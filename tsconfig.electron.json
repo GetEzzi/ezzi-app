@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "outDir": "dist-electron",
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "baseUrl": ".",
+    "types": ["vite/client", "jest"],
+    "paths": {
+      "main": ["electron/main.ts"]
+    }
+  },
+  "include": ["electron/**/*", "shared/**/*"]
+}

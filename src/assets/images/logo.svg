@@ -1,0 +1,18 @@
+<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Rectangle with Gradient -->
+  <rect width="50" height="50" rx="8" fill="url(#paint0_linear)" />
+  
+  <!-- I Letter -->
+  <path d="M14 33V17H18V33H14Z" fill="white"/>
+  
+  <!-- A Letter -->
+  <path d="M24 33L30 17H34L40 33H36L35 30H29L28 33H24ZM30 27H34L32 21L30 27Z" fill="white"/>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="50" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C026D3" /> <!-- fuchsia-600 -->
+      <stop offset="1" stop-color="#0891B2" /> <!-- cyan-600 -->
+    </linearGradient>
+  </defs>
+</svg>

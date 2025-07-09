@@ -1,0 +1,96 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+            artifact: "*.exe"
+            cache-key: "windows"
+          - os: ubuntu-latest
+            platform: linux
+            artifact: "*.AppImage"
+            cache-key: "linux"
+          - os: macos-latest
+            platform: mac
+            artifact: "*.dmg"
+            cache-key: "macos"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        
+    - name: Cache Electron
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/electron
+          ~/Library/Caches/electron
+          %LOCALAPPDATA%\electron\Cache
+        key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-electron-cache-
+          
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Create .env
+      run: |
+        echo "IS_MOCK=false" > .env
+        echo "VITE_API_BASE_URL=https://api.getezzi.com" >> .env
+        echo "VITE_SELF_HOSTED_MODE=false" >> .env
+      
+    - name: Build for Windows
+      if: matrix.platform == 'win'
+      run: npm run build -- --publish=never
+      env:
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+        CSC_LINK: ""
+        CSC_KEY_PASSWORD: ""
+        CI: false
+        
+    - name: Build for Linux
+      if: matrix.platform == 'linux'
+      run: npm run build -- --publish=never
+      env:
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+        
+    - name: Build for macOS
+      if: matrix.platform == 'mac'
+      run: npm run build -- --publish=never -c.mac.identity=null
+
+      env:
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+        CSC_LINK: ""
+        CSC_KEY_PASSWORD: ""
+        APPLE_ID: ""
+        APPLE_ID_PASS: ""
+        CSC_FOR_PULL_REQUEST: false
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-pr-${{ github.event.number }}-${{ matrix.cache-key }}
+        path: |
+          release/${{ matrix.artifact }}
+        retention-days: 1

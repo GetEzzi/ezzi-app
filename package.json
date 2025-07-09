@@ -1,0 +1,205 @@
+{
+  "name": "ezzi",
+  "version": "1.0.0",
+  "main": "dist-electron/main.js",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "clean": "rimraf dist dist-electron",
+    "build": "node scripts/build-config.js && cross-env NODE_ENV=production rimraf dist dist-electron release && vite build && tsc -p tsconfig.electron.json && electron-builder",
+    "lint": "eslint \"{src,electron}/**/*.{ts,tsx,js}\"",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\" && eslint \"{src,electron}/**/*.{ts,tsx,js}\" --fix",
+    "dev:watch-electron": "cross-env NODE_ENV=development tsc -w -p tsconfig.electron.json",
+    "dev:serve-renderer": "cross-env NODE_ENV=development vite",
+    "dev": "concurrently \"npm:dev:watch-electron\" \"npm:dev:serve-renderer\"",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch --passWithNoTests",
+    "test:electron": "jest --config=jest.electron.config.js --passWithNoTests",
+    "test:renderer": "jest --config=jest.renderer.config.js --passWithNoTests"
+  },
+  "build": {
+    "appId": "com.getezzi.ezzi-app",
+    "productName": "Ezzi",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json",
+      "electron/**/*"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "asar": true,
+    "compression": "maximum",
+    "generateUpdatesFilesForAllChannels": true,
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "Ezzi-Mac-${arch}-${version}.${ext}",
+      "icon": "assets/icons/mac/icon-256x256.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "assets/entitlements.mac.plist",
+      "entitlementsInherit": "assets/entitlements.mac.plist",
+      "identity": "Developer ID Application",
+      "type": "distribution",
+      "protocols": {
+        "name": "ezzi-protocol",
+        "schemes": [
+          "ezzi"
+        ]
+      },
+      "notarize": true
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icons/win/icon-256x256.ico",
+      "artifactName": "Ezzi-Windows-${version}.${ext}",
+      "protocols": {
+        "name": "ezzi-protocol",
+        "schemes": [
+          "ezzi"
+        ]
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "assets/icons/png/icon-256x256.png",
+      "artifactName": "Ezzi-Linux-${version}.${ext}",
+      "protocols": {
+        "name": "ezzi-protocol",
+        "schemes": [
+          "ezzi"
+        ]
+      }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "GetEzzi",
+        "repo": "ezzi-app",
+        "private": false,
+        "releaseType": "release"
+      }
+    ],
+    "extraResources": [
+      {
+        "from": ".env",
+        "to": ".env",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "extraMetadata": {
+      "main": "dist-electron/main.js"
+    }
+  },
+  "keywords": [
+    "electron",
+    "desktop",
+    "coding",
+    "interview",
+    "assistant",
+    "developer-tools",
+    "react",
+    "typescript"
+  ],
+  "author": "dkhorev",
+  "license": "MIT",
+  "description": "Invisible overlay UI for DSA interviews. Ezzi (\"easy\") is inspired by Interview Coder, we want to develop and extend this project on it's foundation.",
+  "homepage": "https://github.com/GetEzzi/ezzi-app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GetEzzi/ezzi-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GetEzzi/ezzi-app/issues"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-toast": "^1.2.2",
+    "@tanstack/react-query": "^5.64.0",
+    "axios": "^1.7.7",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.0.1",
+    "electron-store": "^10.1.0",
+    "lucide-react": "^0.525.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "tailwind-merge": "^3.2.0",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@electron/notarize": "^3.0.1",
+    "@electron/typescript-definitions": "^9.1.2",
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.22.0",
+    "@tailwindcss/postcss": "^4.1.4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/color": "^4.2.0",
+    "@types/diff": "^7.0.2",
+    "@types/electron-store": "^1.3.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.15.2",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12",
+    "electron-is-dev": "^3.0.1",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "jest": "^30.0.4",
+    "jest-environment-jsdom": "^30.0.4",
+    "postcss": "^8.4.49",
+    "rimraf": "^6.0.1",
+    "tailwindcss": "^4.1.4",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.4.2",
+    "typescript-eslint": "^8.26.1",
+    "vite": "^7.0.2",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
