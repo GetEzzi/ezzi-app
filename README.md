@@ -8,7 +8,7 @@ Ezzi ("easy") is inspired by Interview Coder, designed to help developers succee
 
 | What You See | What They See |
 |:------------:|:-------------:|
-| <img src="./images/what-you-see.png" alt="What you see - your interface view" width="600"/> | <img src="./images/what-they-see.png" alt="What they see - interviewer's view" width="600"/> |
+| <a href="./images/what-you-see.png" target="_blank"><img src="./images/what-you-see.png" alt="What you see - your interface view" width="600"/></a> | <a href="./images/what-they-see.png" target="_blank"><img src="./images/what-they-see.png" alt="What they see - interviewer's view" width="600"/></a> |
 
 ## What Ezzi helps with:
 
