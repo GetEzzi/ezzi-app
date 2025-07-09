@@ -90,7 +90,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-pr-${{ github.event.number }}-${{ matrix.cache-key }}
+        name: build-${{ github.event.number || github.run_number }}-${{ matrix.cache-key }}
         path: |
           release/${{ matrix.artifact }}
         retention-days: 1
