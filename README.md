@@ -6,6 +6,10 @@
 
 Ezzi ("easy") is inspired by Interview Coder, designed to help developers succeed in technical interviews and beyond. This desktop application provides undetectable assistance for coding interviews, technical practice, and learning.
 
+| What You See | What They See |
+|:------------:|:-------------:|
+| <img src="./images/what-you-see.png" alt="What you see - your interface view" width="600"/> | <img src="./images/what-they-see.png" alt="What they see - interviewer's view" width="600"/> |
+
 ## What Ezzi helps with:
 
 - **Technical interview preparation** - Practice and solve coding problems with AI guidance
