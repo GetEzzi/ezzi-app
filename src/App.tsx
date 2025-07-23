@@ -11,6 +11,7 @@ import {
   ToastViewport,
 } from './components/ui/toast';
 import { ToastContext } from './contexts/toast';
+import { AppModeProvider } from './contexts/appMode';
 import {
   AuthenticatedUser,
   ProgrammingLanguage,
@@ -401,34 +402,36 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <ToastContext.Provider value={{ showToast }}>
-          {appState.user ? (
-            <AppContent
-              isInitialized={appState.isInitialized}
-              user={appState.user}
-              currentLanguage={appState.currentLanguage}
-              currentLocale={appState.userLocale}
-              setLanguage={updateLanguage}
-              setLocale={updateLocale}
-            />
-          ) : (
-            <AuthForm
-              setUser={(user) => {
-                setUser(user).catch(console.error);
-              }}
-            />
-          )}
-          <Toast
-            open={toastState.open}
-            onOpenChange={(open) =>
-              setToastState((prev) => ({ ...prev, open }))
-            }
-            variant={toastState.variant}
-            duration={1500}
-          >
-            <ToastTitle>{toastState.title}</ToastTitle>
-            <ToastDescription>{toastState.description}</ToastDescription>
-          </Toast>
-          <ToastViewport />
+          <AppModeProvider>
+            {appState.user ? (
+              <AppContent
+                isInitialized={appState.isInitialized}
+                user={appState.user}
+                currentLanguage={appState.currentLanguage}
+                currentLocale={appState.userLocale}
+                setLanguage={updateLanguage}
+                setLocale={updateLocale}
+              />
+            ) : (
+              <AuthForm
+                setUser={(user) => {
+                  setUser(user).catch(console.error);
+                }}
+              />
+            )}
+            <Toast
+              open={toastState.open}
+              onOpenChange={(open) =>
+                setToastState((prev) => ({ ...prev, open }))
+              }
+              variant={toastState.variant}
+              duration={1500}
+            >
+              <ToastTitle>{toastState.title}</ToastTitle>
+              <ToastDescription>{toastState.description}</ToastDescription>
+            </Toast>
+            <ToastViewport />
+          </AppModeProvider>
         </ToastContext.Provider>
       </ToastProvider>
     </QueryClientProvider>

@@ -1,8 +1,9 @@
-import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
+import { ProgrammingLanguage, UserLanguage, AppMode } from '@shared/api.ts';
 
 export interface UserSettings {
   solutionLanguage: ProgrammingLanguage;
   userLanguage: UserLanguage;
+  appMode: AppMode;
 }
 
 export interface IStorageProvider {
@@ -12,4 +13,6 @@ export interface IStorageProvider {
   setSolutionLanguage(language: ProgrammingLanguage): Promise<void>;
   getUserLanguage(): Promise<UserLanguage>;
   setUserLanguage(language: UserLanguage): Promise<void>;
+  getAppMode(): Promise<AppMode>;
+  setAppMode(appMode: AppMode): Promise<void>;
 }

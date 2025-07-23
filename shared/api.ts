@@ -47,6 +47,11 @@ export enum UserLanguage {
   AR_EG = 'ar-EG', // Arabic (Egypt)
 }
 
+export enum AppMode {
+  LIVE_INTERVIEW = 'live-interview',
+  LEETCODE_SOLVER = 'leetcode-solver',
+}
+
 export enum SubscriptionType {
   DAYS_10 = 'DAYS_10', // 10 days = 15 USD
   DAYS_30 = 'DAYS_30', // 30 days = 30 USD

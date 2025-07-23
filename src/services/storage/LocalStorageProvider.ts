@@ -1,5 +1,5 @@
 import { IStorageProvider, UserSettings } from './StorageProvider';
-import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
+import { ProgrammingLanguage, UserLanguage, AppMode } from '@shared/api.ts';
 
 export class LocalStorageProvider implements IStorageProvider {
   private readonly STORAGE_KEY = 'ezzi-settings';
@@ -11,12 +11,14 @@ export class LocalStorageProvider implements IStorageProvider {
         const parsed = JSON.parse(stored) as {
           solutionLanguage?: ProgrammingLanguage;
           userLanguage?: UserLanguage;
+          appMode?: AppMode;
         };
 
         return Promise.resolve({
           solutionLanguage:
             parsed.solutionLanguage || ProgrammingLanguage.Python,
           userLanguage: parsed.userLanguage || UserLanguage.EN_US,
+          appMode: parsed.appMode || AppMode.LIVE_INTERVIEW,
         });
       } catch (error) {
         console.warn('Failed to parse stored settings:', error);
@@ -26,6 +28,7 @@ export class LocalStorageProvider implements IStorageProvider {
     return Promise.resolve({
       solutionLanguage: ProgrammingLanguage.Python,
       userLanguage: UserLanguage.EN_US,
+      appMode: AppMode.LIVE_INTERVIEW,
     });
   }
 
@@ -53,5 +56,15 @@ export class LocalStorageProvider implements IStorageProvider {
 
   async setUserLanguage(language: UserLanguage): Promise<void> {
     await this.updateSettings({ userLanguage: language });
+  }
+
+  async getAppMode(): Promise<AppMode> {
+    const settings = await this.getSettings();
+
+    return settings.appMode;
+  }
+
+  async setAppMode(appMode: AppMode): Promise<void> {
+    await this.updateSettings({ appMode });
   }
 }

@@ -1,4 +1,5 @@
 import { QueryObserverResult, Register } from '@tanstack/react-query';
+import { AppMode } from '../shared/api';
 
 export interface ElectronAPI {
   openSubscriptionPortal: (authData: {
@@ -78,6 +79,9 @@ export interface ElectronAPI {
     isAuthenticated?: boolean;
     error?: string;
   }>;
+  setAppMode: (
+    appMode: AppMode,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface IElectron {

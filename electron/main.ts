@@ -4,6 +4,7 @@ import { initializeIpcHandlers } from './ipc.handlers';
 import { ProcessingHelper } from './processing.helper';
 import { ScreenshotHelper } from './screenshot.helper';
 import { ShortcutsHelper } from './shortcuts';
+import { AppMode } from '../shared/api';
 import * as dotenv from 'dotenv';
 
 const isDev = !app.isPackaged;
@@ -25,6 +26,7 @@ const state = {
 
   view: 'queue' as 'queue' | 'solutions' | 'debug',
   hasDebugged: false,
+  appMode: AppMode.LIVE_INTERVIEW as AppMode,
 
   PROCESSING_EVENTS: {
     UNAUTHORIZED: 'processing-unauthorized',
@@ -85,6 +87,8 @@ export interface IIpcHandlerDeps {
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
   takeScreenshot: () => Promise<string>;
   getView: () => 'queue' | 'solutions' | 'debug';
+  getAppMode: () => AppMode;
+  setAppMode: (appMode: AppMode) => void;
   toggleMainWindow: () => void;
   clearQueues: () => void;
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
@@ -489,6 +493,8 @@ async function initializeApp() {
       PROCESSING_EVENTS: state.PROCESSING_EVENTS,
       takeScreenshot,
       getView,
+      getAppMode,
+      setAppMode,
       toggleMainWindow,
       clearQueues,
       setView,
@@ -549,6 +555,14 @@ function getView(): 'queue' | 'solutions' | 'debug' {
 function setView(view: 'queue' | 'solutions' | 'debug'): void {
   state.view = view;
   state.screenshotHelper?.setView(view);
+}
+
+function getAppMode(): AppMode {
+  return state.appMode;
+}
+
+function setAppMode(appMode: AppMode): void {
+  state.appMode = appMode;
 }
 
 function getScreenshotHelper(): ScreenshotHelper | null {
@@ -616,6 +630,8 @@ export {
   getMainWindow,
   getView,
   setView,
+  getAppMode,
+  setAppMode,
   getScreenshotHelper,
   getScreenshotQueue,
   getExtraScreenshotQueue,
