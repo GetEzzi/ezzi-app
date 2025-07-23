@@ -1,6 +1,6 @@
 {
   "name": "ezzi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist-electron/main.js",
   "engines": {
     "node": ">=22.0.0"

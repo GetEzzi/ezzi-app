@@ -2,6 +2,7 @@ import { IStorageProvider, UserSettings } from './StorageProvider';
 import {
   ProgrammingLanguage,
   UserLanguage,
+  AppMode,
   UserSettingsUpdateRequest,
 } from '@shared/api.ts';
 import { settingsService } from '../settings';
@@ -13,6 +14,7 @@ export class ApiStorageProvider implements IStorageProvider {
     return {
       solutionLanguage: settings.solutionLanguage,
       userLanguage: settings.userLanguage,
+      appMode: AppMode.LIVE_INTERVIEW,
     };
   }
 
@@ -44,5 +46,18 @@ export class ApiStorageProvider implements IStorageProvider {
 
   async setUserLanguage(language: UserLanguage): Promise<void> {
     await this.updateSettings({ userLanguage: language });
+  }
+
+  getAppMode(): Promise<AppMode> {
+    return Promise.resolve(AppMode.LIVE_INTERVIEW);
+  }
+
+  setAppMode(appMode: AppMode): Promise<void> {
+    console.log(
+      'App mode change not persisted in API storage provider:',
+      appMode,
+    );
+
+    return Promise.resolve();
   }
 }

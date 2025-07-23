@@ -1,6 +1,7 @@
 console.log('Preload script starting...');
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_EVENTS } from '../shared/constants';
+import { AppMode } from '../shared/api';
 import { shell } from 'electron';
 // const { shell } = require('electron');
 
@@ -66,6 +67,9 @@ interface ElectronAPI {
     isAuthenticated?: boolean;
     error?: string;
   }>;
+  setAppMode: (
+    appMode: AppMode,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const PROCESSING_EVENTS = {
@@ -247,6 +251,8 @@ const electronAPI = {
   authGetToken: () => ipcRenderer.invoke('auth-get-token'),
   authClearToken: () => ipcRenderer.invoke('auth-clear-token'),
   authIsAuthenticated: () => ipcRenderer.invoke('auth-is-authenticated'),
+  setAppMode: (appMode: AppMode) =>
+    ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
 } as ElectronAPI;
 
 // Before exposing the API

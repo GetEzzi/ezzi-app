@@ -1,6 +1,7 @@
 import { app, ipcMain, shell } from 'electron';
 import { IIpcHandlerDeps } from './main';
 import { IPC_EVENTS } from '../shared/constants';
+import { AppMode } from '../shared/api';
 import { AuthStorage } from './auth.storage';
 
 export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
@@ -325,6 +326,24 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       console.error('Error checking authentication:', error);
 
       return { error: 'Failed to check authentication' };
+    }
+  });
+
+  ipcMain.handle(IPC_EVENTS.APP_MODE.CHANGE, (event, appMode: string) => {
+    try {
+      console.log('App mode changed to:', appMode);
+
+      if (Object.values(AppMode).includes(appMode as AppMode)) {
+        deps.setAppMode(appMode as AppMode);
+      } else {
+        return { error: 'Invalid app mode' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error changing app mode:', error);
+
+      return { error: 'Failed to change app mode' };
     }
   });
 }

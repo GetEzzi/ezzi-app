@@ -7,6 +7,7 @@ import {
 } from '../../../shared/api';
 import { COMMAND_KEY } from '../../utils/platform';
 import { authService } from '../../services/auth.ts';
+import { useAppMode } from '../../contexts/appMode';
 import CommandButton from '../shared/commands/CommandButton';
 import CommandSeparator from '../shared/commands/CommandSeparator';
 import SettingsTooltip from '../shared/commands/SettingsTooltip';
@@ -31,6 +32,7 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
   const [isTooltipVisible] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const { currentAppMode, setAppMode } = useAppMode();
 
   useEffect(() => {
     // Fetch the current user when the component mounts
@@ -128,8 +130,10 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
               ]}
               currentLanguage={currentLanguage}
               currentLocale={currentLocale}
+              currentAppMode={currentAppMode}
               setLanguage={setLanguage}
               setLocale={setLocale}
+              setAppMode={setAppMode}
               onSignOut={handleSignOut}
               onTooltipVisibilityChange={onTooltipVisibilityChange}
             />
