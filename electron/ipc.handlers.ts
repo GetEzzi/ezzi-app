@@ -24,23 +24,14 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
 
   ipcMain.handle(IPC_EVENTS.QUEUE.LOADED_NO_SCREENSHOTS, () => {
     console.log('Queue page loaded with no screenshots');
-    const mainWindow = deps.getMainWindow();
-    if (mainWindow) {
-      mainWindow.setIgnoreMouseEvents(false);
-      mainWindow.setFocusable(true);
-      mainWindow.setSkipTaskbar(true);
-    }
+    deps.applyQueueWindowBehavior();
   });
 
   ipcMain.handle(
     IPC_EVENTS.QUEUE.LOADED_WITH_SCREENSHOTS,
     (event, screenshotCount) => {
       console.log('Queue page loaded with screenshots:', screenshotCount);
-      const mainWindow = deps.getMainWindow();
-      if (mainWindow) {
-        mainWindow.setIgnoreMouseEvents(true, { forward: true });
-        mainWindow.setFocusable(false);
-      }
+      deps.applyQueueWindowBehavior();
     },
   );
 

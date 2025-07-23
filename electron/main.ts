@@ -5,6 +5,7 @@ import { ProcessingHelper } from './processing.helper';
 import { ScreenshotHelper } from './screenshot.helper';
 import { ShortcutsHelper } from './shortcuts';
 import { AppMode } from '../shared/api';
+import { WindowConfigFactory } from './window-config/WindowConfigFactory';
 import * as dotenv from 'dotenv';
 
 const isDev = !app.isPackaged;
@@ -96,6 +97,7 @@ export interface IIpcHandlerDeps {
   moveWindowRight: () => void;
   moveWindowUp: () => void;
   moveWindowDown: () => void;
+  applyQueueWindowBehavior: () => void;
 }
 
 function initializeHelpers() {
@@ -183,16 +185,17 @@ async function createWindow(): Promise<void> {
   const workArea = primaryDisplay.workAreaSize;
   state.screenWidth = workArea.width;
   state.screenHeight = workArea.height;
-  state.step = 60;
   state.currentY = 50;
 
-  // Base window settings that are common for both modes
+  const configFactory = WindowConfigFactory.getInstance();
+  const windowConfig = configFactory.getConfig(state.appMode);
+
+  state.step = 60;
+
   const baseWindowSettings: Electron.BrowserWindowConstructorOptions = {
-    width: 500,
-    height: 520,
+    ...windowConfig.baseSettings,
     x: state.currentX,
     y: 50,
-    alwaysOnTop: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -201,21 +204,6 @@ async function createWindow(): Promise<void> {
         : path.join(__dirname, 'preload.js'),
       scrollBounce: true,
     },
-    show: true,
-    fullscreenable: false,
-    // Important: MUST BE default "true" for Login/Signup to have active inputs
-    focusable: true,
-    enableLargerThanScreen: true,
-    // Invisible options but we still want them always ON
-    frame: false,
-    hasShadow: false,
-    transparent: true,
-    skipTaskbar: true,
-    titleBarStyle: 'hidden',
-    backgroundColor: '#00000000',
-    type: 'panel',
-    paintWhenInitiallyHidden: true,
-    movable: true,
   };
 
   state.mainWindow = new BrowserWindow(baseWindowSettings);
@@ -271,13 +259,17 @@ async function createWindow(): Promise<void> {
   });
   state.mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
 
-  // Warning: calling those options on other OS breaks app loading
-  // Additional screen capture resistance settings for macOS
-  if (process.platform === 'darwin') {
-    state.mainWindow.setHiddenInMissionControl(true);
-    state.mainWindow.setWindowButtonVisibility(false);
-    state.mainWindow.setBackgroundColor('#00000000');
-    state.mainWindow.setHasShadow(false);
+  // Apply platform-specific configurations
+  const platformConfig = windowConfig.behavior.platformSpecific;
+  if (process.platform === 'darwin' && platformConfig.darwin) {
+    state.mainWindow.setHiddenInMissionControl(
+      platformConfig.darwin.hiddenInMissionControl,
+    );
+    state.mainWindow.setWindowButtonVisibility(
+      platformConfig.darwin.windowButtonVisibility,
+    );
+    state.mainWindow.setBackgroundColor(platformConfig.darwin.backgroundColor);
+    state.mainWindow.setHasShadow(platformConfig.darwin.hasShadow);
   }
 
   // Prevent a window from being included in the window switcher
@@ -334,12 +326,8 @@ function hideMainWindow(): void {
     state.windowPosition = { x: bounds.x, y: bounds.y };
     state.windowSize = { width: bounds.width, height: bounds.height };
 
-    state.mainWindow.setIgnoreMouseEvents(true, { forward: true });
-    state.mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-    state.mainWindow.setVisibleOnAllWorkspaces(true, {
-      visibleOnFullScreen: true,
-    });
-    state.mainWindow.setOpacity(0);
+    const configFactory = WindowConfigFactory.getInstance();
+    configFactory.applyHideBehavior(state.mainWindow, state.appMode);
     state.mainWindow.hide();
 
     state.isWindowVisible = false;
@@ -360,26 +348,27 @@ function showMainWindow(): void {
       });
     }
 
-    // Allow click-thru only if Queue mode and no screenshots
+    const configFactory = WindowConfigFactory.getInstance();
     const view = getView();
-    const screenshots = getScreenshotQueue();
-    if (view === 'queue' && screenshots.length === 0) {
-      console.log('showMainWindow: in Queue mode and no screenshots ');
-      state.mainWindow.setIgnoreMouseEvents(false);
-      state.mainWindow.setFocusable(true);
-    }
-
-    state.mainWindow.setSkipTaskbar(true);
-
-    state.mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-    state.mainWindow.setVisibleOnAllWorkspaces(true, {
-      visibleOnFullScreen: true,
-    });
-    state.mainWindow.setContentProtection(true);
 
     state.mainWindow.setOpacity(0);
     state.mainWindow.showInactive();
-    state.mainWindow.setOpacity(1);
+
+    // Apply appropriate behavior based on current view
+    if (view === 'queue') {
+      const screenshots = getScreenshotQueue();
+      const hasScreenshots = screenshots.length > 0;
+      console.log(
+        `showMainWindow: in Queue mode with ${screenshots.length} screenshots`,
+      );
+      configFactory.applyQueueBehavior(
+        state.mainWindow,
+        state.appMode,
+        hasScreenshots,
+      );
+    } else {
+      configFactory.applyShowBehavior(state.mainWindow, state.appMode);
+    }
 
     state.isWindowVisible = true;
 
@@ -511,6 +500,7 @@ async function initializeApp() {
         ),
       moveWindowUp: () => moveWindowVertical((y) => y - state.step),
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
+      applyQueueWindowBehavior,
     });
     await createWindow();
 
@@ -618,6 +608,20 @@ function getHasDebugged(): boolean {
   return state.hasDebugged;
 }
 
+function applyQueueWindowBehavior(): void {
+  if (!state.mainWindow?.isDestroyed()) {
+    const configFactory = WindowConfigFactory.getInstance();
+    const screenshots = getScreenshotQueue();
+    const hasScreenshots = screenshots.length > 0;
+
+    configFactory.applyQueueBehavior(
+      state.mainWindow,
+      state.appMode,
+      hasScreenshots,
+    );
+  }
+}
+
 export {
   state,
   createWindow,
@@ -641,6 +645,7 @@ export {
   deleteScreenshot,
   setHasDebugged,
   getHasDebugged,
+  applyQueueWindowBehavior,
 };
 
 app.whenReady().then(initializeApp).catch(console.error);

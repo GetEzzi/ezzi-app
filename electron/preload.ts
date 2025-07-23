@@ -1,9 +1,7 @@
-console.log('Preload script starting...');
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_EVENTS } from '../shared/constants';
 import { AppMode } from '../shared/api';
 import { shell } from 'electron';
-// const { shell } = require('electron');
 
 // Types for the exposed Electron API
 interface ElectronAPI {

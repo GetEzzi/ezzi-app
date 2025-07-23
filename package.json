@@ -8,6 +8,9 @@
   "scripts": {
     "clean": "rimraf dist dist-electron",
     "build": "node scripts/build-config.js && cross-env NODE_ENV=production rimraf dist dist-electron release && vite build && tsc -p tsconfig.electron.json && electron-builder",
+    "compile:renderer": "tsc --noEmit",
+    "compile:electron": "tsc -p tsconfig.electron.json --noEmit",
+    "compile": "concurrently \"npm:compile:renderer\" \"npm:compile:electron\"",
     "lint": "eslint \"{src,electron}/**/*.{ts,tsx,js}\"",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\" && eslint \"{src,electron}/**/*.{ts,tsx,js}\" --fix",
     "dev:watch-electron": "cross-env NODE_ENV=development tsc -w -p tsconfig.electron.json",
