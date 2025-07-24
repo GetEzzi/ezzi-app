@@ -15,9 +15,9 @@ export const LeetcodeSolverLayout: React.FC<LeetcodeSolverLayoutProps> = ({
 }) => {
   return (
     <div className={`px-4 py-2 space-y-2 ${className}`}>
-      {commandSection && <div className="w-full">{commandSection}</div>}
-
       {screenshotSection && <div className="w-fit">{screenshotSection}</div>}
+
+      {commandSection && <div className="w-full">{commandSection}</div>}
 
       {solutionSection && (
         <div className="w-full space-y-3">{solutionSection}</div>
