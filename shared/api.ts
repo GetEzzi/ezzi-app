@@ -1,15 +1,3 @@
-/**
- * API Contract Documentation for Ezzi Backend
- *
- * This file documents all API endpoints, request/response interfaces, and data types
- * used by the Ezzi application. Backend developers should implement
- * these exact interfaces to ensure compatibility with the client application.
- */
-
-// =============================================================================
-// ENUMS & TYPES
-// =============================================================================
-
 export enum ProgrammingLanguage {
   Python = 'python',
   JavaScript = 'javascript',
@@ -50,12 +38,6 @@ export enum UserLanguage {
 export enum AppMode {
   LIVE_INTERVIEW = 'live-interview',
   LEETCODE_SOLVER = 'leetcode-solver',
-}
-
-export enum SubscriptionType {
-  DAYS_10 = 'DAYS_10', // 10 days = 15 USD
-  DAYS_30 = 'DAYS_30', // 30 days = 30 USD
-  DAYS_90 = 'DAYS_90', // 90 days = 70 USD
 }
 
 export enum SubscriptionLevel {
@@ -149,176 +131,6 @@ export interface UserSettingsUpdateRequest {
   userLanguage: UserLanguage;
 }
 
-// =============================================================================
-// API ENDPOINTS DOCUMENTATION
-// =============================================================================
-
-/**
- * AUTH ENDPOINTS
- */
-
-/**
- * POST /auth/login
- *
- * Login with email and password
- *
- * Request Body:
- * {
- *   "email": "user@example.com",
- *   "password": "password123"
- * }
- *
- * Response: AuthResponse
- *
- * Headers Required: None
- * Authentication: None
- */
-
-/**
- * POST /auth/signup
- *
- * Sign up new user with email and password
- *
- * Request Body:
- * {
- *   "email": "user@example.com",
- *   "password": "password123",
- *   "options": {
- *     "emailRedirectTo": "https://example.com/auth/callback"
- *   }
- * }
- *
- * Response: AuthResponse
- *
- * Headers Required: None
- * Authentication: None
- */
-
-/**
- * GET /auth/user
- *
- * Get current authenticated user information
- *
- * Request Body: None
- *
- * Response: AuthenticatedUser
- *
- * Headers Required:
- * - Authorization: Bearer <token>
- *
- * Authentication: Required
- */
-
-/**
- * USER SETTINGS ENDPOINTS
- */
-
-/**
- * GET /user-settings
- *
- * Get current user's settings
- *
- * Request Body: None
- *
- * Response: SettingsResponse
- *
- * Headers Required:
- * - Authorization: Bearer <token>
- *
- * Authentication: Required
- */
-
-/**
- * POST /user-settings
- *
- * Update user settings
- *
- * Request Body: UserSettingsUpdateRequest
- * {
- *   "solutionLanguage": "python",
- *   "userLanguage": "en-US"
- * }
- *
- * Response: 200 OK (no body expected)
- *
- * Headers Required:
- * - Authorization: Bearer <token>
- * - Content-Type: application/json
- *
- * Authentication: Required
- */
-
-/**
- * SOLUTION PROCESSING ENDPOINTS
- */
-
-/**
- * POST /solutions/solve
- *
- * Process screenshots to generate initial solution
- *
- * Request Body: SolveRequest
- * {
- *   "images": ["base64image1", "base64image2"],
- *   "language": "python",
- *   "locale": "en-US",
- *   "isMock": false
- * }
- *
- * Response: SolveResponse
- *
- * Headers Required:
- * - Authorization: Bearer <token>
- * - Content-Type: application/json
- */
-
-/**
- * POST /solutions/debug
- *
- * Process additional screenshots to debug/improve existing solution
- *
- * Request Body: DebugRequest
- * {
- *   "images": ["base64image1", "base64image2"],
- *   "language": "python",
- *   "locale": "en-US",
- *   "isMock": false
- * }
- *
- * Response: DebugResponse
- *
- * Headers Required:
- * - Authorization: Bearer <token>
- * - Content-Type: application/json
- */
-
-// =============================================================================
-// ERROR HANDLING
-// =============================================================================
-
-/**
- * Common HTTP Status Codes and Expected Responses:
- *
- * 200 OK - Request successful
- * 400 Bad Request - Invalid request data
- * 401 Unauthorized - Invalid or missing authentication token
- * 403 Forbidden - Valid token but insufficient permissions/subscription
- * 404 Not Found - Endpoint not found
- * 408 Request Timeout - Request took too long (> 5 minutes)
- * 500 Internal Server Error - Server error
- *
- * Error Response Format:
- * {
- *   "error": "Human readable error message",
- *   "code": "ERROR_CODE", // Optional
- *   "details": {} // Optional additional details
- * }
- */
-
-// =============================================================================
-// IMPLEMENTATION NOTES
-// =============================================================================
-
 /**
  * AUTHENTICATION:
  * - Uses Bearer token authentication
@@ -360,8 +172,6 @@ export const API_ENDPOINTS = {
     DEBUG: '/solutions/debug',
   },
 } as const;
-
-export type ApiEndpoints = typeof API_ENDPOINTS;
 
 // =============================================================================
 // ADDITIONAL TYPES
