@@ -65,8 +65,29 @@ export const SolutionSection: React.FC<SolutionSectionProps> = ({
     </div>
   );
 
+  if (isLeetcodeSolver) {
+    return (
+      <div className={className}>
+        {solutionData && (
+          <SolutionContent
+            title={title}
+            content={
+              <CodeBlock
+                code={solutionData}
+                language={currentLanguage}
+                showCopyButton={true}
+              />
+            }
+            isLoading={!solutionData}
+            type="code"
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className={`space-y-${isLeetcodeSolver ? '3' : '4'} ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       {thoughtsData && (
         <SolutionContent
           title={title === 'Solution' ? 'My Thoughts' : 'What I Changed'}
@@ -78,7 +99,13 @@ export const SolutionSection: React.FC<SolutionSectionProps> = ({
       {solutionData && (
         <SolutionContent
           title={title}
-          content={<CodeBlock code={solutionData} language={currentLanguage} />}
+          content={
+            <CodeBlock
+              code={solutionData}
+              language={currentLanguage}
+              showCopyButton={false}
+            />
+          }
           isLoading={!solutionData}
           type="code"
         />
