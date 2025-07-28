@@ -10,7 +10,7 @@ export const AppModeIndicator: React.FC = () => {
       case AppMode.LIVE_INTERVIEW:
         return {
           dotColor: 'bg-green-500',
-          text: 'Interview Live - invisible',
+          text: 'Live Interview - invisible',
         };
       case AppMode.LEETCODE_SOLVER:
         return {

@@ -118,6 +118,32 @@ export interface DebugResponse {
 }
 
 // =============================================================================
+// LEETCODE PROCESSING TYPES
+// =============================================================================
+
+export interface LeetCodeSolveRequest {
+  images: string[]; // Array of base64-encoded images
+  language: string; // Programming language for solution
+  locale: string; // User locale for response language
+  isMock?: boolean; // Optional flag for mock responses
+}
+
+export interface LeetCodeSolveResponse {
+  code: string; // Generated code solution
+}
+
+export interface LeetCodeDebugRequest {
+  images: string[]; // Array of base64-encoded images
+  language: string; // Programming language for debugging
+  locale: string; // User locale for response language
+  isMock?: boolean; // Optional flag for mock responses
+}
+
+export interface LeetCodeDebugResponse {
+  code: string; // Debugged/improved code
+}
+
+// =============================================================================
 // SETTINGS TYPES
 // =============================================================================
 
@@ -170,6 +196,10 @@ export const API_ENDPOINTS = {
   SOLUTIONS: {
     SOLVE: '/solutions/solve',
     DEBUG: '/solutions/debug',
+  },
+  LEETCODE: {
+    SOLVE: '/leetcode/solve',
+    DEBUG: '/leetcode/debug',
   },
 } as const;
 
