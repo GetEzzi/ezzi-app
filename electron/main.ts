@@ -57,6 +57,7 @@ export interface IProcessingHelperDeps {
   ) => Promise<{ success: boolean; error?: string }>;
   setHasDebugged: (value: boolean) => void;
   getHasDebugged: () => boolean;
+  getAppMode: () => AppMode;
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
 }
 
@@ -115,6 +116,7 @@ function initializeHelpers() {
     deleteScreenshot,
     setHasDebugged,
     getHasDebugged,
+    getAppMode,
     PROCESSING_EVENTS: state.PROCESSING_EVENTS,
   } as IProcessingHelperDeps);
   state.shortcutsHelper = new ShortcutsHelper({
