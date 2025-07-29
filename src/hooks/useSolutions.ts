@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Screenshot, SolveResponse } from '@shared/api.ts';
+import { Screenshot, SolveResponse, LeetCodeSolveResponse } from '@shared/api.ts';
 import { useToast } from '../contexts/toast';
 
 export function useSolutions() {
@@ -132,15 +132,15 @@ export function useSolutions() {
         setTimeComplexityData(solution?.time_complexity || null);
         setSpaceComplexityData(solution?.space_complexity || null);
       }),
-      window.electronAPI.onSolutionSuccess((data: SolveResponse) => {
+      window.electronAPI.onSolutionSuccess((data: SolveResponse | LeetCodeSolveResponse) => {
         if (!data) {
           return;
         }
         queryClient.setQueryData(['solution'], data);
         setSolutionData(data.code || null);
-        setThoughtsData(data.thoughts || null);
-        setTimeComplexityData(data.time_complexity || null);
-        setSpaceComplexityData(data.space_complexity || null);
+        setThoughtsData('thoughts' in data ? data.thoughts || null : null);
+        setTimeComplexityData('time_complexity' in data ? data.time_complexity || null : null);
+        setSpaceComplexityData('space_complexity' in data ? data.space_complexity || null : null);
         setExtraScreenshots([]);
       }),
       window.electronAPI.onDebugStart(() => setDebugProcessing(true)),

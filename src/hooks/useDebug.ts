@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { DebugResponse, Screenshot } from '@shared/api.ts';
+import { DebugResponse, LeetCodeDebugResponse, Screenshot } from '@shared/api.ts';
 import { useToast } from '../contexts/toast';
 
 async function fetchScreenshots() {
@@ -80,13 +80,13 @@ export function useDebug(
   useEffect(() => {
     const newSolution = queryClient.getQueryData([
       'new_solution',
-    ]) as DebugResponse;
+    ]) as DebugResponse | LeetCodeDebugResponse;
 
     if (newSolution) {
       setNewCode(newSolution.code || null);
-      setThoughtsData(newSolution.thoughts || null);
-      setTimeComplexityData(newSolution.time_complexity || null);
-      setSpaceComplexityData(newSolution.space_complexity || null);
+      setThoughtsData('thoughts' in newSolution ? newSolution.thoughts || null : null);
+      setTimeComplexityData('time_complexity' in newSolution ? newSolution.time_complexity || null : null);
+      setSpaceComplexityData('space_complexity' in newSolution ? newSolution.space_complexity || null : null);
       setIsProcessing(false);
     }
 
