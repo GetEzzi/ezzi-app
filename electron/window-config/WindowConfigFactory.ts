@@ -35,6 +35,8 @@ export class WindowConfigFactory implements WindowConfigProvider {
     window: BrowserWindow,
     config: WindowVisibilityConfig,
   ): void {
+    const currentBounds = window.getBounds();
+
     if (config.ignoreMouseEvents) {
       window.setIgnoreMouseEvents(true, { forward: true });
     } else {
@@ -48,6 +50,8 @@ export class WindowConfigFactory implements WindowConfigProvider {
     });
     window.setContentProtection(config.contentProtection);
     window.setOpacity(config.opacity);
+
+    window.setBounds(currentBounds);
   }
 
   public applyQueueBehavior(
