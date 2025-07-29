@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProgrammingLanguage } from '../../shared/api';
+import { ProgrammingLanguage } from '@shared/api.ts';
 import { useDebug } from '../hooks';
 import {
   useAppModeLayout,

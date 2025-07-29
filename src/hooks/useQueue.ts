@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/toast';
-import { Screenshot } from '../../shared/api';
+import { Screenshot } from '@shared/api.ts';
 import { sendToElectron } from '../utils/electron';
 import { IPC_EVENTS } from '@shared/constants.ts';
 
