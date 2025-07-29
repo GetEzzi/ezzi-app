@@ -198,8 +198,8 @@ export const API_ENDPOINTS = {
     DEBUG: '/solutions/debug',
   },
   LEETCODE: {
-    SOLVE: '/leetcode/solve',
-    DEBUG: '/leetcode/debug',
+    SOLVE: '/solutions/leetcode/solve',
+    DEBUG: '/solutions/leetcode/debug',
   },
 } as const;
 
