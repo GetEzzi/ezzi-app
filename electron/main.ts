@@ -411,15 +411,18 @@ function moveWindowHorizontal(updateFn: (x: number) => number): void {
 }
 
 function moveWindowVertical(updateFn: (y: number) => number): void {
-  if (!state.mainWindow) {
+  if (!state.mainWindow || !state.windowSize) {
     return;
   }
 
   const newY = updateFn(state.currentY);
   // Allow window to go 2/3 off screen in either direction
-  const maxUpLimit = (-(state.windowSize?.height || 0) * 2) / 3;
+  const maxUpLimit = (-(state.windowSize.height || 0) * 2) / 3;
   const maxDownLimit =
-    state.screenHeight + ((state.windowSize?.height || 0) * 2) / 3;
+    state.screenHeight + ((state.windowSize.height || 0) * 2) / 3;
+  console.log(
+    `height: ${state.windowSize.height} | maxUpLimit: ${maxUpLimit} | maxDownLimit: ${maxDownLimit}`,
+  );
 
   // Only update if within bounds
   if (newY >= maxUpLimit && newY <= maxDownLimit) {
@@ -431,20 +434,56 @@ function moveWindowVertical(updateFn: (y: number) => number): void {
   }
 }
 
+function isWindowCompletelyOffScreen(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): boolean {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const workArea = primaryDisplay.workAreaSize;
+
+  return (
+    x + width < 0 || // Completely left of screen
+    x > workArea.width || // Completely right of screen
+    y + height < 0 || // Completely above screen
+    y > workArea.height // Completely below screen
+  );
+}
+
 function setWindowDimensions(width: number, height: number): void {
-  if (!state.mainWindow?.isDestroyed()) {
+  if (state.mainWindow && !state.mainWindow.isDestroyed()) {
     // console.log(`setWindowDimensions width:${width} height:${height}`);
     const [currentX, currentY] = state.mainWindow.getPosition();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workAreaSize;
     const maxWidth = Math.floor(workArea.width * 0.5);
 
+    const newWidth = Math.min(width + 32, maxWidth);
+    const newHeight = Math.ceil(height);
+
+    // Only adjust position if window would be completely off-screen
+    let adjustedX = currentX;
+    let adjustedY = currentY;
+
+    if (isWindowCompletelyOffScreen(currentX, currentY, newWidth, newHeight)) {
+      // Only in extreme cases, center the window
+      adjustedX = Math.max(0, (workArea.width - newWidth) / 2);
+      adjustedY = Math.max(0, (workArea.height - newHeight) / 2);
+    }
+
     state.mainWindow.setBounds({
-      x: Math.min(currentX, workArea.width - maxWidth),
-      y: currentY,
-      width: Math.min(width + 32, maxWidth),
-      height: Math.ceil(height),
+      x: adjustedX,
+      y: adjustedY,
+      width: newWidth,
+      height: newHeight,
     });
+
+    // Update internal state to match actual position
+    state.currentX = adjustedX;
+    state.currentY = adjustedY;
+    state.windowPosition = { x: adjustedX, y: adjustedY };
+    state.windowSize = { width: newWidth, height: newHeight };
   }
 }
 
@@ -610,17 +649,45 @@ function getHasDebugged(): boolean {
   return state.hasDebugged;
 }
 
-function applyQueueWindowBehavior(): void {
-  if (!state.mainWindow?.isDestroyed()) {
-    const configFactory = WindowConfigFactory.getInstance();
-    const screenshots = getScreenshotQueue();
-    const hasScreenshots = screenshots.length > 0;
+function preserveWindowPosition<T>(operation: () => T): T {
+  if (state.mainWindow && !state.mainWindow.isDestroyed()) {
+    const bounds = state.mainWindow.getBounds();
+    state.windowPosition = { x: bounds.x, y: bounds.y };
+    state.windowSize = { width: bounds.width, height: bounds.height };
+    state.currentX = bounds.x;
+    state.currentY = bounds.y;
+  }
 
-    configFactory.applyQueueBehavior(
-      state.mainWindow,
-      state.appMode,
-      hasScreenshots,
-    );
+  const result = operation();
+
+  if (
+    state.mainWindow &&
+    !state.mainWindow.isDestroyed() &&
+    state.windowPosition &&
+    state.windowSize
+  ) {
+    state.mainWindow.setBounds({
+      ...state.windowPosition,
+      ...state.windowSize,
+    });
+  }
+
+  return result;
+}
+
+function applyQueueWindowBehavior(): void {
+  if (state.mainWindow && !state.mainWindow.isDestroyed()) {
+    preserveWindowPosition(() => {
+      const configFactory = WindowConfigFactory.getInstance();
+      const screenshots = getScreenshotQueue();
+      const hasScreenshots = screenshots.length > 0;
+
+      configFactory.applyQueueBehavior(
+        state.mainWindow,
+        state.appMode,
+        hasScreenshots,
+      );
+    });
   }
 }
 
@@ -648,6 +715,7 @@ export {
   setHasDebugged,
   getHasDebugged,
   applyQueueWindowBehavior,
+  preserveWindowPosition,
 };
 
 app.whenReady().then(initializeApp).catch(console.error);

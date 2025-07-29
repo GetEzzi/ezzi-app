@@ -326,6 +326,14 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
 
       if (Object.values(AppMode).includes(appMode as AppMode)) {
         deps.setAppMode(appMode as AppMode);
+
+        const mainWindow = deps.getMainWindow();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          const currentView = deps.getView();
+          if (currentView === 'queue') {
+            deps.applyQueueWindowBehavior();
+          }
+        }
       } else {
         return { error: 'Invalid app mode' };
       }

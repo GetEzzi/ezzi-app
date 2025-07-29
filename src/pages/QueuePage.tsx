@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProgrammingLanguage, UserLanguage } from '../../shared/api';
+import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
 import { useQueue } from '../hooks';
 import {
   useAppModeLayout,

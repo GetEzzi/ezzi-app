@@ -3,11 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ScreenshotQueue from '../components/Queue/ScreenshotQueue';
 import QueueCommands from '../components/Queue/QueueCommands';
 import { useToast } from '../contexts/toast';
-import {
-  ProgrammingLanguage,
-  Screenshot,
-  UserLanguage,
-} from '../../shared/api';
+import { ProgrammingLanguage, Screenshot, UserLanguage } from '@shared/api.ts';
 import { sendToElectron } from '../utils/electron';
 import { IPC_EVENTS } from '@shared/constants.ts';
 
