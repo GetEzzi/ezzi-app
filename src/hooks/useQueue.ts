@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/toast';
 import { Screenshot } from '../../shared/api';
@@ -54,7 +54,7 @@ export function useQueue() {
     setTooltipHeight(height);
   };
 
-  const updateDimensions = () => {
+  const updateDimensions = useCallback(() => {
     if (contentRef.current) {
       let contentHeight = contentRef.current.scrollHeight;
       const contentWidth = contentRef.current.scrollWidth;
@@ -68,14 +68,14 @@ export function useQueue() {
         })
         .catch(console.error);
     }
-  };
+  }, [isTooltipVisible, tooltipHeight]);
 
+  // Separate effect for resize observation and event listeners (doesn't depend on tooltip state)
   useEffect(() => {
     const resizeObserver = new ResizeObserver(updateDimensions);
     if (contentRef.current) {
       resizeObserver.observe(contentRef.current);
     }
-    updateDimensions();
 
     const cleanupFunctions = [
       window.electronAPI.onScreenshotTaken(() => refetch()),
@@ -106,7 +106,12 @@ export function useQueue() {
       resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
-  }, [isTooltipVisible, tooltipHeight, refetch, showToast, queryClient]);
+  }, [refetch, showToast, queryClient, updateDimensions]);
+
+  // Separate effect for tooltip-triggered dimension updates
+  useEffect(() => {
+    updateDimensions();
+  }, [isTooltipVisible, tooltipHeight, updateDimensions]);
 
   useEffect(() => {
     if (screenshots.length === 0) {
