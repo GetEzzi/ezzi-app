@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
-import { QueuePage, SolutionsPage } from '../pages';
+import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
 import { ProgrammingLanguage, UserLanguage } from '../../shared/api.ts';

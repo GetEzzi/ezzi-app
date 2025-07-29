@@ -1,6 +1,6 @@
-import SubscribedApp from './_pages/SubscribedApp';
-import SubscribePage from './_pages/SubscribePage';
-import { AuthForm } from './_pages/AuthForm.tsx';
+import SubscribedApp from './pages/SubscribedApp';
+import SubscribePage from './pages/SubscribePage';
+import { AuthForm } from './pages/AuthForm.tsx';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
