@@ -56,7 +56,11 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   ipcMain.handle(
     'update-content-dimensions',
     (event, { width, height }: { width: number; height: number }) => {
+      // TODO: issue - chain called while window idle
       if (width && height) {
+        console.log(
+          `update-content-dimensions => width: ${width} | height: ${height}`,
+        );
         deps.setWindowDimensions(width, height);
       }
     },

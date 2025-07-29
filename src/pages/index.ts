@@ -4,4 +4,3 @@ export { default as DebugPage } from './DebugPage';
 export { AuthForm } from './AuthForm';
 export { default as SubscribePage } from './SubscribePage';
 export { default as SubscribedApp } from './SubscribedApp';
-export { default as Debug } from './Debug';

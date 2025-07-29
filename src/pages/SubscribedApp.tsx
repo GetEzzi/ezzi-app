@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
-import { ProgrammingLanguage, UserLanguage } from '../../shared/api.ts';
+import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
 
 interface SubscribedAppProps {
   currentLanguage: ProgrammingLanguage;
