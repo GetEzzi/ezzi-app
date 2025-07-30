@@ -71,11 +71,42 @@ export function useSolutions() {
     }
   };
 
+  const updateDimensions = () => {
+    if (contentRef.current) {
+      const contentHeight = contentRef.current.scrollHeight;
+      const contentWidth = contentRef.current.scrollWidth;
+      window.electronAPI
+        .updateContentDimensions({
+          width: contentWidth,
+          height: contentHeight,
+          source: 'useSolutions',
+        })
+        .catch(console.error);
+    }
+  };
+
   useEffect(() => {
     fetchScreenshots().catch(console.error);
   }, [solutionData]);
 
   useEffect(() => {
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (contentRef.current) {
+      resizeObserver.observe(contentRef.current);
+    }
+
+    const mutationObserver = new MutationObserver(updateDimensions);
+    if (contentRef.current) {
+      mutationObserver.observe(contentRef.current, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        characterData: true,
+      });
+    }
+
+    updateDimensions();
+
     const cleanupFunctions = [
       window.electronAPI.onScreenshotTaken(() => {
         fetchScreenshots().catch(console.error);
@@ -146,6 +177,8 @@ export function useSolutions() {
     ];
 
     return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
   }, [queryClient, showToast]);

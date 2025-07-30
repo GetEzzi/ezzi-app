@@ -462,9 +462,9 @@ function setWindowDimensions(width: number, height: number): void {
     const [currentX, currentY] = state.mainWindow.getPosition();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workAreaSize;
-    const maxWidth = Math.floor(workArea.width * 0.5);
+    const maxWidth = Math.floor(workArea.width * 0.4);
 
-    const newWidth = Math.min(width, maxWidth);
+    const newWidth = Math.min(width + 32, maxWidth);
     const newHeight = Math.ceil(height);
 
     // Only adjust position if window would be completely off-screen

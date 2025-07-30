@@ -67,6 +67,21 @@ export function useDebug(
     }
   };
 
+  const updateDimensions = () => {
+    if (contentRef.current) {
+      const contentHeight = contentRef.current.scrollHeight;
+      const contentWidth = contentRef.current.scrollWidth;
+
+      window.electronAPI
+        .updateContentDimensions({
+          width: contentWidth,
+          height: contentHeight,
+          source: 'useDebug',
+        })
+        .catch(console.error);
+    }
+  };
+
   useEffect(() => {
     const newSolution = queryClient.getQueryData(['new_solution']) as
       | DebugResponse
@@ -106,7 +121,14 @@ export function useDebug(
       }),
     ];
 
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (contentRef.current) {
+      resizeObserver.observe(contentRef.current);
+    }
+    updateDimensions();
+
     return () => {
+      resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
   }, [queryClient, setIsProcessing, showToast, refetch]);
