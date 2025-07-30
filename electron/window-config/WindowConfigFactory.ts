@@ -6,6 +6,7 @@ import {
   WindowVisibilityConfig,
 } from './WindowConfig';
 import { LiveInterviewConfig } from './configs/LiveInterviewConfig';
+import { LeetCodeSolverConfig } from './configs/LeetCodeSolverConfig';
 
 export class WindowConfigFactory implements WindowConfigProvider {
   private static instance: WindowConfigFactory;
@@ -25,7 +26,7 @@ export class WindowConfigFactory implements WindowConfigProvider {
       case AppMode.LIVE_INTERVIEW:
         return LiveInterviewConfig;
       case AppMode.LEETCODE_SOLVER:
-        return LiveInterviewConfig;
+        return LeetCodeSolverConfig;
       default:
         return LiveInterviewConfig;
     }
