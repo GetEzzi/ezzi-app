@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/toast';
 import { Screenshot } from '@shared/api.ts';
@@ -54,29 +54,8 @@ export function useQueue() {
     setTooltipHeight(height);
   };
 
-  const updateDimensions = useCallback(() => {
-    if (contentRef.current) {
-      let contentHeight = contentRef.current.scrollHeight;
-      const contentWidth = contentRef.current.scrollWidth;
-      if (isTooltipVisible) {
-        contentHeight += tooltipHeight;
-      }
-      window.electronAPI
-        .updateContentDimensions({
-          width: contentWidth,
-          height: contentHeight,
-        })
-        .catch(console.error);
-    }
-  }, [isTooltipVisible, tooltipHeight]);
-
-  // Separate effect for resize observation and event listeners (doesn't depend on tooltip state)
+  // Event listeners for Electron IPC
   useEffect(() => {
-    const resizeObserver = new ResizeObserver(updateDimensions);
-    if (contentRef.current) {
-      resizeObserver.observe(contentRef.current);
-    }
-
     const cleanupFunctions = [
       window.electronAPI.onScreenshotTaken(() => refetch()),
       window.electronAPI.onResetView(() => {
@@ -103,15 +82,9 @@ export function useQueue() {
     ];
 
     return () => {
-      resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
-  }, [refetch, showToast, queryClient, updateDimensions]);
-
-  // Separate effect for tooltip-triggered dimension updates
-  useEffect(() => {
-    updateDimensions();
-  }, [isTooltipVisible, tooltipHeight, updateDimensions]);
+  }, [refetch, showToast, queryClient]);
 
   useEffect(() => {
     if (screenshots.length === 0) {

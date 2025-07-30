@@ -403,10 +403,16 @@ function moveWindowHorizontal(updateFn: (x: number) => number): void {
   if (!state.mainWindow) {
     return;
   }
+  console.log(
+    `moveWindowHorizontal: OLD x: ${state.currentX}  y: ${state.currentY}`,
+  );
   state.currentX = updateFn(state.currentX);
   state.mainWindow.setPosition(
     Math.round(state.currentX),
     Math.round(state.currentY),
+  );
+  console.log(
+    `moveWindowHorizontal: NEW x: ${state.currentX}  y: ${state.currentY}`,
   );
 }
 
@@ -453,19 +459,17 @@ function isWindowCompletelyOffScreen(
 
 function setWindowDimensions(width: number, height: number): void {
   if (state.mainWindow && !state.mainWindow.isDestroyed()) {
-    // console.log(`setWindowDimensions width:${width} height:${height}`);
     const [currentX, currentY] = state.mainWindow.getPosition();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workAreaSize;
     const maxWidth = Math.floor(workArea.width * 0.5);
 
-    const newWidth = Math.min(width + 32, maxWidth);
+    const newWidth = Math.min(width, maxWidth);
     const newHeight = Math.ceil(height);
 
     // Only adjust position if window would be completely off-screen
     let adjustedX = currentX;
     let adjustedY = currentY;
-
     if (isWindowCompletelyOffScreen(currentX, currentY, newWidth, newHeight)) {
       // Only in extreme cases, center the window
       adjustedX = Math.max(0, (workArea.width - newWidth) / 2);

@@ -8,6 +8,7 @@ export interface ElectronAPI {
   updateContentDimensions: (dimensions: {
     width: number;
     height: number;
+    source: string;
   }) => Promise<void>;
   clearStore: () => Promise<{ success: boolean; error?: string }>;
   getScreenshots: () => Promise<

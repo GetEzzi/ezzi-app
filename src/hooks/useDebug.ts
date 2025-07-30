@@ -1,6 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { DebugResponse, LeetCodeDebugResponse, Screenshot } from '@shared/api.ts';
+import {
+  DebugResponse,
+  LeetCodeDebugResponse,
+  Screenshot,
+} from '@shared/api.ts';
 import { useToast } from '../contexts/toast';
 
 async function fetchScreenshots() {
@@ -63,30 +67,26 @@ export function useDebug(
     }
   };
 
-  const updateDimensions = () => {
-    if (contentRef.current) {
-      const contentHeight = contentRef.current.scrollHeight;
-      const contentWidth = contentRef.current.scrollWidth;
-
-      window.electronAPI
-        .updateContentDimensions({
-          width: contentWidth,
-          height: contentHeight,
-        })
-        .catch(console.error);
-    }
-  };
-
   useEffect(() => {
-    const newSolution = queryClient.getQueryData([
-      'new_solution',
-    ]) as DebugResponse | LeetCodeDebugResponse;
+    const newSolution = queryClient.getQueryData(['new_solution']) as
+      | DebugResponse
+      | LeetCodeDebugResponse;
 
     if (newSolution) {
       setNewCode(newSolution.code || null);
-      setThoughtsData('thoughts' in newSolution ? newSolution.thoughts || null : null);
-      setTimeComplexityData('time_complexity' in newSolution ? newSolution.time_complexity || null : null);
-      setSpaceComplexityData('space_complexity' in newSolution ? newSolution.space_complexity || null : null);
+      setThoughtsData(
+        'thoughts' in newSolution ? newSolution.thoughts || null : null,
+      );
+      setTimeComplexityData(
+        'time_complexity' in newSolution
+          ? newSolution.time_complexity || null
+          : null,
+      );
+      setSpaceComplexityData(
+        'space_complexity' in newSolution
+          ? newSolution.space_complexity || null
+          : null,
+      );
       setIsProcessing(false);
     }
 
@@ -106,14 +106,7 @@ export function useDebug(
       }),
     ];
 
-    const resizeObserver = new ResizeObserver(updateDimensions);
-    if (contentRef.current) {
-      resizeObserver.observe(contentRef.current);
-    }
-    updateDimensions();
-
     return () => {
-      resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
   }, [queryClient, setIsProcessing, showToast, refetch]);
