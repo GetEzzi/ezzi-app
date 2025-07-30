@@ -3,7 +3,7 @@ import { WindowConfig } from '../WindowConfig';
 export const LiveInterviewConfig: WindowConfig = {
   baseSettings: {
     width: 500,
-    height: 520,
+    height: 420,
     alwaysOnTop: true,
     show: true,
     fullscreenable: false,

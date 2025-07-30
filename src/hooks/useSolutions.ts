@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Screenshot, SolveResponse, LeetCodeSolveResponse } from '@shared/api.ts';
+import {
+  Screenshot,
+  SolveResponse,
+  LeetCodeSolveResponse,
+} from '@shared/api.ts';
 import { useToast } from '../contexts/toast';
 
 export function useSolutions() {
@@ -67,41 +71,11 @@ export function useSolutions() {
     }
   };
 
-  const updateDimensions = () => {
-    if (contentRef.current) {
-      const contentHeight = contentRef.current.scrollHeight;
-      const contentWidth = contentRef.current.scrollWidth;
-      window.electronAPI
-        .updateContentDimensions({
-          width: contentWidth,
-          height: contentHeight,
-        })
-        .catch(console.error);
-    }
-  };
-
   useEffect(() => {
     fetchScreenshots().catch(console.error);
   }, [solutionData]);
 
   useEffect(() => {
-    const resizeObserver = new ResizeObserver(updateDimensions);
-    if (contentRef.current) {
-      resizeObserver.observe(contentRef.current);
-    }
-
-    const mutationObserver = new MutationObserver(updateDimensions);
-    if (contentRef.current) {
-      mutationObserver.observe(contentRef.current, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        characterData: true,
-      });
-    }
-
-    updateDimensions();
-
     const cleanupFunctions = [
       window.electronAPI.onScreenshotTaken(() => {
         fetchScreenshots().catch(console.error);
@@ -132,17 +106,23 @@ export function useSolutions() {
         setTimeComplexityData(solution?.time_complexity || null);
         setSpaceComplexityData(solution?.space_complexity || null);
       }),
-      window.electronAPI.onSolutionSuccess((data: SolveResponse | LeetCodeSolveResponse) => {
-        if (!data) {
-          return;
-        }
-        queryClient.setQueryData(['solution'], data);
-        setSolutionData(data.code || null);
-        setThoughtsData('thoughts' in data ? data.thoughts || null : null);
-        setTimeComplexityData('time_complexity' in data ? data.time_complexity || null : null);
-        setSpaceComplexityData('space_complexity' in data ? data.space_complexity || null : null);
-        setExtraScreenshots([]);
-      }),
+      window.electronAPI.onSolutionSuccess(
+        (data: SolveResponse | LeetCodeSolveResponse) => {
+          if (!data) {
+            return;
+          }
+          queryClient.setQueryData(['solution'], data);
+          setSolutionData(data.code || null);
+          setThoughtsData('thoughts' in data ? data.thoughts || null : null);
+          setTimeComplexityData(
+            'time_complexity' in data ? data.time_complexity || null : null,
+          );
+          setSpaceComplexityData(
+            'space_complexity' in data ? data.space_complexity || null : null,
+          );
+          setExtraScreenshots([]);
+        },
+      ),
       window.electronAPI.onDebugStart(() => setDebugProcessing(true)),
       window.electronAPI.onDebugSuccess((data) => {
         queryClient.setQueryData(['new_solution'], data);
@@ -166,8 +146,6 @@ export function useSolutions() {
     ];
 
     return () => {
-      resizeObserver.disconnect();
-      mutationObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
   }, [queryClient, showToast]);

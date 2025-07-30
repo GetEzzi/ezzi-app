@@ -11,6 +11,7 @@ interface ElectronAPI {
   updateContentDimensions: (dimensions: {
     width: number;
     height: number;
+    source: string;
   }) => Promise<void>;
   clearStore: () => Promise<{ success: boolean; error?: string }>;
   getScreenshots: () => Promise<{
@@ -96,8 +97,11 @@ const electronAPI = {
     return ipcRenderer.invoke('open-subscription-portal', authData);
   },
   openSettingsPortal: () => ipcRenderer.invoke('open-settings-portal'),
-  updateContentDimensions: (dimensions: { width: number; height: number }) =>
-    ipcRenderer.invoke('update-content-dimensions', dimensions),
+  updateContentDimensions: (dimensions: {
+    width: number;
+    height: number;
+    source: string;
+  }) => ipcRenderer.invoke('update-content-dimensions', dimensions),
   clearStore: () => ipcRenderer.invoke('clear-store'),
   getScreenshots: () => ipcRenderer.invoke('get-screenshots'),
   deleteScreenshot: (path: string) =>

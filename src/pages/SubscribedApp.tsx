@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
@@ -22,23 +22,47 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({
   const [view, setView] = useState<'queue' | 'solutions' | 'debug'>('queue');
   const containerRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
+  const lastDimensionsRef = useRef<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
+  const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Debounced dimension update function
+  const updateDimensions = useCallback(() => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      if (!containerRef.current) {
+        return;
+      }
+
+      const height = containerRef.current.scrollHeight;
+      const width = containerRef.current.scrollWidth;
+      const lastDimensions = lastDimensionsRef.current;
+
+      if (width === lastDimensions.width && height === lastDimensions.height) {
+        return;
+      }
+
+      lastDimensionsRef.current = { width, height };
+      window.electronAPI
+        .updateContentDimensions({ width, height, source: 'SubscribedApp' })
+        .catch(console.error);
+    }, 150);
+  }, []);
 
   // Dynamically update the window size
   useEffect(() => {
     if (!containerRef.current) {
       return;
     }
-
-    const updateDimensions = () => {
-      if (!containerRef.current) {
-        return;
-      }
-      const height = containerRef.current.scrollHeight;
-      const width = containerRef.current.scrollWidth;
-      window.electronAPI
-        ?.updateContentDimensions({ width, height })
-        .catch(console.error);
-    };
 
     const resizeObserver = new ResizeObserver(updateDimensions);
     resizeObserver.observe(containerRef.current);
@@ -58,8 +82,11 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({
     return () => {
       resizeObserver.disconnect();
       mutationObserver.disconnect();
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
     };
-  }, [view]);
+  }, [view, updateDimensions]);
 
   // Listen for events that might switch views or show errors
   useEffect(() => {
