@@ -81,8 +81,8 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
 
   ipcMain.handle(
     'set-window-dimensions',
-    (event, width: number, height: number) => {
-      deps.setWindowDimensions(width, height);
+    (event, width: number, height: number, source: string) => {
+      deps.setWindowDimensions(width, height, source);
     },
   );
 
