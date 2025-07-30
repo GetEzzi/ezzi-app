@@ -78,7 +78,7 @@ export interface IShortcutsHelperDeps {
 
 export interface IIpcHandlerDeps {
   getMainWindow: () => BrowserWindow | null;
-  setWindowDimensions: (width: number, height: number) => void;
+  setWindowDimensions: (width: number, height: number, source: string) => void;
   getScreenshotQueue: () => string[];
   getExtraScreenshotQueue: () => string[];
   deleteScreenshot: (
@@ -457,14 +457,23 @@ function isWindowCompletelyOffScreen(
   );
 }
 
-function setWindowDimensions(width: number, height: number): void {
+function setWindowDimensions(
+  width: number,
+  height: number,
+  source: string,
+): void {
   if (state.mainWindow && !state.mainWindow.isDestroyed()) {
     const [currentX, currentY] = state.mainWindow.getPosition();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workAreaSize;
     const maxWidth = Math.floor(workArea.width * 0.4);
 
-    const newWidth = Math.min(width + 32, maxWidth);
+    let extra = 0;
+    // TODO: prevents infinite resize loops (bug with hooks and updateContentDimensions())
+    if (source !== 'SubscribedApp') {
+      extra = 32;
+    }
+    const newWidth = Math.min(width + extra, maxWidth);
     const newHeight = Math.ceil(height);
 
     // Only adjust position if window would be completely off-screen
