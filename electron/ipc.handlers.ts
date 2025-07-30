@@ -74,7 +74,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       );
 
       if (width && height) {
-        deps.setWindowDimensions(width, height);
+        deps.setWindowDimensions(width, height, source);
       }
     },
   );
