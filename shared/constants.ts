@@ -51,6 +51,9 @@ export const IPC_EVENTS = {
     LOADED_NO_SCREENSHOTS: 'queue:loaded-no-screenshots',
     LOADED_WITH_SCREENSHOTS: 'queue:loaded-with-screenshots',
   },
+  APP_MODE: {
+    CHANGE: 'app-mode:change',
+  },
 } as const;
 
 // Type for all IPC events

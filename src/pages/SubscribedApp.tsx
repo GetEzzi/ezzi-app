@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
-import Queue from '../_pages/Queue';
-import Solutions from '../_pages/Solutions';
+import { QueuePage, SolutionsPage } from '.';
+import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
-import { ProgrammingLanguage, UserLanguage } from '../../shared/api.ts';
+import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
 
 interface SubscribedAppProps {
   currentLanguage: ProgrammingLanguage;
@@ -36,7 +36,7 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({
       const height = containerRef.current.scrollHeight;
       const width = containerRef.current.scrollWidth;
       window.electronAPI
-        ?.updateContentDimensions({ width, height })
+        ?.updateContentDimensions({ width, height, source: 'SubscribedApp' })
         .catch(console.error);
     };
 
@@ -111,19 +111,21 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({
   }, [view]);
 
   return (
-    <div ref={containerRef} className="min-h-0">
-      {view === 'queue' ? (
-        <Queue
-          setView={setView}
-          currentLanguage={currentLanguage}
-          currentLocale={currentLocale}
-          setLanguage={setLanguage}
-          setLocale={setLocale}
-        />
-      ) : view === 'solutions' ? (
-        <Solutions setView={setView} currentLanguage={currentLanguage} />
-      ) : null}
-    </div>
+    <AppModeLayoutProvider>
+      <div ref={containerRef} className="min-h-0">
+        {view === 'queue' ? (
+          <QueuePage
+            setView={setView}
+            currentLanguage={currentLanguage}
+            currentLocale={currentLocale}
+            setLanguage={setLanguage}
+            setLocale={setLocale}
+          />
+        ) : view === 'solutions' ? (
+          <SolutionsPage setView={setView} currentLanguage={currentLanguage} />
+        ) : null}
+      </div>
+    </AppModeLayoutProvider>
   );
 };
 

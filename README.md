@@ -44,13 +44,13 @@ Ezzi ("easy") is inspired by Interview Coder, designed to help developers succee
 
 Here's what we're planning to develop for Ezzi:
 
-### Interview Live ✅ (Done)
+### Live Interview ✅ (Done)
 A helpful tool that shows your problem, thoughts, and code all in one view. It works as an invisible layer during coding interviews.
 
 ### Hint-only 🔄 (Planned)
 Gives you helpful tips on how to solve coding problems. Suggests which algorithms to use and helps identify problem types. Shows different solution approaches with their good and bad points. You can also see the complete solution if needed.
 
-### Leetcode crusher 🔄 (Planned)
+### Leetcode solver 🔄 (Beta)
 Helps you solve one coding problem at a time with a focus on finding the best solution. Keeps explanations simple and direct to save time.
 
 ### Quiz 🔄 (Planned)
