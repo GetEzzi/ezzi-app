@@ -6,12 +6,34 @@ This document describes how to deploy Ezzi with your own backend infrastructure.
 
 Ezzi in self-hosted mode completely bypasses authentication and user management, requiring only AI processing endpoints. User settings are stored locally in the browser.
 
+## App Modes
+
+Ezzi supports two distinct app modes that determine the functionality and API endpoints used:
+
+### Live Interview Mode
+- **Mode ID**: `live-interview`
+- **Purpose**: Comprehensive coding interview assistance with detailed explanations
+- **API Endpoints**: `/solutions/solve` and `/solutions/debug`
+- **Response Format**: Includes thoughts, code, complexity analysis, and problem statements
+- **Use Case**: Real coding interviews where detailed explanations and analysis are needed
+
+### LeetCode Solver Mode
+- **Mode ID**: `leetcode-solver`  
+- **Purpose**: Quick LeetCode problem solving with minimal response overhead
+- **API Endpoints**: `/solutions/leetcode/solve` and `/solutions/leetcode/debug`
+- **Response Format**: Only includes the generated code (streamlined for speed)
+- **Use Case**: LeetCode practice sessions where fast code generation is prioritized
+
+The app mode is managed client-side and determines which endpoints are called. Self-hosted implementations should support both modes for full compatibility.
+
 ## Required API Endpoints
 
-You need to implement exactly **2 endpoints** for self-hosted mode:
+You need to implement exactly **4 endpoints** for self-hosted mode (2 per app mode):
 
-### POST /solutions/solve
-Process screenshots to generate initial solution
+### Live Interview Mode Endpoints
+
+#### POST /solutions/solve
+Process screenshots to generate initial solution with detailed analysis
 
 **Request Body:**
 ```typescript
@@ -59,8 +81,8 @@ interface SolveResponse {
 }
 ```
 
-### POST /solutions/debug
-Process additional screenshots to debug/improve existing solution
+#### POST /solutions/debug
+Process additional screenshots to debug/improve existing solution with detailed analysis
 
 **Request Body:**
 ```typescript
@@ -103,6 +125,82 @@ interface DebugResponse {
   ],
   "time_complexity": "O(n)",
   "space_complexity": "O(1)"
+}
+```
+
+### LeetCode Solver Mode Endpoints
+
+#### POST /solutions/leetcode/solve
+Process screenshots to generate code solution (streamlined response for speed)
+
+**Request Body:**
+```typescript
+interface LeetCodeSolveRequest {
+  images: string[]; // Array of base64-encoded images
+  language: string; // Programming language for solution
+  locale: string; // User locale for response language
+  isMock?: boolean; // Optional flag for mock responses
+}
+```
+
+**Example Request:**
+```json
+{
+  "images": ["base64image1", "base64image2"],
+  "language": "python",
+  "locale": "en-US",
+  "isMock": false
+}
+```
+
+**Response:**
+```typescript
+interface LeetCodeSolveResponse {
+  code: string; // Generated code solution
+}
+```
+
+**Example Response:**
+```json
+{
+  "code": "def solution(nums):\n    # Implementation\n    result = 0\n    # Logic here\n    return result"
+}
+```
+
+#### POST /solutions/leetcode/debug
+Process additional screenshots to debug/improve existing solution (streamlined response)
+
+**Request Body:**
+```typescript
+interface LeetCodeDebugRequest {
+  images: string[]; // Array of base64-encoded images
+  language: string; // Programming language for debugging
+  locale: string; // User locale for response language
+  isMock?: boolean; // Optional flag for mock responses
+}
+```
+
+**Example Request:**
+```json
+{
+  "images": ["base64image1", "base64image2"],
+  "language": "python",
+  "locale": "en-US",
+  "isMock": false
+}
+```
+
+**Response:**
+```typescript
+interface LeetCodeDebugResponse {
+  code: string; // Debugged/improved code
+}
+```
+
+**Example Response:**
+```json
+{
+  "code": "def solution(nums):\n    # Improved implementation\n    if not nums:\n        return 0\n    result = 0\n    # Improved logic here\n    return result"
 }
 ```
 
@@ -164,9 +262,11 @@ enum UserLanguage {
   RU_RU = 'ru-RU', // Russian (Russia)
   ZH_CN = 'zh-CN', // Chinese (Simplified, China)
   ZH_TW = 'zh-TW', // Chinese (Traditional, Taiwan)
-  JA_JP = 'ja-JP', // Japanese (Japan)
+  JA_JP = 'ja-JP', // Japanese (Japan)  
   KO_KR = 'ko-KR', // Korean (Korea)
   HI_IN = 'hi-IN', // Hindi (India)
+  AR_SA = 'ar-SA', // Arabic (Saudi Arabia)
+  AR_EG = 'ar-EG', // Arabic (Egypt)
 }
 ```
 
@@ -183,7 +283,11 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 
-// Solve endpoint
+// =============================================================================
+// LIVE INTERVIEW MODE ENDPOINTS
+// =============================================================================
+
+// Live Interview - Solve endpoint
 app.post('/solutions/solve', async (req, res) => {
   try {
     const { images, language, locale, isMock } = req.body;
@@ -199,13 +303,13 @@ app.post('/solutions/solve', async (req, res) => {
       });
     }
     
-    // Your AI processing logic here
+    // Your AI processing logic here for Live Interview mode
     // 1. Process base64 images (OCR, image analysis)
     // 2. Extract problem statement
     // 3. Generate solution using AI (OpenAI, Claude, etc.)
-    // 4. Analyze complexity
+    // 4. Analyze complexity and provide detailed thoughts
     
-    const result = await processImages(images, language, locale);
+    const result = await processLiveInterviewSolve(images, language, locale);
     
     res.json({
       thoughts: result.thoughts,
@@ -215,12 +319,12 @@ app.post('/solutions/solve', async (req, res) => {
       problem_statement: result.problemStatement
     });
   } catch (error) {
-    console.error('Solve error:', error);
+    console.error('Live Interview Solve error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Debug endpoint
+// Live Interview - Debug endpoint
 app.post('/solutions/debug', async (req, res) => {
   try {
     const { images, language, locale, isMock } = req.body;
@@ -235,12 +339,12 @@ app.post('/solutions/debug', async (req, res) => {
       });
     }
     
-    // Your debugging logic here
+    // Your debugging logic here for Live Interview mode
     // 1. Process images to understand the debugging request
     // 2. Analyze existing code for issues
-    // 3. Generate improved solution
+    // 3. Generate improved solution with detailed analysis
     
-    const result = await debugImages(images, language, locale);
+    const result = await processLiveInterviewDebug(images, language, locale);
     
     res.json({
       thoughts: result.thoughts,
@@ -249,10 +353,72 @@ app.post('/solutions/debug', async (req, res) => {
       space_complexity: result.spaceComplexity
     });
   } catch (error) {
-    console.error('Debug error:', error);
+    console.error('Live Interview Debug error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// =============================================================================
+// LEETCODE SOLVER MODE ENDPOINTS
+// =============================================================================
+
+// LeetCode - Solve endpoint
+app.post('/solutions/leetcode/solve', async (req, res) => {
+  try {
+    const { images, language, locale, isMock } = req.body;
+    
+    // Handle mock mode
+    if (isMock) {
+      return res.json({
+        code: `def mock_leetcode_solution():\n    return "Mock LeetCode solution in ${language}"`
+      });
+    }
+    
+    // Your AI processing logic here for LeetCode mode
+    // 1. Process base64 images quickly
+    // 2. Generate code solution (no detailed analysis needed)
+    
+    const result = await processLeetCodeSolve(images, language, locale);
+    
+    res.json({
+      code: result.code
+    });
+  } catch (error) {
+    console.error('LeetCode Solve error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// LeetCode - Debug endpoint
+app.post('/solutions/leetcode/debug', async (req, res) => {
+  try {
+    const { images, language, locale, isMock } = req.body;
+    
+    // Handle mock mode
+    if (isMock) {
+      return res.json({
+        code: `def improved_mock_leetcode_solution():\n    return "Improved mock LeetCode solution in ${language}"`
+      });
+    }
+    
+    // Your debugging logic here for LeetCode mode
+    // 1. Process images to understand the debugging request
+    // 2. Generate improved code solution (streamlined response)
+    
+    const result = await processLeetCodeDebug(images, language, locale);
+    
+    res.json({
+      code: result.code
+    });
+  } catch (error) {
+    console.error('LeetCode Debug error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// =============================================================================
+// SHARED ENDPOINTS
+// =============================================================================
 
 // Health check endpoint (optional)
 app.get('/health', (req, res) => {
@@ -262,18 +428,41 @@ app.get('/health', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Self-hosted Ezzi API server running on port ${PORT}`);
+  console.log('Supported endpoints:');
+  console.log('  Live Interview: POST /solutions/solve, POST /solutions/debug');
+  console.log('  LeetCode Solver: POST /solutions/leetcode/solve, POST /solutions/leetcode/debug');
 });
 
-// Example AI processing functions (implement these with your chosen AI service)
-async function processImages(images, language, locale) {
-  // Implement your AI processing logic here
+// =============================================================================
+// EXAMPLE AI PROCESSING FUNCTIONS
+// =============================================================================
+// Implement these functions with your chosen AI service
+
+// Live Interview processing functions
+async function processLiveInterviewSolve(images, language, locale) {
+  // Implement your AI processing logic here for detailed analysis
   // This is where you'd integrate with OpenAI, Claude, or your own AI models
-  throw new Error('AI processing not implemented');
+  // Should return: { thoughts, code, timeComplexity, spaceComplexity, problemStatement }
+  throw new Error('Live Interview solve processing not implemented');
 }
 
-async function debugImages(images, language, locale) {
-  // Implement your debugging logic here
-  throw new Error('Debug processing not implemented');
+async function processLiveInterviewDebug(images, language, locale) {
+  // Implement your debugging logic here for detailed analysis
+  // Should return: { thoughts, code, timeComplexity, spaceComplexity }
+  throw new Error('Live Interview debug processing not implemented');
+}
+
+// LeetCode processing functions
+async function processLeetCodeSolve(images, language, locale) {
+  // Implement your AI processing logic here for quick code generation
+  // Should return: { code }
+  throw new Error('LeetCode solve processing not implemented');
+}
+
+async function processLeetCodeDebug(images, language, locale) {
+  // Implement your debugging logic here for quick code improvement
+  // Should return: { code }
+  throw new Error('LeetCode debug processing not implemented');
 }
 ```
 
@@ -297,17 +486,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class SolveRequest(BaseModel):
+# =============================================================================
+# REQUEST/RESPONSE MODELS
+# =============================================================================
+
+# Shared request models
+class BaseRequest(BaseModel):
     images: List[str]
     language: str
     locale: str
     isMock: Optional[bool] = False
 
-class DebugRequest(BaseModel):
-    images: List[str]
-    language: str
-    locale: str
-    isMock: Optional[bool] = False
+# Live Interview models
+class SolveRequest(BaseRequest):
+    pass
+
+class DebugRequest(BaseRequest):
+    pass
 
 class SolveResponse(BaseModel):
     thoughts: List[str]
@@ -322,8 +517,26 @@ class DebugResponse(BaseModel):
     time_complexity: str
     space_complexity: str
 
+# LeetCode models
+class LeetCodeSolveRequest(BaseRequest):
+    pass
+
+class LeetCodeDebugRequest(BaseRequest):
+    pass
+
+class LeetCodeSolveResponse(BaseModel):
+    code: str
+
+class LeetCodeDebugResponse(BaseModel):
+    code: str
+
+# =============================================================================
+# LIVE INTERVIEW MODE ENDPOINTS
+# =============================================================================
+
 @app.post("/solutions/solve", response_model=SolveResponse)
 async def solve_problem(request: SolveRequest):
+    """Live Interview mode - Generate detailed solution with analysis"""
     try:
         if request.isMock:
             return SolveResponse(
@@ -334,8 +547,10 @@ async def solve_problem(request: SolveRequest):
                 problem_statement="Mock problem statement"
             )
         
-        # Your AI processing logic here
-        result = await process_images(request.images, request.language, request.locale)
+        # Your AI processing logic here for Live Interview mode
+        result = await process_live_interview_solve(
+            request.images, request.language, request.locale
+        )
         return result
         
     except Exception as e:
@@ -343,6 +558,7 @@ async def solve_problem(request: SolveRequest):
 
 @app.post("/solutions/debug", response_model=DebugResponse)
 async def debug_solution(request: DebugRequest):
+    """Live Interview mode - Debug solution with detailed analysis"""
     try:
         if request.isMock:
             return DebugResponse(
@@ -352,25 +568,109 @@ async def debug_solution(request: DebugRequest):
                 space_complexity="O(1)"
             )
         
-        # Your debugging logic here
-        result = await debug_images(request.images, request.language, request.locale)
+        # Your debugging logic here for Live Interview mode
+        result = await process_live_interview_debug(
+            request.images, request.language, request.locale
+        )
         return result
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# =============================================================================
+# LEETCODE SOLVER MODE ENDPOINTS
+# =============================================================================
+
+@app.post("/solutions/leetcode/solve", response_model=LeetCodeSolveResponse)
+async def solve_leetcode_problem(request: LeetCodeSolveRequest):
+    """LeetCode mode - Generate code solution (streamlined response)"""
+    try:
+        if request.isMock:
+            return LeetCodeSolveResponse(
+                code=f"def mock_leetcode_solution():\n    return 'Mock LeetCode solution in {request.language}'"
+            )
+        
+        # Your AI processing logic here for LeetCode mode
+        result = await process_leetcode_solve(
+            request.images, request.language, request.locale
+        )
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/solutions/leetcode/debug", response_model=LeetCodeDebugResponse)
+async def debug_leetcode_solution(request: LeetCodeDebugRequest):
+    """LeetCode mode - Debug code solution (streamlined response)"""
+    try:
+        if request.isMock:
+            return LeetCodeDebugResponse(
+                code=f"def improved_mock_leetcode_solution():\n    return 'Improved mock LeetCode solution in {request.language}'"
+            )
+        
+        # Your debugging logic here for LeetCode mode
+        result = await process_leetcode_debug(
+            request.images, request.language, request.locale
+        )
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =============================================================================
+# SHARED ENDPOINTS
+# =============================================================================
+
 @app.get("/health")
 async def health_check():
-    return {"status": "OK", "mode": "self-hosted"}
+    return {
+        "status": "OK", 
+        "mode": "self-hosted",
+        "supported_endpoints": {
+            "live_interview": ["/solutions/solve", "/solutions/debug"],
+            "leetcode_solver": ["/solutions/leetcode/solve", "/solutions/leetcode/debug"]
+        }
+    }
 
-# Implement these functions with your AI service
-async def process_images(image_data_list, language, locale):
-    # Implement your AI processing logic here
-    raise NotImplementedError("AI processing not implemented")
+# =============================================================================
+# EXAMPLE AI PROCESSING FUNCTIONS
+# =============================================================================
+# Implement these functions with your chosen AI service
 
-async def debug_images(image_data_list, language, locale):
-    # Implement your debugging logic here
-    raise NotImplementedError("Debug processing not implemented")
+# Live Interview processing functions
+async def process_live_interview_solve(images: List[str], language: str, locale: str) -> SolveResponse:
+    """Implement your AI processing logic here for detailed analysis"""
+    # This is where you'd integrate with OpenAI, Claude, or your own AI models
+    # Should return SolveResponse with: thoughts, code, time_complexity, space_complexity, problem_statement
+    raise NotImplementedError("Live Interview solve processing not implemented")
+
+async def process_live_interview_debug(images: List[str], language: str, locale: str) -> DebugResponse:
+    """Implement your debugging logic here for detailed analysis"""
+    # Should return DebugResponse with: thoughts, code, time_complexity, space_complexity
+    raise NotImplementedError("Live Interview debug processing not implemented")
+
+# LeetCode processing functions
+async def process_leetcode_solve(images: List[str], language: str, locale: str) -> LeetCodeSolveResponse:
+    """Implement your AI processing logic here for quick code generation"""
+    # Should return LeetCodeSolveResponse with: code
+    raise NotImplementedError("LeetCode solve processing not implemented")
+
+async def process_leetcode_debug(images: List[str], language: str, locale: str) -> LeetCodeDebugResponse:
+    """Implement your debugging logic here for quick code improvement"""
+    # Should return LeetCodeDebugResponse with: code
+    raise NotImplementedError("LeetCode debug processing not implemented")
+
+# =============================================================================
+# RUNNING THE SERVER
+# =============================================================================
+
+if __name__ == "__main__":
+    import uvicorn
+    print("Starting Ezzi Self-Hosted API server...")
+    print("Supported endpoints:")
+    print("  Live Interview: POST /solutions/solve, POST /solutions/debug")
+    print("  LeetCode Solver: POST /solutions/leetcode/solve, POST /solutions/leetcode/debug")
+    uvicorn.run(app, host="0.0.0.0", port=3000)
 ```
 
 ## Implementation Notes
@@ -395,6 +695,15 @@ async def debug_images(image_data_list, language, locale):
 - Implement proper HTTP status codes (500 for server errors, 400 for bad requests)
 - Log errors for debugging purposes
 - Return meaningful error messages in production
+
+### App Mode Handling
+- The client automatically switches between app modes based on user selection
+- Each app mode calls different endpoints and expects different response formats
+- Your self-hosted implementation should support both modes for full compatibility
+- Consider implementing shared logic for image processing and AI calls
+- Route requests to appropriate processing functions based on the endpoint path
+- LeetCode mode endpoints should prioritize speed over detailed analysis
+- Live Interview mode endpoints should provide comprehensive analysis and explanations
 
 ## Client Settings
 
