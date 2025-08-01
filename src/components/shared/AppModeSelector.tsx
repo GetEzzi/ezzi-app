@@ -1,11 +1,11 @@
 import React from 'react';
-import { AppMode } from '../../../shared/api';
-import { getStorageProvider } from '../../services/storage/index';
+import { AppMode } from '@shared/api.ts';
+import { getStorageProvider } from '../../services/storage';
 import { AppModeHintBox } from './AppModeHintBox';
 
 const APP_MODE_LABELS: Record<AppMode, string> = {
   [AppMode.LIVE_INTERVIEW]: 'Live Interview',
-  [AppMode.LEETCODE_SOLVER]: 'Leetcode Solver',
+  [AppMode.LEETCODE_SOLVER]: 'Leetcode Solver (beta)',
 };
 
 interface AppModeSelectorProps {
