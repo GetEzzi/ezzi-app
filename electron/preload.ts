@@ -1,8 +1,7 @@
-console.log('Preload script starting...');
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_EVENTS } from '../shared/constants';
+import { AppMode } from '../shared/api';
 import { shell } from 'electron';
-// const { shell } = require('electron');
 
 // Types for the exposed Electron API
 interface ElectronAPI {
@@ -12,6 +11,7 @@ interface ElectronAPI {
   updateContentDimensions: (dimensions: {
     width: number;
     height: number;
+    source: string;
   }) => Promise<void>;
   clearStore: () => Promise<{ success: boolean; error?: string }>;
   getScreenshots: () => Promise<{
@@ -66,6 +66,9 @@ interface ElectronAPI {
     isAuthenticated?: boolean;
     error?: string;
   }>;
+  setAppMode: (
+    appMode: AppMode,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const PROCESSING_EVENTS = {
@@ -94,8 +97,11 @@ const electronAPI = {
     return ipcRenderer.invoke('open-subscription-portal', authData);
   },
   openSettingsPortal: () => ipcRenderer.invoke('open-settings-portal'),
-  updateContentDimensions: (dimensions: { width: number; height: number }) =>
-    ipcRenderer.invoke('update-content-dimensions', dimensions),
+  updateContentDimensions: (dimensions: {
+    width: number;
+    height: number;
+    source: string;
+  }) => ipcRenderer.invoke('update-content-dimensions', dimensions),
   clearStore: () => ipcRenderer.invoke('clear-store'),
   getScreenshots: () => ipcRenderer.invoke('get-screenshots'),
   deleteScreenshot: (path: string) =>
@@ -247,6 +253,8 @@ const electronAPI = {
   authGetToken: () => ipcRenderer.invoke('auth-get-token'),
   authClearToken: () => ipcRenderer.invoke('auth-clear-token'),
   authIsAuthenticated: () => ipcRenderer.invoke('auth-is-authenticated'),
+  setAppMode: (appMode: AppMode) =>
+    ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
 } as ElectronAPI;
 
 // Before exposing the API

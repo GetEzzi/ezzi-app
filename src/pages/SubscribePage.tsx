@@ -20,6 +20,7 @@ export default function SubscribePage({ user }: SubscribePageProps) {
         await window.electronAPI.updateContentDimensions({
           width: 500,
           height: 520,
+          source: 'SubscribePage',
         });
       }
     };

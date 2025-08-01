@@ -27,7 +27,7 @@ jest.mock('@shared/constants.ts', () => ({
 jest.mock('./config', () => ({
   API_BASE_URL: 'http://localhost:3000',
 }));
-jest.mock('./_pages/SubscribedApp', () => {
+jest.mock('./pages/SubscribedApp', () => {
   return function MockSubscribedApp({ currentLanguage, currentLocale }: any) {
     return (
       <div data-testid="subscribed-app">
@@ -37,14 +37,14 @@ jest.mock('./_pages/SubscribedApp', () => {
     );
   };
 });
-jest.mock('./_pages/SubscribePage', () => {
+jest.mock('./pages/SubscribePage', () => {
   return function MockSubscribePage({ user }: any) {
     return (
       <div data-testid="subscribe-page">Subscribe Page - {user.email}</div>
     );
   };
 });
-jest.mock('./_pages/AuthForm.tsx', () => {
+jest.mock('./pages/AuthForm.tsx', () => {
   return {
     AuthForm: function MockAuthForm({ setUser }: any) {
       return (

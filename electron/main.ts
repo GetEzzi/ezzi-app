@@ -4,6 +4,8 @@ import { initializeIpcHandlers } from './ipc.handlers';
 import { ProcessingHelper } from './processing.helper';
 import { ScreenshotHelper } from './screenshot.helper';
 import { ShortcutsHelper } from './shortcuts';
+import { AppMode } from '../shared/api';
+import { WindowConfigFactory } from './window-config/WindowConfigFactory';
 import * as dotenv from 'dotenv';
 
 const isDev = !app.isPackaged;
@@ -25,6 +27,7 @@ const state = {
 
   view: 'queue' as 'queue' | 'solutions' | 'debug',
   hasDebugged: false,
+  appMode: AppMode.LIVE_INTERVIEW as AppMode,
 
   PROCESSING_EVENTS: {
     UNAUTHORIZED: 'processing-unauthorized',
@@ -54,6 +57,7 @@ export interface IProcessingHelperDeps {
   ) => Promise<{ success: boolean; error?: string }>;
   setHasDebugged: (value: boolean) => void;
   getHasDebugged: () => boolean;
+  getAppMode: () => AppMode;
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
 }
 
@@ -74,7 +78,7 @@ export interface IShortcutsHelperDeps {
 
 export interface IIpcHandlerDeps {
   getMainWindow: () => BrowserWindow | null;
-  setWindowDimensions: (width: number, height: number) => void;
+  setWindowDimensions: (width: number, height: number, source: string) => void;
   getScreenshotQueue: () => string[];
   getExtraScreenshotQueue: () => string[];
   deleteScreenshot: (
@@ -85,6 +89,8 @@ export interface IIpcHandlerDeps {
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
   takeScreenshot: () => Promise<string>;
   getView: () => 'queue' | 'solutions' | 'debug';
+  getAppMode: () => AppMode;
+  setAppMode: (appMode: AppMode) => void;
   toggleMainWindow: () => void;
   clearQueues: () => void;
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
@@ -92,6 +98,7 @@ export interface IIpcHandlerDeps {
   moveWindowRight: () => void;
   moveWindowUp: () => void;
   moveWindowDown: () => void;
+  applyQueueWindowBehavior: () => void;
 }
 
 function initializeHelpers() {
@@ -109,6 +116,7 @@ function initializeHelpers() {
     deleteScreenshot,
     setHasDebugged,
     getHasDebugged,
+    getAppMode,
     PROCESSING_EVENTS: state.PROCESSING_EVENTS,
   } as IProcessingHelperDeps);
   state.shortcutsHelper = new ShortcutsHelper({
@@ -179,16 +187,17 @@ async function createWindow(): Promise<void> {
   const workArea = primaryDisplay.workAreaSize;
   state.screenWidth = workArea.width;
   state.screenHeight = workArea.height;
-  state.step = 60;
   state.currentY = 50;
 
-  // Base window settings that are common for both modes
+  const configFactory = WindowConfigFactory.getInstance();
+  const windowConfig = configFactory.getConfig(state.appMode);
+
+  state.step = 60;
+
   const baseWindowSettings: Electron.BrowserWindowConstructorOptions = {
-    width: 500,
-    height: 520,
+    ...windowConfig.baseSettings,
     x: state.currentX,
     y: 50,
-    alwaysOnTop: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -197,21 +206,6 @@ async function createWindow(): Promise<void> {
         : path.join(__dirname, 'preload.js'),
       scrollBounce: true,
     },
-    show: true,
-    fullscreenable: false,
-    // Important: MUST BE default "true" for Login/Signup to have active inputs
-    focusable: true,
-    enableLargerThanScreen: true,
-    // Invisible options but we still want them always ON
-    frame: false,
-    hasShadow: false,
-    transparent: true,
-    skipTaskbar: true,
-    titleBarStyle: 'hidden',
-    backgroundColor: '#00000000',
-    type: 'panel',
-    paintWhenInitiallyHidden: true,
-    movable: true,
   };
 
   state.mainWindow = new BrowserWindow(baseWindowSettings);
@@ -267,13 +261,17 @@ async function createWindow(): Promise<void> {
   });
   state.mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
 
-  // Warning: calling those options on other OS breaks app loading
-  // Additional screen capture resistance settings for macOS
-  if (process.platform === 'darwin') {
-    state.mainWindow.setHiddenInMissionControl(true);
-    state.mainWindow.setWindowButtonVisibility(false);
-    state.mainWindow.setBackgroundColor('#00000000');
-    state.mainWindow.setHasShadow(false);
+  // Apply platform-specific configurations
+  const platformConfig = windowConfig.behavior.platformSpecific;
+  if (process.platform === 'darwin' && platformConfig.darwin) {
+    state.mainWindow.setHiddenInMissionControl(
+      platformConfig.darwin.hiddenInMissionControl,
+    );
+    state.mainWindow.setWindowButtonVisibility(
+      platformConfig.darwin.windowButtonVisibility,
+    );
+    state.mainWindow.setBackgroundColor(platformConfig.darwin.backgroundColor);
+    state.mainWindow.setHasShadow(platformConfig.darwin.hasShadow);
   }
 
   // Prevent a window from being included in the window switcher
@@ -330,12 +328,8 @@ function hideMainWindow(): void {
     state.windowPosition = { x: bounds.x, y: bounds.y };
     state.windowSize = { width: bounds.width, height: bounds.height };
 
-    state.mainWindow.setIgnoreMouseEvents(true, { forward: true });
-    state.mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-    state.mainWindow.setVisibleOnAllWorkspaces(true, {
-      visibleOnFullScreen: true,
-    });
-    state.mainWindow.setOpacity(0);
+    const configFactory = WindowConfigFactory.getInstance();
+    configFactory.applyHideBehavior(state.mainWindow, state.appMode);
     state.mainWindow.hide();
 
     state.isWindowVisible = false;
@@ -356,26 +350,27 @@ function showMainWindow(): void {
       });
     }
 
-    // Allow click-thru only if Queue mode and no screenshots
+    const configFactory = WindowConfigFactory.getInstance();
     const view = getView();
-    const screenshots = getScreenshotQueue();
-    if (view === 'queue' && screenshots.length === 0) {
-      console.log('showMainWindow: in Queue mode and no screenshots ');
-      state.mainWindow.setIgnoreMouseEvents(false);
-      state.mainWindow.setFocusable(true);
-    }
-
-    state.mainWindow.setSkipTaskbar(true);
-
-    state.mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-    state.mainWindow.setVisibleOnAllWorkspaces(true, {
-      visibleOnFullScreen: true,
-    });
-    state.mainWindow.setContentProtection(true);
 
     state.mainWindow.setOpacity(0);
     state.mainWindow.showInactive();
-    state.mainWindow.setOpacity(1);
+
+    // Apply appropriate behavior based on current view
+    if (view === 'queue') {
+      const screenshots = getScreenshotQueue();
+      const hasScreenshots = screenshots.length > 0;
+      console.log(
+        `showMainWindow: in Queue mode with ${screenshots.length} screenshots`,
+      );
+      configFactory.applyQueueBehavior(
+        state.mainWindow,
+        state.appMode,
+        hasScreenshots,
+      );
+    } else {
+      configFactory.applyShowBehavior(state.mainWindow, state.appMode);
+    }
 
     state.isWindowVisible = true;
 
@@ -408,23 +403,32 @@ function moveWindowHorizontal(updateFn: (x: number) => number): void {
   if (!state.mainWindow) {
     return;
   }
+  console.log(
+    `moveWindowHorizontal: OLD x: ${state.currentX}  y: ${state.currentY}`,
+  );
   state.currentX = updateFn(state.currentX);
   state.mainWindow.setPosition(
     Math.round(state.currentX),
     Math.round(state.currentY),
   );
+  console.log(
+    `moveWindowHorizontal: NEW x: ${state.currentX}  y: ${state.currentY}`,
+  );
 }
 
 function moveWindowVertical(updateFn: (y: number) => number): void {
-  if (!state.mainWindow) {
+  if (!state.mainWindow || !state.windowSize) {
     return;
   }
 
   const newY = updateFn(state.currentY);
   // Allow window to go 2/3 off screen in either direction
-  const maxUpLimit = (-(state.windowSize?.height || 0) * 2) / 3;
+  const maxUpLimit = (-(state.windowSize.height || 0) * 2) / 3;
   const maxDownLimit =
-    state.screenHeight + ((state.windowSize?.height || 0) * 2) / 3;
+    state.screenHeight + ((state.windowSize.height || 0) * 2) / 3;
+  console.log(
+    `height: ${state.windowSize.height} | maxUpLimit: ${maxUpLimit} | maxDownLimit: ${maxDownLimit}`,
+  );
 
   // Only update if within bounds
   if (newY >= maxUpLimit && newY <= maxDownLimit) {
@@ -436,20 +440,63 @@ function moveWindowVertical(updateFn: (y: number) => number): void {
   }
 }
 
-function setWindowDimensions(width: number, height: number): void {
-  if (!state.mainWindow?.isDestroyed()) {
-    // console.log(`setWindowDimensions width:${width} height:${height}`);
+function isWindowCompletelyOffScreen(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): boolean {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const workArea = primaryDisplay.workAreaSize;
+
+  return (
+    x + width < 0 || // Completely left of screen
+    x > workArea.width || // Completely right of screen
+    y + height < 0 || // Completely above screen
+    y > workArea.height // Completely below screen
+  );
+}
+
+function setWindowDimensions(
+  width: number,
+  height: number,
+  _source: string,
+): void {
+  if (state.mainWindow && !state.mainWindow.isDestroyed()) {
     const [currentX, currentY] = state.mainWindow.getPosition();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workAreaSize;
-    const maxWidth = Math.floor(workArea.width * 0.5);
+    const maxWidth = Math.floor(workArea.width * 0.4);
+
+    // let extra = 0;
+    // // TODO: prevents infinite resize loops (bug with hooks and updateContentDimensions())
+    // if (source !== 'SubscribedApp') {
+    //   extra = 32;
+    // }
+    const newWidth = Math.min(width + 32, maxWidth);
+    const newHeight = Math.ceil(height);
+
+    // Only adjust position if window would be completely off-screen
+    let adjustedX = currentX;
+    let adjustedY = currentY;
+    if (isWindowCompletelyOffScreen(currentX, currentY, newWidth, newHeight)) {
+      // Only in extreme cases, center the window
+      adjustedX = Math.max(0, (workArea.width - newWidth) / 2);
+      adjustedY = Math.max(0, (workArea.height - newHeight) / 2);
+    }
 
     state.mainWindow.setBounds({
-      x: Math.min(currentX, workArea.width - maxWidth),
-      y: currentY,
-      width: Math.min(width + 32, maxWidth),
-      height: Math.ceil(height),
+      x: adjustedX,
+      y: adjustedY,
+      width: newWidth,
+      height: newHeight,
     });
+
+    // Update internal state to match actual position
+    state.currentX = adjustedX;
+    state.currentY = adjustedY;
+    state.windowPosition = { x: adjustedX, y: adjustedY };
+    state.windowSize = { width: newWidth, height: newHeight };
   }
 }
 
@@ -489,6 +536,8 @@ async function initializeApp() {
       PROCESSING_EVENTS: state.PROCESSING_EVENTS,
       takeScreenshot,
       getView,
+      getAppMode,
+      setAppMode,
       toggleMainWindow,
       clearQueues,
       setView,
@@ -505,6 +554,7 @@ async function initializeApp() {
         ),
       moveWindowUp: () => moveWindowVertical((y) => y - state.step),
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
+      applyQueueWindowBehavior,
     });
     await createWindow();
 
@@ -549,6 +599,14 @@ function getView(): 'queue' | 'solutions' | 'debug' {
 function setView(view: 'queue' | 'solutions' | 'debug'): void {
   state.view = view;
   state.screenshotHelper?.setView(view);
+}
+
+function getAppMode(): AppMode {
+  return state.appMode;
+}
+
+function setAppMode(appMode: AppMode): void {
+  state.appMode = appMode;
 }
 
 function getScreenshotHelper(): ScreenshotHelper | null {
@@ -604,6 +662,48 @@ function getHasDebugged(): boolean {
   return state.hasDebugged;
 }
 
+function preserveWindowPosition<T>(operation: () => T): T {
+  if (state.mainWindow && !state.mainWindow.isDestroyed()) {
+    const bounds = state.mainWindow.getBounds();
+    state.windowPosition = { x: bounds.x, y: bounds.y };
+    state.windowSize = { width: bounds.width, height: bounds.height };
+    state.currentX = bounds.x;
+    state.currentY = bounds.y;
+  }
+
+  const result = operation();
+
+  if (
+    state.mainWindow &&
+    !state.mainWindow.isDestroyed() &&
+    state.windowPosition &&
+    state.windowSize
+  ) {
+    state.mainWindow.setBounds({
+      ...state.windowPosition,
+      ...state.windowSize,
+    });
+  }
+
+  return result;
+}
+
+function applyQueueWindowBehavior(): void {
+  if (state.mainWindow && !state.mainWindow.isDestroyed()) {
+    preserveWindowPosition(() => {
+      const configFactory = WindowConfigFactory.getInstance();
+      const screenshots = getScreenshotQueue();
+      const hasScreenshots = screenshots.length > 0;
+
+      configFactory.applyQueueBehavior(
+        state.mainWindow,
+        state.appMode,
+        hasScreenshots,
+      );
+    });
+  }
+}
+
 export {
   state,
   createWindow,
@@ -616,6 +716,8 @@ export {
   getMainWindow,
   getView,
   setView,
+  getAppMode,
+  setAppMode,
   getScreenshotHelper,
   getScreenshotQueue,
   getExtraScreenshotQueue,
@@ -625,6 +727,8 @@ export {
   deleteScreenshot,
   setHasDebugged,
   getHasDebugged,
+  applyQueueWindowBehavior,
+  preserveWindowPosition,
 };
 
 app.whenReady().then(initializeApp).catch(console.error);

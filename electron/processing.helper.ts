@@ -1,24 +1,24 @@
 import fs from 'node:fs';
 import { ScreenshotHelper } from './screenshot.helper';
 import { IProcessingHelperDeps } from './main';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { BrowserWindow } from 'electron';
 import { AuthStorage } from './auth.storage';
 import {
-  API_ENDPOINTS,
-  DebugRequest,
   DebugResponse,
-  SolveRequest,
+  LeetCodeDebugResponse,
+  LeetCodeSolveResponse,
   SolveResponse,
 } from '../shared/api';
-
-// Import API_BASE_URL from shared constants
-import { API_BASE_URL, isSelfHosted } from '../shared/constants';
+import { AppModeProcessorFactory } from './processors/AppModeProcessorFactory';
+import { ProcessingParams } from './processors/AppModeProcessor';
+import { isSelfHosted } from '../shared/constants';
 
 export class ProcessingHelper {
   private deps: IProcessingHelperDeps;
   private screenshotHelper: ScreenshotHelper;
   private authStorage: AuthStorage;
+  private processorFactory: AppModeProcessorFactory;
 
   // AbortControllers for API requests
   private currentProcessingAbortController: AbortController | null = null;
@@ -28,6 +28,7 @@ export class ProcessingHelper {
     this.deps = deps;
     this.screenshotHelper = deps.getScreenshotHelper();
     this.authStorage = AuthStorage.getInstance();
+    this.processorFactory = AppModeProcessorFactory.getInstance();
   }
 
   private async waitForInitialization(
@@ -275,7 +276,11 @@ export class ProcessingHelper {
   private async processScreenshotsHelperSolve(
     screenshots: Array<{ path: string; data: string }>,
     signal: AbortSignal,
-  ) {
+  ): Promise<{
+    success: boolean;
+    data?: SolveResponse | LeetCodeSolveResponse;
+    error?: string;
+  }> {
     try {
       const images = screenshots.map((screenshot) => screenshot.data);
       const mainWindow = this.deps.getMainWindow();
@@ -285,105 +290,80 @@ export class ProcessingHelper {
       if (isMock) {
         console.log('Running mock mode');
       }
-      let solutionData: SolveResponse;
+      const currentAppMode = this.deps.getAppMode();
+      const processor = this.processorFactory.getProcessor(currentAppMode);
 
       if (!mainWindow) {
-        return;
-      }
-
-      try {
-        const token = this.getAuthToken();
-        if (!isSelfHosted() && !token) {
-          return {
-            success: false,
-            error: 'Authentication required. Please log in.',
-          };
-        }
-
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
+        return {
+          success: false,
+          error: 'Main window not available',
         };
-
-        // Only add auth header if not in self-hosted mode
-        if (!isSelfHosted() && token) {
-          headers.Authorization = `Bearer ${token}`;
-        }
-
-        const extractResponse = await axios.post<
-          SolveRequest,
-          AxiosResponse<SolveResponse>
-        >(
-          `${API_BASE_URL}${API_ENDPOINTS.SOLUTIONS.SOLVE}`,
-          {
-            images,
-            language,
-            isMock,
-            locale,
-          },
-          {
-            signal,
-            timeout: 300000,
-            headers,
-          },
-        );
-
-        solutionData = extractResponse.data;
-
-        this.screenshotHelper.clearExtraScreenshotQueue();
-        mainWindow.webContents.send(
-          this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
-          solutionData,
-        );
-
-        console.log('Solution retrieved and sent to app');
-
-        return { success: true, data: solutionData };
-      } catch (error: any) {
-        if (axios.isCancel(error)) {
-          return {
-            success: false,
-            error: 'Processing was canceled by the user.',
-          };
-        }
-
-        console.error('API Error Details:', {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          status: error.response?.status,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          data: error.response?.data,
-          message: (error as Error).message,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          code: error.code,
-        });
-
-        throw new Error(
-          (error as Error).message || 'Server error. Please try again.',
-        );
       }
-    } catch (error: any) {
-      console.error('Processing error details:', {
-        message: (error as Error).message,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        code: error.code,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        response: error.response?.data,
-      });
 
-      if (axios.isCancel(error)) {
-        return { success: false, error: error.message };
+      const token = this.getAuthToken();
+      if (!isSelfHosted() && !token) {
+        return {
+          success: false,
+          error: 'Authentication required. Please log in.',
+        };
       }
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Only add auth header if not in self-hosted mode
+      if (!isSelfHosted() && token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const processingParams: ProcessingParams = {
+        images,
+        language,
+        locale,
+        isMock,
+        signal,
+        headers,
+      };
+
+      const result = await processor.processSolve(processingParams);
+
+      if (!result.success) {
+        return result;
+      }
+
+      const solutionData = result.data;
+
+      this.screenshotHelper.clearExtraScreenshotQueue();
+      mainWindow.webContents.send(
+        this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
+        solutionData,
+      );
+
+      console.log('Solution retrieved and sent to app');
+
+      return { success: true, data: solutionData };
+    } catch (error: unknown) {
+      console.error('Processing Helper Error:', error);
+
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      };
     }
-
-    return {
-      success: false,
-      error: 'Failed to process. Please try again.',
-    };
   }
 
   private async processExtraScreenshotsHelper(
     screenshots: Array<{ path: string; data: string }>,
     signal: AbortSignal,
-  ) {
+  ): Promise<{
+    success: boolean;
+    data?: DebugResponse | LeetCodeDebugResponse;
+    error?: string;
+  }> {
     try {
       const images = screenshots.map((screenshot) => screenshot.data);
       const language = await this.getLanguage();
@@ -411,62 +391,31 @@ export class ProcessingHelper {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await axios.post<
-        DebugRequest,
-        AxiosResponse<DebugResponse>
-      >(
-        `${API_BASE_URL}${API_ENDPOINTS.SOLUTIONS.DEBUG}`,
-        { images, language, isMock, locale },
-        {
-          signal,
-          timeout: 300000,
-          headers,
-        },
-      );
+      const currentAppMode = this.deps.getAppMode();
+      const processor = this.processorFactory.getProcessor(currentAppMode);
 
-      return { success: true, data: response.data };
-    } catch (error: any) {
-      if (axios.isCancel(error)) {
-        return {
-          success: false,
-          error: 'Processing was canceled by the user.',
-        };
-      }
+      const processingParams: ProcessingParams = {
+        images,
+        language,
+        locale,
+        isMock,
+        signal,
+        headers,
+      };
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        return {
-          success: false,
-          error:
-            'Your session or subscription has expired. Please sign in again.',
-        };
-      }
+      const result = await processor.processDebug(processingParams);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      if (error.response?.data?.error?.includes('Operation timed out')) {
-        const mainWindow = this.deps.getMainWindow();
-        // Cancel ongoing API requests
-        this.cancelOngoingRequests();
-        // Clear both screenshot queues
-        this.deps.clearQueues();
-        // Update view state to queue
-        this.deps.setView('queue');
-        // Notify renderer to switch view
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('reset-view');
-          mainWindow.webContents.send(
-            this.deps.PROCESSING_EVENTS.DEBUG_ERROR,
-            'Operation timed out after 1 minute. Please try again.',
-          );
-        }
+      return result;
+    } catch (error: unknown) {
+      console.error('Debug Processing Helper Error:', error);
 
-        return {
-          success: false,
-          error: 'Operation timed out after 1 minute. Please try again.',
-        };
-      }
-
-      return { success: false, error: (error as Error).message };
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+      };
     }
   }
 

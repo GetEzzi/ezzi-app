@@ -3,7 +3,8 @@ import { LanguageSelector } from '../LanguageSelector';
 import { sendToElectron } from '../../../utils/electron';
 import { IPC_EVENTS } from '@shared/constants.ts';
 import { LocaleSelector } from '../LocaleSelector.tsx';
-import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
+import { AppModeSelector } from '../AppModeSelector';
+import { ProgrammingLanguage, UserLanguage, AppMode } from '@shared/api.ts';
 
 export interface ShortcutItem {
   label: string;
@@ -17,10 +18,12 @@ interface ShortcutsTooltipProps {
   shortcuts: ShortcutItem[];
   currentLanguage: ProgrammingLanguage;
   currentLocale: UserLanguage;
+  currentAppMode: AppMode;
   setLanguage: (language: ProgrammingLanguage) => void;
   onSignOut: () => void;
   className?: string;
   setLocale: (language: UserLanguage) => void;
+  setAppMode: (appMode: AppMode) => void;
 }
 
 const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
@@ -28,10 +31,12 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
   shortcuts,
   currentLanguage,
   currentLocale,
+  currentAppMode,
   setLanguage,
   onSignOut,
   className = '',
   setLocale,
+  setAppMode,
 }) => {
   return (
     <div
@@ -75,6 +80,11 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
           </div>
 
           <div className="pt-3 mt-3 border-t border-gray-700">
+            <AppModeSelector
+              currentAppMode={currentAppMode}
+              setAppMode={setAppMode}
+            />
+
             <LanguageSelector
               currentLanguage={currentLanguage}
               currentLocale={currentLocale}

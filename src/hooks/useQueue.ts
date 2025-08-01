@@ -1,13 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import ScreenshotQueue from '../components/Queue/ScreenshotQueue';
-import QueueCommands from '../components/Queue/QueueCommands';
 import { useToast } from '../contexts/toast';
-import {
-  ProgrammingLanguage,
-  Screenshot,
-  UserLanguage,
-} from '../../shared/api';
+import { Screenshot } from '@shared/api.ts';
 import { sendToElectron } from '../utils/electron';
 import { IPC_EVENTS } from '@shared/constants.ts';
 
@@ -21,21 +15,7 @@ async function fetchScreenshots() {
   }
 }
 
-interface QueueProps {
-  setView: (view: 'queue' | 'solutions' | 'debug') => void;
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLanguage: (language: ProgrammingLanguage) => void;
-  setLocale: (language: UserLanguage) => void;
-}
-
-const Queue: React.FC<QueueProps> = ({
-  setView,
-  currentLanguage,
-  currentLocale,
-  setLanguage,
-  setLocale,
-}) => {
+export function useQueue() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
@@ -59,7 +39,7 @@ const Queue: React.FC<QueueProps> = ({
       );
 
       if (response.success) {
-        await refetch(); // Refetch screenshots instead of managing state directly
+        await refetch();
       } else {
         console.error('Failed to delete screenshot:', response.error);
         showToast('Error', 'Failed to delete the screenshot file', 'error');
@@ -69,38 +49,42 @@ const Queue: React.FC<QueueProps> = ({
     }
   };
 
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (contentRef.current) {
-        let contentHeight = contentRef.current.scrollHeight;
-        const contentWidth = contentRef.current.scrollWidth;
-        if (isTooltipVisible) {
-          contentHeight += tooltipHeight;
-        }
-        window.electronAPI
-          .updateContentDimensions({
-            width: contentWidth,
-            height: contentHeight,
-          })
-          .catch(console.error);
-      }
-    };
+  const handleTooltipVisibilityChange = (visible: boolean, height: number) => {
+    setIsTooltipVisible(visible);
+    setTooltipHeight(height);
+  };
 
-    // Initialize resize observer
+  const updateDimensions = useCallback(() => {
+    if (contentRef.current) {
+      let contentHeight = contentRef.current.scrollHeight;
+      const contentWidth = contentRef.current.scrollWidth;
+      if (isTooltipVisible) {
+        contentHeight += tooltipHeight;
+      }
+      window.electronAPI
+        .updateContentDimensions({
+          width: contentWidth,
+          height: contentHeight,
+          source: 'useQueue',
+        })
+        .catch(console.error);
+    }
+  }, [isTooltipVisible, tooltipHeight]);
+
+  // Separate effect for resize observation and event listeners (doesn't depend on tooltip state)
+  useEffect(() => {
     const resizeObserver = new ResizeObserver(updateDimensions);
     if (contentRef.current) {
       resizeObserver.observe(contentRef.current);
     }
-    updateDimensions();
 
-    // Set up event listeners
     const cleanupFunctions = [
       window.electronAPI.onScreenshotTaken(() => refetch()),
-      window.electronAPI.onResetView(async () => {
+      window.electronAPI.onResetView(() => {
         queryClient.removeQueries({
           queryKey: ['screenshots'],
         });
-        await refetch();
+        refetch().catch(console.error);
       }),
       window.electronAPI.onSolutionError((error: string) => {
         showToast(
@@ -108,7 +92,6 @@ const Queue: React.FC<QueueProps> = ({
           'There was an error processing your screenshots.',
           'error',
         );
-        setView('queue'); // Revert to queue if processing fails
         console.error('Processing error:', error);
       }),
       window.electronAPI.onProcessingNoScreenshots(() => {
@@ -124,14 +107,13 @@ const Queue: React.FC<QueueProps> = ({
       resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
-  }, [isTooltipVisible, tooltipHeight]);
+  }, [refetch, showToast, queryClient, updateDimensions]);
 
-  const handleTooltipVisibilityChange = (visible: boolean, height: number) => {
-    setIsTooltipVisible(visible);
-    setTooltipHeight(height);
-  };
+  // Separate effect for tooltip-triggered dimension updates
+  useEffect(() => {
+    updateDimensions();
+  }, [isTooltipVisible, tooltipHeight, updateDimensions]);
 
-  // Log events when Queue page loads with or without screenshots
   useEffect(() => {
     if (screenshots.length === 0) {
       sendToElectron(IPC_EVENTS.QUEUE.LOADED_NO_SCREENSHOTS);
@@ -143,28 +125,13 @@ const Queue: React.FC<QueueProps> = ({
     }
   }, [screenshots]);
 
-  return (
-    <div ref={contentRef} className={`bg-transparent w-1/2`}>
-      <div className="px-4 py-3">
-        <div className="space-y-3 w-fit">
-          <ScreenshotQueue
-            isLoading={false}
-            screenshots={screenshots}
-            onDeleteScreenshot={handleDeleteScreenshot}
-          />
-
-          <QueueCommands
-            onTooltipVisibilityChange={handleTooltipVisibilityChange}
-            screenshotCount={screenshots.length}
-            currentLanguage={currentLanguage}
-            currentLocale={currentLocale}
-            setLanguage={setLanguage}
-            setLocale={setLocale}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Queue;
+  return {
+    screenshots,
+    refetch,
+    handleDeleteScreenshot,
+    handleTooltipVisibilityChange,
+    contentRef,
+    isTooltipVisible,
+    tooltipHeight,
+  };
+}

@@ -1,6 +1,7 @@
 import { app, ipcMain, shell } from 'electron';
 import { IIpcHandlerDeps } from './main';
 import { IPC_EVENTS } from '../shared/constants';
+import { AppMode } from '../shared/api';
 import { AuthStorage } from './auth.storage';
 
 export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
@@ -23,23 +24,14 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
 
   ipcMain.handle(IPC_EVENTS.QUEUE.LOADED_NO_SCREENSHOTS, () => {
     console.log('Queue page loaded with no screenshots');
-    const mainWindow = deps.getMainWindow();
-    if (mainWindow) {
-      mainWindow.setIgnoreMouseEvents(false);
-      mainWindow.setFocusable(true);
-      mainWindow.setSkipTaskbar(true);
-    }
+    deps.applyQueueWindowBehavior();
   });
 
   ipcMain.handle(
     IPC_EVENTS.QUEUE.LOADED_WITH_SCREENSHOTS,
     (event, screenshotCount) => {
       console.log('Queue page loaded with screenshots:', screenshotCount);
-      const mainWindow = deps.getMainWindow();
-      if (mainWindow) {
-        mainWindow.setIgnoreMouseEvents(true, { forward: true });
-        mainWindow.setFocusable(false);
-      }
+      deps.applyQueueWindowBehavior();
     },
   );
 
@@ -63,17 +55,34 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   // Window dimension handlers
   ipcMain.handle(
     'update-content-dimensions',
-    (event, { width, height }: { width: number; height: number }) => {
+    (
+      event,
+      {
+        width,
+        height,
+        source,
+      }: { width: number; height: number; source: string },
+    ) => {
+      // TODO: issue - chain called while window is idle at start
+      console.log(
+        'Received content dimensions - width:',
+        width,
+        'height:',
+        height,
+        'source:',
+        source,
+      );
+
       if (width && height) {
-        deps.setWindowDimensions(width, height);
+        deps.setWindowDimensions(width, height, source);
       }
     },
   );
 
   ipcMain.handle(
     'set-window-dimensions',
-    (event, width: number, height: number) => {
-      deps.setWindowDimensions(width, height);
+    (event, width: number, height: number, source: string) => {
+      deps.setWindowDimensions(width, height, source);
     },
   );
 
@@ -325,6 +334,32 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       console.error('Error checking authentication:', error);
 
       return { error: 'Failed to check authentication' };
+    }
+  });
+
+  ipcMain.handle(IPC_EVENTS.APP_MODE.CHANGE, (event, appMode: string) => {
+    try {
+      console.log('App mode changed to:', appMode);
+
+      if (Object.values(AppMode).includes(appMode as AppMode)) {
+        deps.setAppMode(appMode as AppMode);
+
+        const mainWindow = deps.getMainWindow();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          const currentView = deps.getView();
+          if (currentView === 'queue') {
+            deps.applyQueueWindowBehavior();
+          }
+        }
+      } else {
+        return { error: 'Invalid app mode' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error changing app mode:', error);
+
+      return { error: 'Failed to change app mode' };
     }
   });
 }
