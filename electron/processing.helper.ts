@@ -343,12 +343,15 @@ export class ProcessingHelper {
       console.log('Solution retrieved and sent to app');
 
       return { success: true, data: solutionData };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Processing Helper Error:', error);
 
       return {
         success: false,
-        error: error.message || 'An unexpected error occurred',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       };
     }
   }
@@ -403,12 +406,15 @@ export class ProcessingHelper {
       const result = await processor.processDebug(processingParams);
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Debug Processing Helper Error:', error);
 
       return {
         success: false,
-        error: error.message || 'An unexpected error occurred',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       };
     }
   }
