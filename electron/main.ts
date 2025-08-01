@@ -460,7 +460,7 @@ function isWindowCompletelyOffScreen(
 function setWindowDimensions(
   width: number,
   height: number,
-  source: string,
+  _source: string,
 ): void {
   if (state.mainWindow && !state.mainWindow.isDestroyed()) {
     const [currentX, currentY] = state.mainWindow.getPosition();
