@@ -39,7 +39,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
       );
 
       return { success: true, data: extractResponse.data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isCancel(error)) {
         return {
           success: false,
@@ -47,13 +47,17 @@ export class LeetCodeProcessor implements AppModeProcessor {
         };
       }
 
+      const axiosError = error as {
+        response?: { status?: number; data?: unknown };
+        message?: string;
+      };
       console.error('LeetCode API Error Details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
+        status: axiosError.response?.status,
+        data: axiosError.response?.data,
+        message: axiosError.message,
       });
 
-      if (error.response?.status === 401) {
+      if (axiosError.response?.status === 401) {
         return {
           success: false,
           error:
@@ -61,7 +65,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
         };
       }
 
-      if (error.response?.status === 402) {
+      if (axiosError.response?.status === 402) {
         return {
           success: false,
           error:
@@ -71,7 +75,10 @@ export class LeetCodeProcessor implements AppModeProcessor {
 
       return {
         success: false,
-        error: error.message || 'An unexpected error occurred',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       };
     }
   }
@@ -96,7 +103,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
       );
 
       return { success: true, data: response.data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (axios.isCancel(error)) {
         return {
           success: false,
@@ -104,13 +111,17 @@ export class LeetCodeProcessor implements AppModeProcessor {
         };
       }
 
+      const axiosError = error as {
+        response?: { status?: number; data?: unknown };
+        message?: string;
+      };
       console.error('LeetCode Debug API Error Details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
+        status: axiosError.response?.status,
+        data: axiosError.response?.data,
+        message: axiosError.message,
       });
 
-      if (error.response?.status === 401) {
+      if (axiosError.response?.status === 401) {
         return {
           success: false,
           error:
@@ -118,7 +129,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
         };
       }
 
-      if (error.response?.status === 402) {
+      if (axiosError.response?.status === 402) {
         return {
           success: false,
           error:
@@ -128,7 +139,10 @@ export class LeetCodeProcessor implements AppModeProcessor {
 
       return {
         success: false,
-        error: error.message || 'An unexpected error occurred',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
       };
     }
   }
