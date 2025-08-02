@@ -58,7 +58,6 @@ export interface ElectronAPI {
   triggerMoveDown: () => Promise<{ success: boolean; error?: string }>;
   onSubscriptionUpdated: (callback: () => void) => () => void;
   onSubscriptionPortalClosed: (callback: () => void) => () => void;
-  openSettingsPortal: () => Promise<void>;
   getPlatform: () => string;
   handleMouseEnter: (...args: any[]) => Promise<any>;
   handleMouseLeave: (...args: any[]) => Promise<any>;
@@ -84,13 +83,10 @@ export interface ElectronAPI {
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
-  setWindowFocusable: (
-    focusable: boolean,
+  copyAndRefreshWindow: (
+    text: string,
+    waitDuration?: number,
   ) => Promise<{ success: boolean; error?: string }>;
-  hideWindowBriefly: (
-    duration?: number,
-  ) => Promise<{ success: boolean; error?: string }>;
-  copyAndRefreshWindow: (text: string, waitDuration?: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface IElectron {
