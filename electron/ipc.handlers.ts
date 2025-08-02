@@ -416,4 +416,23 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       };
     }
   });
+
+  // Copy and refresh window handlers
+  ipcMain.handle('copy-and-refresh-window', async (event, text: string, waitDuration?: number) => {
+    try {
+      const result = await deps.copyAndRefreshWindow(text, waitDuration);
+
+      return result;
+    } catch (error) {
+      console.error('Error in copy and refresh window:', error);
+
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to copy and refresh window',
+      };
+    }
+  });
 }
