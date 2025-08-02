@@ -69,6 +69,7 @@ interface ElectronAPI {
   setAppMode: (
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
+  writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const PROCESSING_EVENTS = {
@@ -255,6 +256,7 @@ const electronAPI = {
   authIsAuthenticated: () => ipcRenderer.invoke('auth-is-authenticated'),
   setAppMode: (appMode: AppMode) =>
     ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
+  writeText: (text: string) => ipcRenderer.invoke('write-text', text),
 } as ElectronAPI;
 
 // Before exposing the API

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from 'lucide-react';
-import { ProgrammingLanguage } from '../../../shared/api';
+import { ProgrammingLanguage } from '@shared/api.ts';
 
 interface CodeBlockProps {
   code: string;
@@ -17,16 +17,18 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard
-      .writeText(code)
-      .then(() => {
+  const handleCopy = async () => {
+    try {
+      const result = await window.electronAPI.writeText(code);
+      if (result.success) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      })
-      .catch((error) => {
-        console.error('Failed to copy code:', error);
-      });
+      } else {
+        console.error('Failed to copy code:', result.error);
+      }
+    } catch (error) {
+      console.error('Failed to copy code:', error);
+    }
   };
 
   return (

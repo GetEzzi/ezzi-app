@@ -362,4 +362,18 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       return { error: 'Failed to change app mode' };
     }
   });
+
+  // Clipboard handlers
+  ipcMain.handle('write-text', async (event, text: string) => {
+    try {
+      const result = await deps.writeText(text);
+      return result;
+    } catch (error) {
+      console.error('Error writing text to clipboard:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to copy text' 
+      };
+    }
+  });
 }

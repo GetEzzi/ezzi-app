@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, screen, clipboard } from 'electron';
 import path from 'path';
 import { initializeIpcHandlers } from './ipc.handlers';
 import { ProcessingHelper } from './processing.helper';
@@ -99,6 +99,7 @@ export interface IIpcHandlerDeps {
   moveWindowUp: () => void;
   moveWindowDown: () => void;
   applyQueueWindowBehavior: () => void;
+  writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 function initializeHelpers() {
@@ -555,6 +556,7 @@ async function initializeApp() {
       moveWindowUp: () => moveWindowVertical((y) => y - state.step),
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
       applyQueueWindowBehavior,
+      writeText,
     });
     await createWindow();
 
@@ -700,6 +702,21 @@ function applyQueueWindowBehavior(): void {
         state.appMode,
         hasScreenshots,
       );
+    });
+  }
+}
+
+async function writeText(
+  text: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    clipboard.writeText(text);
+
+    return Promise.resolve({ success: true });
+  } catch (error) {
+    return Promise.resolve({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to copy text',
     });
   }
 }
