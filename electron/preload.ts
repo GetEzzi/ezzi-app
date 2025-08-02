@@ -76,6 +76,7 @@ interface ElectronAPI {
   hideWindowBriefly: (
     duration?: number,
   ) => Promise<{ success: boolean; error?: string }>;
+  copyAndRefreshWindow: (text: string, waitDuration?: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const PROCESSING_EVENTS = {
@@ -267,6 +268,8 @@ const electronAPI = {
     ipcRenderer.invoke('set-window-focusable', focusable),
   hideWindowBriefly: (duration?: number) =>
     ipcRenderer.invoke('hide-window-briefly', duration),
+  copyAndRefreshWindow: (text: string, waitDuration?: number) =>
+    ipcRenderer.invoke('copy-and-refresh-window', text, waitDuration),
 } as ElectronAPI;
 
 // Before exposing the API

@@ -19,19 +19,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
   const handleCopy = async () => {
     try {
-      const result = await window.electronAPI.writeText(code);
+      // Use copy → hide → wait → show sequence to prevent title bar appearing
+      const result = await window.electronAPI.copyAndRefreshWindow(code, 250);
 
       if (result.success) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-
-        // Brief hide + config reapplication to prevent title bar appearing on focus change
-        await window.electronAPI.hideWindowBriefly(250);
       } else {
-        console.error('Failed to copy code:', result.error);
+        console.error('Failed to copy and refresh window:', result.error);
       }
     } catch (error) {
-      console.error('Failed to copy code:', error);
+      console.error('Failed to copy and refresh window:', error);
     }
   };
 

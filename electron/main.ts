@@ -106,6 +106,7 @@ export interface IIpcHandlerDeps {
   hideWindowBriefly: (
     duration?: number,
   ) => Promise<{ success: boolean; error?: string }>;
+  copyAndRefreshWindow: (text: string, waitDuration?: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 function initializeHelpers() {
@@ -407,8 +408,8 @@ function hideMainWindow(): void {
     state.windowSize = { width: bounds.width, height: bounds.height };
 
     const configFactory = WindowConfigFactory.getInstance();
-    configFactory.applyHideBehavior(state.mainWindow, state.appMode);
-    state.mainWindow.hide();
+    configFactory.applyHideBehavior(state.mainWindow!, state.appMode);
+    state.mainWindow!.hide();
 
     state.isWindowVisible = false;
 
@@ -636,6 +637,7 @@ async function initializeApp() {
       writeText,
       setWindowFocusable,
       hideWindowBriefly,
+      copyAndRefreshWindow,
     });
     await createWindow();
 
@@ -878,6 +880,42 @@ async function hideWindowBriefly(
         error instanceof Error
           ? error.message
           : 'Failed to hide window briefly',
+    };
+  }
+}
+
+async function copyAndRefreshWindow(
+  text: string,
+  waitDuration: number = 250,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    console.log('Starting copy and refresh window sequence');
+    
+    // Step 1: Copy text to clipboard
+    const copyResult = await writeText(text);
+    if (!copyResult.success) {
+      return { success: false, error: `Copy failed: ${copyResult.error}` };
+    }
+    console.log('Text copied successfully');
+    
+    // Step 2: Hide window (same as cmd+B)
+    hideMainWindow();
+    console.log('Window hidden');
+    
+    // Step 3: Wait briefly for Windows state reset
+    await new Promise(resolve => setTimeout(resolve, waitDuration));
+    console.log(`Waited ${waitDuration}ms for state reset`);
+    
+    // Step 4: Show window (proper config restoration)
+    showMainWindow();
+    console.log('Window shown with proper configuration');
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error in copy and refresh window sequence:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Copy and refresh failed',
     };
   }
 }

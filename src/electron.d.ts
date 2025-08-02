@@ -90,6 +90,7 @@ export interface ElectronAPI {
   hideWindowBriefly: (
     duration?: number,
   ) => Promise<{ success: boolean; error?: string }>;
+  copyAndRefreshWindow: (text: string, waitDuration?: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface IElectron {
