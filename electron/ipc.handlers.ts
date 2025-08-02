@@ -376,4 +376,18 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       };
     }
   });
+
+  // Window configuration refresh handler
+  ipcMain.handle('refresh-window-config', async () => {
+    try {
+      const result = await deps.refreshWindowConfiguration();
+      return result;
+    } catch (error) {
+      console.error('Error refreshing window configuration:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to refresh window configuration',
+      };
+    }
+  });
 }

@@ -21,6 +21,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     try {
       const result = await window.electronAPI.writeText(code);
       if (result.success) {
+        // Refresh window configuration to prevent title bar from appearing
+        await window.electronAPI.refreshWindowConfiguration();
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } else {
