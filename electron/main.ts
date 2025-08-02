@@ -286,6 +286,8 @@ async function createWindow(): Promise<void> {
   state.mainWindow.on('move', handleWindowMove);
   state.mainWindow.on('resize', handleWindowResize);
   state.mainWindow.on('closed', handleWindowClosed);
+  state.mainWindow.on('focus', handleWindowFocus);
+  state.mainWindow.on('blur', handleWindowBlur);
 
   // Initialize window state
   const bounds = state.mainWindow.getBounds();
@@ -319,6 +321,55 @@ function handleWindowClosed(): void {
   state.isWindowVisible = false;
   state.windowPosition = null;
   state.windowSize = null;
+}
+
+function handleWindowFocus(): void {
+  console.log('Window gained focus - preserving configuration');
+  preserveWindowConfiguration();
+}
+
+function handleWindowBlur(): void {
+  console.log('Window lost focus - will preserve configuration on next focus');
+}
+
+function preserveWindowConfiguration(): void {
+  if (!state.mainWindow || state.mainWindow.isDestroyed()) {
+    return;
+  }
+
+  try {
+    const windowConfig = WindowConfigFactory.getInstance().getConfig(state.appMode);
+    
+    // Re-apply platform-specific configurations to prevent OS overrides
+    const platformConfig = windowConfig.behavior.platformSpecific;
+    
+    // macOS-specific settings
+    if (process.platform === 'darwin' && platformConfig.darwin) {
+      state.mainWindow.setWindowButtonVisibility(
+        platformConfig.darwin.windowButtonVisibility,
+      );
+      state.mainWindow.setHiddenInMissionControl(
+        platformConfig.darwin.hiddenInMissionControl,
+      );
+      state.mainWindow.setBackgroundColor(platformConfig.darwin.backgroundColor);
+      state.mainWindow.setHasShadow(platformConfig.darwin.hasShadow);
+    }
+
+    // Windows-specific settings
+    if (process.platform === 'win32') {
+      // On Windows, ensure the menu bar stays hidden
+      state.mainWindow.setMenuBarVisibility(false);
+      state.mainWindow.setAutoHideMenuBar(true);
+    }
+
+    // Cross-platform: Re-apply critical frameless window settings
+    // Note: The frame and titleBarStyle are set at window creation and cannot be changed dynamically
+    // But we can re-apply other settings that might get overridden by the OS
+    
+    console.log('Window configuration preserved for platform:', process.platform);
+  } catch (error) {
+    console.error('Error preserving window configuration:', error);
+  }
 }
 
 function hideMainWindow(): void {
