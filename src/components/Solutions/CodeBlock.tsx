@@ -19,7 +19,14 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
   const handleCopy = async () => {
     try {
+      // Temporarily disable focus to prevent title bar restoration
+      await window.electronAPI.setWindowFocusable(false);
+
       const result = await window.electronAPI.writeText(code);
+
+      // Re-enable focus after copy completes
+      await window.electronAPI.setWindowFocusable(true);
+
       if (result.success) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -27,6 +34,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         console.error('Failed to copy code:', result.error);
       }
     } catch (error) {
+      // Always restore focusable state on error
+      try {
+        await window.electronAPI.setWindowFocusable(true);
+      } catch (restoreError) {
+        console.error('Failed to restore focus state:', restoreError);
+      }
       console.error('Failed to copy code:', error);
     }
   };

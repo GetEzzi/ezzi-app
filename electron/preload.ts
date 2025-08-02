@@ -70,6 +70,9 @@ interface ElectronAPI {
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
+  setWindowFocusable: (
+    focusable: boolean,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const PROCESSING_EVENTS = {
@@ -257,6 +260,8 @@ const electronAPI = {
   setAppMode: (appMode: AppMode) =>
     ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
   writeText: (text: string) => ipcRenderer.invoke('write-text', text),
+  setWindowFocusable: (focusable: boolean) =>
+    ipcRenderer.invoke('set-window-focusable', focusable),
 } as ElectronAPI;
 
 // Before exposing the API
