@@ -100,7 +100,6 @@ export interface IIpcHandlerDeps {
   moveWindowDown: () => void;
   applyQueueWindowBehavior: () => void;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
-  refreshWindowConfiguration: () => Promise<{ success: boolean; error?: string }>;
 }
 
 function initializeHelpers() {
@@ -629,7 +628,6 @@ async function initializeApp() {
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
       applyQueueWindowBehavior,
       writeText,
-      refreshWindowConfiguration,
     });
     await createWindow();
 
@@ -791,47 +789,6 @@ async function writeText(
       success: false,
       error: error instanceof Error ? error.message : 'Failed to copy text',
     });
-  }
-}
-
-async function refreshWindowConfiguration(): Promise<{ success: boolean; error?: string }> {
-  try {
-    if (!state.mainWindow || state.mainWindow.isDestroyed()) {
-      return { success: false, error: 'Window not available' };
-    }
-
-    console.log('Refreshing window configuration to prevent title bar appearance');
-
-    // Store current opacity to restore later
-    const currentOpacity = state.mainWindow.getOpacity();
-    
-    // Brief hide/show cycle using the same mechanism that works
-    state.mainWindow.setOpacity(0);
-    state.mainWindow.showInactive(); // Key: showInactive() prevents focus issues
-    
-    // Reapply current window configuration
-    const configFactory = WindowConfigFactory.getInstance();
-    const view = getView();
-    
-    if (view === 'queue') {
-      const screenshots = getScreenshotQueue();
-      const hasScreenshots = screenshots.length > 0;
-      configFactory.applyQueueBehavior(state.mainWindow, state.appMode, hasScreenshots);
-    } else {
-      configFactory.applyShowBehavior(state.mainWindow, state.appMode);
-    }
-    
-    // Restore original opacity
-    state.mainWindow.setOpacity(currentOpacity);
-    
-    console.log('Window configuration refresh completed');
-    return { success: true };
-  } catch (error) {
-    console.error('Error refreshing window configuration:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to refresh window configuration' 
-    };
   }
 }
 
