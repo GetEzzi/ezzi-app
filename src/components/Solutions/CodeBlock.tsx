@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from 'lucide-react';
-import { ProgrammingLanguage } from '../../../shared/api';
+import { ProgrammingLanguage } from '@shared/api.ts';
 
 interface CodeBlockProps {
   code: string;
@@ -17,16 +17,20 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard
-      .writeText(code)
-      .then(() => {
+  const handleCopy = async () => {
+    try {
+      // Use copy → hide → wait → show sequence to prevent title bar appearing
+      const result = await window.electronAPI.copyAndRefreshWindow(code, 250);
+
+      if (result.success) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      })
-      .catch((error) => {
-        console.error('Failed to copy code:', error);
-      });
+      } else {
+        console.error('Failed to copy and refresh window:', result.error);
+      }
+    } catch (error) {
+      console.error('Failed to copy and refresh window:', error);
+    }
   };
 
   return (
@@ -54,7 +58,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
       {showCopyButton && (
         <button
-          onClick={handleCopy}
+          onClick={() => {
+            handleCopy().catch(console.error);
+          }}
           className="absolute top-2 right-2 p-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors duration-200 group"
           title="Copy code"
         >
