@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, screen, clipboard } from 'electron';
 import path from 'path';
 import { initializeIpcHandlers } from './ipc.handlers';
 import { ProcessingHelper } from './processing.helper';
@@ -99,6 +99,11 @@ export interface IIpcHandlerDeps {
   moveWindowUp: () => void;
   moveWindowDown: () => void;
   applyQueueWindowBehavior: () => void;
+  writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
+  copyAndRefreshWindow: (
+    text: string,
+    waitDuration?: number,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 function initializeHelpers() {
@@ -194,8 +199,16 @@ async function createWindow(): Promise<void> {
 
   state.step = 60;
 
+  // Get platform-specific configuration for window creation
+  const platformConfigForCreation = windowConfig.behavior.platformSpecific;
+  const windowsSpecificOptions =
+    process.platform === 'win32' && platformConfigForCreation.win32
+      ? { thickFrame: platformConfigForCreation.win32.thickFrame }
+      : {};
+
   const baseWindowSettings: Electron.BrowserWindowConstructorOptions = {
     ...windowConfig.baseSettings,
+    ...windowsSpecificOptions,
     x: state.currentX,
     y: 50,
     webPreferences: {
@@ -217,7 +230,7 @@ async function createWindow(): Promise<void> {
 
   state.mainWindow.webContents.on(
     'did-fail-load',
-    (event, errorCode, errorDescription) => {
+    (_event, errorCode, errorDescription) => {
       console.error('Window failed to load:', errorCode, errorDescription);
       if (isDev) {
         // In development, retry loading after a short delay
@@ -233,7 +246,7 @@ async function createWindow(): Promise<void> {
 
   if (isDev) {
     setTimeout(() => {
-      state.mainWindow.loadURL('http://localhost:54321').catch((error) => {
+      state.mainWindow?.loadURL('http://localhost:54321').catch((error) => {
         console.error('Failed to load dev server:', error);
       });
     }, 200);
@@ -285,6 +298,8 @@ async function createWindow(): Promise<void> {
   state.mainWindow.on('move', handleWindowMove);
   state.mainWindow.on('resize', handleWindowResize);
   state.mainWindow.on('closed', handleWindowClosed);
+  state.mainWindow.on('focus', handleWindowFocus);
+  state.mainWindow.on('blur', handleWindowBlur);
 
   // Initialize window state
   const bounds = state.mainWindow.getBounds();
@@ -318,6 +333,67 @@ function handleWindowClosed(): void {
   state.isWindowVisible = false;
   state.windowPosition = null;
   state.windowSize = null;
+}
+
+function handleWindowFocus(): void {
+  console.log('Window gained focus - preserving configuration');
+  preserveWindowConfiguration();
+}
+
+function handleWindowBlur(): void {
+  console.log('Window lost focus - will preserve configuration on next focus');
+}
+
+function preserveWindowConfiguration(): void {
+  if (!state.mainWindow || state.mainWindow.isDestroyed()) {
+    return;
+  }
+
+  try {
+    const windowConfig = WindowConfigFactory.getInstance().getConfig(
+      state.appMode,
+    );
+
+    // Re-apply platform-specific configurations to prevent OS overrides
+    const platformConfig = windowConfig.behavior.platformSpecific;
+
+    // macOS-specific settings
+    if (process.platform === 'darwin' && platformConfig.darwin) {
+      state.mainWindow.setWindowButtonVisibility(
+        platformConfig.darwin.windowButtonVisibility,
+      );
+      state.mainWindow.setHiddenInMissionControl(
+        platformConfig.darwin.hiddenInMissionControl,
+      );
+      state.mainWindow.setBackgroundColor(
+        platformConfig.darwin.backgroundColor,
+      );
+      state.mainWindow.setHasShadow(platformConfig.darwin.hasShadow);
+    }
+
+    // Windows-specific settings
+    if (process.platform === 'win32' && platformConfig.win32) {
+      // On Windows, ensure the menu bar stays hidden
+      state.mainWindow.setMenuBarVisibility(false);
+      state.mainWindow.setAutoHideMenuBar(true);
+      // Note: thickFrame is set during window creation and cannot be changed dynamically
+      console.log(
+        'Windows config preserved - thickFrame was set to:',
+        platformConfig.win32.thickFrame,
+      );
+    }
+
+    // Cross-platform: Re-apply critical frameless window settings
+    // Note: The frame and titleBarStyle are set at window creation and cannot be changed dynamically
+    // But we can re-apply other settings that might get overridden by the OS
+
+    console.log(
+      'Window configuration preserved for platform:',
+      process.platform,
+    );
+  } catch (error) {
+    console.error('Error preserving window configuration:', error);
+  }
 }
 
 function hideMainWindow(): void {
@@ -555,6 +631,8 @@ async function initializeApp() {
       moveWindowUp: () => moveWindowVertical((y) => y - state.step),
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
       applyQueueWindowBehavior,
+      writeText,
+      copyAndRefreshWindow,
     });
     await createWindow();
 
@@ -701,6 +779,58 @@ function applyQueueWindowBehavior(): void {
         hasScreenshots,
       );
     });
+  }
+}
+
+async function writeText(
+  text: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    clipboard.writeText(text);
+
+    return Promise.resolve({ success: true });
+  } catch (error) {
+    return Promise.resolve({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to copy text',
+    });
+  }
+}
+
+async function copyAndRefreshWindow(
+  text: string,
+  waitDuration: number = 250,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    console.log('Starting copy and refresh window sequence');
+
+    // Step 1: Copy text to clipboard
+    const copyResult = await writeText(text);
+    if (!copyResult.success) {
+      return { success: false, error: `Copy failed: ${copyResult.error}` };
+    }
+    console.log('Text copied successfully');
+
+    // Step 2: Hide window (same as cmd+B)
+    hideMainWindow();
+    console.log('Window hidden');
+
+    // Step 3: Wait briefly for Windows state reset
+    await new Promise((resolve) => setTimeout(resolve, waitDuration));
+    console.log(`Waited ${waitDuration}ms for state reset`);
+
+    // Step 4: Show window (proper config restoration)
+    showMainWindow();
+    console.log('Window shown with proper configuration');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error in copy and refresh window sequence:', error);
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Copy and refresh failed',
+    };
   }
 }
 

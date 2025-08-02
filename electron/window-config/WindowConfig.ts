@@ -28,6 +28,9 @@ export interface WindowPlatformConfig {
     backgroundColor: string;
     hasShadow: boolean;
   };
+  win32?: {
+    thickFrame: boolean;
+  };
 }
 
 export interface WindowQueueBehaviorConfig {

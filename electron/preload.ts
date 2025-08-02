@@ -69,6 +69,11 @@ interface ElectronAPI {
   setAppMode: (
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
+  writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
+  copyAndRefreshWindow: (
+    text: string,
+    waitDuration?: number,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const PROCESSING_EVENTS = {
@@ -96,7 +101,6 @@ const electronAPI = {
   }): Promise<unknown> => {
     return ipcRenderer.invoke('open-subscription-portal', authData);
   },
-  openSettingsPortal: () => ipcRenderer.invoke('open-settings-portal'),
   updateContentDimensions: (dimensions: {
     width: number;
     height: number;
@@ -255,6 +259,9 @@ const electronAPI = {
   authIsAuthenticated: () => ipcRenderer.invoke('auth-is-authenticated'),
   setAppMode: (appMode: AppMode) =>
     ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
+  writeText: (text: string) => ipcRenderer.invoke('write-text', text),
+  copyAndRefreshWindow: (text: string, waitDuration?: number) =>
+    ipcRenderer.invoke('copy-and-refresh-window', text, waitDuration),
 } as ElectronAPI;
 
 // Before exposing the API
@@ -283,14 +290,14 @@ contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
     on: (channel: string, func: (...args: any[]) => void) => {
       if (channel === 'auth-callback') {
-        ipcRenderer.on(channel, (event, ...args) =>
+        ipcRenderer.on(channel, (_event, ...args) =>
           func(...(args as unknown[])),
         );
       }
     },
     removeListener: (channel: string, func: (...args: any[]) => void) => {
       if (channel === 'auth-callback') {
-        ipcRenderer.removeListener(channel, (event, ...args) =>
+        ipcRenderer.removeListener(channel, (_event, ...args) =>
           func(...(args as unknown[])),
         );
       }
