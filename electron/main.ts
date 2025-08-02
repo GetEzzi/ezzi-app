@@ -100,13 +100,10 @@ export interface IIpcHandlerDeps {
   moveWindowDown: () => void;
   applyQueueWindowBehavior: () => void;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
-  setWindowFocusable: (
-    focusable: boolean,
+  copyAndRefreshWindow: (
+    text: string,
+    waitDuration?: number,
   ) => Promise<{ success: boolean; error?: string }>;
-  hideWindowBriefly: (
-    duration?: number,
-  ) => Promise<{ success: boolean; error?: string }>;
-  copyAndRefreshWindow: (text: string, waitDuration?: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 function initializeHelpers() {
@@ -233,7 +230,7 @@ async function createWindow(): Promise<void> {
 
   state.mainWindow.webContents.on(
     'did-fail-load',
-    (event, errorCode, errorDescription) => {
+    (_event, errorCode, errorDescription) => {
       console.error('Window failed to load:', errorCode, errorDescription);
       if (isDev) {
         // In development, retry loading after a short delay
@@ -408,8 +405,8 @@ function hideMainWindow(): void {
     state.windowSize = { width: bounds.width, height: bounds.height };
 
     const configFactory = WindowConfigFactory.getInstance();
-    configFactory.applyHideBehavior(state.mainWindow!, state.appMode);
-    state.mainWindow!.hide();
+    configFactory.applyHideBehavior(state.mainWindow, state.appMode);
+    state.mainWindow.hide();
 
     state.isWindowVisible = false;
 
@@ -635,8 +632,6 @@ async function initializeApp() {
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
       applyQueueWindowBehavior,
       writeText,
-      setWindowFocusable,
-      hideWindowBriefly,
       copyAndRefreshWindow,
     });
     await createWindow();
@@ -802,117 +797,36 @@ async function writeText(
   }
 }
 
-async function setWindowFocusable(
-  focusable: boolean,
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    if (!state.mainWindow || state.mainWindow.isDestroyed()) {
-      return { success: false, error: 'Window not available' };
-    }
-
-    console.log('Setting window focusable to:', focusable);
-    state.mainWindow.setFocusable(focusable);
-
-    return Promise.resolve({ success: true });
-  } catch (error) {
-    console.error('Error setting window focusable:', error);
-
-    return Promise.resolve({
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to set window focusable',
-    });
-  }
-}
-
-async function hideWindowBriefly(
-  duration: number = 250,
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    if (!state.mainWindow || state.mainWindow.isDestroyed()) {
-      return { success: false, error: 'Window not available' };
-    }
-
-    console.log(`Hiding window briefly for ${duration}ms to reset state`);
-
-    // Store current state
-    const currentOpacity = state.mainWindow.getOpacity();
-    const currentBounds = state.mainWindow.getBounds();
-
-    // Hide window to reset Windows title bar state
-    state.mainWindow.setOpacity(0);
-
-    // Wait for Windows to "forget" about the problematic state
-    await new Promise((resolve) => setTimeout(resolve, duration));
-
-    // Reapply fresh window configuration (same as working hide/show)
-    const configFactory = WindowConfigFactory.getInstance();
-    const view = getView();
-
-    if (view === 'queue') {
-      const screenshots = getScreenshotQueue();
-      const hasScreenshots = screenshots.length > 0;
-      configFactory.applyQueueBehavior(
-        state.mainWindow,
-        state.appMode,
-        hasScreenshots,
-      );
-    } else {
-      configFactory.applyShowBehavior(state.mainWindow, state.appMode);
-    }
-
-    // Restore window with showInactive (prevents focus-related title bar restoration)
-    state.mainWindow.showInactive();
-    state.mainWindow.setBounds(currentBounds);
-    state.mainWindow.setOpacity(currentOpacity);
-
-    console.log('Window briefly hidden and restored with fresh configuration');
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error hiding window briefly:', error);
-
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to hide window briefly',
-    };
-  }
-}
-
 async function copyAndRefreshWindow(
   text: string,
   waitDuration: number = 250,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log('Starting copy and refresh window sequence');
-    
+
     // Step 1: Copy text to clipboard
     const copyResult = await writeText(text);
     if (!copyResult.success) {
       return { success: false, error: `Copy failed: ${copyResult.error}` };
     }
     console.log('Text copied successfully');
-    
+
     // Step 2: Hide window (same as cmd+B)
     hideMainWindow();
     console.log('Window hidden');
-    
+
     // Step 3: Wait briefly for Windows state reset
-    await new Promise(resolve => setTimeout(resolve, waitDuration));
+    await new Promise((resolve) => setTimeout(resolve, waitDuration));
     console.log(`Waited ${waitDuration}ms for state reset`);
-    
+
     // Step 4: Show window (proper config restoration)
     showMainWindow();
     console.log('Window shown with proper configuration');
-    
+
     return { success: true };
   } catch (error) {
     console.error('Error in copy and refresh window sequence:', error);
+
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Copy and refresh failed',

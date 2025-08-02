@@ -29,7 +29,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
 
   ipcMain.handle(
     IPC_EVENTS.QUEUE.LOADED_WITH_SCREENSHOTS,
-    (event, screenshotCount) => {
+    (_event, screenshotCount) => {
       console.log('Queue page loaded with screenshots:', screenshotCount);
       deps.applyQueueWindowBehavior();
     },
@@ -44,11 +44,11 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     return deps.getExtraScreenshotQueue();
   });
 
-  ipcMain.handle('delete-screenshot', async (event, path: string) => {
+  ipcMain.handle('delete-screenshot', async (_event, path: string) => {
     return deps.deleteScreenshot(path);
   });
 
-  ipcMain.handle('get-image-preview', async (event, path: string) => {
+  ipcMain.handle('get-image-preview', async (_event, path: string) => {
     return deps.getImagePreview(path);
   });
 
@@ -56,7 +56,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   ipcMain.handle(
     'update-content-dimensions',
     (
-      event,
+      _event,
       {
         width,
         height,
@@ -81,7 +81,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
 
   ipcMain.handle(
     'set-window-dimensions',
-    (event, width: number, height: number, source: string) => {
+    (_event, width: number, height: number, source: string) => {
       deps.setWindowDimensions(width, height, source);
     },
   );
@@ -157,7 +157,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     }
   });
 
-  ipcMain.handle('open-external-url', (event, url: string) => {
+  ipcMain.handle('open-external-url', (_event, url: string) => {
     shell.openExternal(url).catch(console.error);
   });
 
@@ -288,7 +288,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   // Auth token handlers
   ipcMain.handle(
     'auth-set-token',
-    (event, token: string, expiryTimestamp?: number) => {
+    (_event, token: string, expiryTimestamp?: number) => {
       try {
         authStorage.setAuthToken(token, expiryTimestamp);
 
@@ -337,7 +337,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     }
   });
 
-  ipcMain.handle(IPC_EVENTS.APP_MODE.CHANGE, (event, appMode: string) => {
+  ipcMain.handle(IPC_EVENTS.APP_MODE.CHANGE, (_event, appMode: string) => {
     try {
       console.log('App mode changed to:', appMode);
 
@@ -364,11 +364,9 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   });
 
   // Clipboard handlers
-  ipcMain.handle('write-text', async (event, text: string) => {
+  ipcMain.handle('write-text', async (_event, text: string) => {
     try {
-      const result = await deps.writeText(text);
-
-      return result;
+      return await deps.writeText(text);
     } catch (error) {
       console.error('Error writing text to clipboard:', error);
 
@@ -379,60 +377,23 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     }
   });
 
-  // Window focus handlers
-  ipcMain.handle('set-window-focusable', async (event, focusable: boolean) => {
-    try {
-      const result = await deps.setWindowFocusable(focusable);
-
-      return result;
-    } catch (error) {
-      console.error('Error setting window focusable:', error);
-
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to set window focusable',
-      };
-    }
-  });
-
-  // Window brief hide handlers
-  ipcMain.handle('hide-window-briefly', async (event, duration?: number) => {
-    try {
-      const result = await deps.hideWindowBriefly(duration);
-
-      return result;
-    } catch (error) {
-      console.error('Error hiding window briefly:', error);
-
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to hide window briefly',
-      };
-    }
-  });
-
   // Copy and refresh window handlers
-  ipcMain.handle('copy-and-refresh-window', async (event, text: string, waitDuration?: number) => {
-    try {
-      const result = await deps.copyAndRefreshWindow(text, waitDuration);
+  ipcMain.handle(
+    'copy-and-refresh-window',
+    async (_event, text: string, waitDuration?: number) => {
+      try {
+        return await deps.copyAndRefreshWindow(text, waitDuration);
+      } catch (error) {
+        console.error('Error in copy and refresh window:', error);
 
-      return result;
-    } catch (error) {
-      console.error('Error in copy and refresh window:', error);
-
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to copy and refresh window',
-      };
-    }
-  });
+        return {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Failed to copy and refresh window',
+        };
+      }
+    },
+  );
 }
