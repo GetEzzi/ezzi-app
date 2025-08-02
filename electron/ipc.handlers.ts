@@ -370,9 +370,9 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       return result;
     } catch (error) {
       console.error('Error writing text to clipboard:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to copy text' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to copy text',
       };
     }
   });

@@ -55,6 +55,32 @@ export class WindowConfigFactory implements WindowConfigProvider {
     window.setBounds(currentBounds);
   }
 
+  private applyPlatformSpecificConfig(
+    window: BrowserWindow,
+    appMode: AppMode,
+  ): void {
+    const config = this.getConfig(appMode);
+    const platformConfig = config.behavior.platformSpecific;
+
+    // Apply macOS-specific configurations
+    if (process.platform === 'darwin' && platformConfig.darwin) {
+      window.setHiddenInMissionControl(
+        platformConfig.darwin.hiddenInMissionControl,
+      );
+      window.setWindowButtonVisibility(
+        platformConfig.darwin.windowButtonVisibility,
+      );
+      window.setBackgroundColor(platformConfig.darwin.backgroundColor);
+      window.setHasShadow(platformConfig.darwin.hasShadow);
+    }
+
+    // Apply Windows-specific configurations
+    if (process.platform === 'win32' && platformConfig.win32) {
+      // Note: thickFrame must be set during window creation, but we can log for debugging
+      console.log('Windows platform config applied:', platformConfig.win32);
+    }
+  }
+
   public applyQueueBehavior(
     window: BrowserWindow,
     appMode: AppMode,
@@ -66,15 +92,18 @@ export class WindowConfigFactory implements WindowConfigProvider {
       : config.behavior.queueBehavior.queueEmpty;
 
     this.applyVisibilityConfig(window, queueConfig);
+    this.applyPlatformSpecificConfig(window, appMode);
   }
 
   public applyShowBehavior(window: BrowserWindow, appMode: AppMode): void {
     const config = this.getConfig(appMode);
     this.applyVisibilityConfig(window, config.behavior.showBehavior);
+    this.applyPlatformSpecificConfig(window, appMode);
   }
 
   public applyHideBehavior(window: BrowserWindow, appMode: AppMode): void {
     const config = this.getConfig(appMode);
     this.applyVisibilityConfig(window, config.behavior.hideBehavior);
+    this.applyPlatformSpecificConfig(window, appMode);
   }
 }

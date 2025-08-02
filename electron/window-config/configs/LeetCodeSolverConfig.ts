@@ -73,6 +73,9 @@ export const LeetCodeSolverConfig: WindowConfig = {
         backgroundColor: '#00000000',
         hasShadow: false,
       },
+      win32: {
+        thickFrame: false,
+      },
     },
   },
 };

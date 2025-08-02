@@ -195,8 +195,16 @@ async function createWindow(): Promise<void> {
 
   state.step = 60;
 
+  // Get platform-specific configuration for window creation
+  const platformConfigForCreation = windowConfig.behavior.platformSpecific;
+  const windowsSpecificOptions =
+    process.platform === 'win32' && platformConfigForCreation.win32
+      ? { thickFrame: platformConfigForCreation.win32.thickFrame }
+      : {};
+
   const baseWindowSettings: Electron.BrowserWindowConstructorOptions = {
     ...windowConfig.baseSettings,
+    ...windowsSpecificOptions,
     x: state.currentX,
     y: 50,
     webPreferences: {
@@ -338,11 +346,13 @@ function preserveWindowConfiguration(): void {
   }
 
   try {
-    const windowConfig = WindowConfigFactory.getInstance().getConfig(state.appMode);
-    
+    const windowConfig = WindowConfigFactory.getInstance().getConfig(
+      state.appMode,
+    );
+
     // Re-apply platform-specific configurations to prevent OS overrides
     const platformConfig = windowConfig.behavior.platformSpecific;
-    
+
     // macOS-specific settings
     if (process.platform === 'darwin' && platformConfig.darwin) {
       state.mainWindow.setWindowButtonVisibility(
@@ -351,22 +361,32 @@ function preserveWindowConfiguration(): void {
       state.mainWindow.setHiddenInMissionControl(
         platformConfig.darwin.hiddenInMissionControl,
       );
-      state.mainWindow.setBackgroundColor(platformConfig.darwin.backgroundColor);
+      state.mainWindow.setBackgroundColor(
+        platformConfig.darwin.backgroundColor,
+      );
       state.mainWindow.setHasShadow(platformConfig.darwin.hasShadow);
     }
 
     // Windows-specific settings
-    if (process.platform === 'win32') {
+    if (process.platform === 'win32' && platformConfig.win32) {
       // On Windows, ensure the menu bar stays hidden
       state.mainWindow.setMenuBarVisibility(false);
       state.mainWindow.setAutoHideMenuBar(true);
+      // Note: thickFrame is set during window creation and cannot be changed dynamically
+      console.log(
+        'Windows config preserved - thickFrame was set to:',
+        platformConfig.win32.thickFrame,
+      );
     }
 
     // Cross-platform: Re-apply critical frameless window settings
     // Note: The frame and titleBarStyle are set at window creation and cannot be changed dynamically
     // But we can re-apply other settings that might get overridden by the OS
-    
-    console.log('Window configuration preserved for platform:', process.platform);
+
+    console.log(
+      'Window configuration preserved for platform:',
+      process.platform,
+    );
   } catch (error) {
     console.error('Error preserving window configuration:', error);
   }
