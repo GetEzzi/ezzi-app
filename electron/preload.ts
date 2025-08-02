@@ -73,6 +73,9 @@ interface ElectronAPI {
   setWindowFocusable: (
     focusable: boolean,
   ) => Promise<{ success: boolean; error?: string }>;
+  hideWindowBriefly: (
+    duration?: number,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const PROCESSING_EVENTS = {
@@ -262,6 +265,8 @@ const electronAPI = {
   writeText: (text: string) => ipcRenderer.invoke('write-text', text),
   setWindowFocusable: (focusable: boolean) =>
     ipcRenderer.invoke('set-window-focusable', focusable),
+  hideWindowBriefly: (duration?: number) =>
+    ipcRenderer.invoke('hide-window-briefly', duration),
 } as ElectronAPI;
 
 // Before exposing the API

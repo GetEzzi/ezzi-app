@@ -397,4 +397,23 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       };
     }
   });
+
+  // Window brief hide handlers
+  ipcMain.handle('hide-window-briefly', async (event, duration?: number) => {
+    try {
+      const result = await deps.hideWindowBriefly(duration);
+
+      return result;
+    } catch (error) {
+      console.error('Error hiding window briefly:', error);
+
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to hide window briefly',
+      };
+    }
+  });
 }

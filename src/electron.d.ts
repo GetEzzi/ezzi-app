@@ -87,6 +87,9 @@ export interface ElectronAPI {
   setWindowFocusable: (
     focusable: boolean,
   ) => Promise<{ success: boolean; error?: string }>;
+  hideWindowBriefly: (
+    duration?: number,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface IElectron {
