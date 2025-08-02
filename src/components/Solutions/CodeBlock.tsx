@@ -58,7 +58,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
       {showCopyButton && (
         <button
-          onClick={handleCopy}
+          onClick={() => {
+            handleCopy().catch(console.error);
+          }}
           className="absolute top-2 right-2 p-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors duration-200 group"
           title="Copy code"
         >
