@@ -103,6 +103,9 @@ export interface IIpcHandlerDeps {
   setWindowFocusable: (
     focusable: boolean,
   ) => Promise<{ success: boolean; error?: string }>;
+  hideWindowBriefly: (
+    duration?: number,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 function initializeHelpers() {
@@ -245,7 +248,7 @@ async function createWindow(): Promise<void> {
 
   if (isDev) {
     setTimeout(() => {
-      state.mainWindow.loadURL('http://localhost:54321').catch((error) => {
+      state.mainWindow?.loadURL('http://localhost:54321').catch((error) => {
         console.error('Failed to load dev server:', error);
       });
     }, 200);
@@ -632,6 +635,7 @@ async function initializeApp() {
       applyQueueWindowBehavior,
       writeText,
       setWindowFocusable,
+      hideWindowBriefly,
     });
     await createWindow();
 
@@ -818,6 +822,63 @@ async function setWindowFocusable(
           ? error.message
           : 'Failed to set window focusable',
     });
+  }
+}
+
+async function hideWindowBriefly(
+  duration: number = 250,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!state.mainWindow || state.mainWindow.isDestroyed()) {
+      return { success: false, error: 'Window not available' };
+    }
+
+    console.log(`Hiding window briefly for ${duration}ms to reset state`);
+
+    // Store current state
+    const currentOpacity = state.mainWindow.getOpacity();
+    const currentBounds = state.mainWindow.getBounds();
+
+    // Hide window to reset Windows title bar state
+    state.mainWindow.setOpacity(0);
+
+    // Wait for Windows to "forget" about the problematic state
+    await new Promise((resolve) => setTimeout(resolve, duration));
+
+    // Reapply fresh window configuration (same as working hide/show)
+    const configFactory = WindowConfigFactory.getInstance();
+    const view = getView();
+
+    if (view === 'queue') {
+      const screenshots = getScreenshotQueue();
+      const hasScreenshots = screenshots.length > 0;
+      configFactory.applyQueueBehavior(
+        state.mainWindow,
+        state.appMode,
+        hasScreenshots,
+      );
+    } else {
+      configFactory.applyShowBehavior(state.mainWindow, state.appMode);
+    }
+
+    // Restore window with showInactive (prevents focus-related title bar restoration)
+    state.mainWindow.showInactive();
+    state.mainWindow.setBounds(currentBounds);
+    state.mainWindow.setOpacity(currentOpacity);
+
+    console.log('Window briefly hidden and restored with fresh configuration');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error hiding window briefly:', error);
+
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to hide window briefly',
+    };
   }
 }
 
