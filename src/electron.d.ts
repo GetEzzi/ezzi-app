@@ -84,6 +84,9 @@ export interface ElectronAPI {
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
+  setWindowFocusable: (
+    focusable: boolean,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 export interface IElectron {

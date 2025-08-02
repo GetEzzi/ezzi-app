@@ -100,6 +100,9 @@ export interface IIpcHandlerDeps {
   moveWindowDown: () => void;
   applyQueueWindowBehavior: () => void;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
+  setWindowFocusable: (
+    focusable: boolean,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 function initializeHelpers() {
@@ -628,6 +631,7 @@ async function initializeApp() {
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
       applyQueueWindowBehavior,
       writeText,
+      setWindowFocusable,
     });
     await createWindow();
 
@@ -788,6 +792,31 @@ async function writeText(
     return Promise.resolve({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to copy text',
+    });
+  }
+}
+
+async function setWindowFocusable(
+  focusable: boolean,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!state.mainWindow || state.mainWindow.isDestroyed()) {
+      return { success: false, error: 'Window not available' };
+    }
+
+    console.log('Setting window focusable to:', focusable);
+    state.mainWindow.setFocusable(focusable);
+
+    return Promise.resolve({ success: true });
+  } catch (error) {
+    console.error('Error setting window focusable:', error);
+
+    return Promise.resolve({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to set window focusable',
     });
   }
 }
