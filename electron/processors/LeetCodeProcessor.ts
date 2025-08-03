@@ -18,7 +18,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
     params: ProcessingParams,
   ): Promise<ProcessingResult<LeetCodeSolveResponse>> {
     try {
-      const { images, language, isMock, locale, signal, headers } = params;
+      const { images, isMock, signal, headers } = params;
 
       const extractResponse = await axios.post<
         LeetCodeSolveRequest,
@@ -27,9 +27,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
         `${API_BASE_URL}${API_ENDPOINTS.LEETCODE.SOLVE}`,
         {
           images,
-          language,
           isMock,
-          locale,
         },
         {
           signal,
@@ -87,14 +85,14 @@ export class LeetCodeProcessor implements AppModeProcessor {
     params: ProcessingParams,
   ): Promise<ProcessingResult<LeetCodeDebugResponse>> {
     try {
-      const { images, language, isMock, locale, signal, headers } = params;
+      const { images, isMock, signal, headers } = params;
 
       const response = await axios.post<
         LeetCodeDebugRequest,
         AxiosResponse<LeetCodeDebugResponse>
       >(
         `${API_BASE_URL}${API_ENDPOINTS.LEETCODE.DEBUG}`,
-        { images, language, isMock, locale },
+        { images, isMock },
         {
           signal,
           timeout: 300000,

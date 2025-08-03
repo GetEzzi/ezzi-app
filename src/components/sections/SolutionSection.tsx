@@ -2,31 +2,31 @@ import React from 'react';
 import SolutionContent from '../Solutions/SolutionContent';
 import ThoughtsList from '../Solutions/ThoughtsList';
 import CodeBlock from '../Solutions/CodeBlock';
-import { ProgrammingLanguage } from '../../../shared/api';
 import { useAppModeLayout } from '../../layouts';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface SolutionSectionProps {
   solutionData?: string | null;
   thoughtsData?: string[] | null;
   timeComplexityData?: string | null;
   spaceComplexityData?: string | null;
-  currentLanguage: ProgrammingLanguage;
   title?: string;
   isGenerating?: boolean;
   className?: string;
 }
 
-export const SolutionSection: React.FC<SolutionSectionProps> = ({
+const SolutionSectionInner: React.FC<SolutionSectionProps> = ({
   solutionData,
   thoughtsData,
   timeComplexityData,
   spaceComplexityData,
-  currentLanguage,
   title = 'Solution',
   isGenerating = false,
   className = '',
 }) => {
   const { isLeetcodeSolver } = useAppModeLayout();
+  const { solutionLanguage } = useSettings();
+  const currentLanguage = solutionLanguage;
 
   if (isGenerating) {
     return (
@@ -121,3 +121,6 @@ export const SolutionSection: React.FC<SolutionSectionProps> = ({
     </div>
   );
 };
+
+export const SolutionSection: React.FC<SolutionSectionProps> =
+  SolutionSectionInner;

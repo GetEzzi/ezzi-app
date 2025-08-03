@@ -1,5 +1,4 @@
 import React from 'react';
-import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
 import { useQueue } from '../hooks';
 import {
   useAppModeLayout,
@@ -10,19 +9,9 @@ import { ScreenshotSection, CommandSection } from '../components/sections';
 
 interface QueuePageProps {
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLanguage: (language: ProgrammingLanguage) => void;
-  setLocale: (language: UserLanguage) => void;
 }
 
-const QueuePage: React.FC<QueuePageProps> = ({
-  setView: _setView,
-  currentLanguage,
-  currentLocale,
-  setLanguage,
-  setLocale,
-}) => {
+const QueuePage: React.FC<QueuePageProps> = ({ setView: _setView }) => {
   const { isLiveInterview } = useAppModeLayout();
   const {
     screenshots,
@@ -45,10 +34,6 @@ const QueuePage: React.FC<QueuePageProps> = ({
       mode="queue"
       onTooltipVisibilityChange={handleTooltipVisibilityChange}
       screenshotCount={screenshots.length}
-      currentLanguage={currentLanguage}
-      currentLocale={currentLocale}
-      setLanguage={setLanguage}
-      setLocale={setLocale}
     />
   );
 
