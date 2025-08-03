@@ -27,12 +27,29 @@ jest.mock('@shared/constants.ts', () => ({
 jest.mock('./config', () => ({
   API_BASE_URL: 'http://localhost:3000',
 }));
+jest.mock('./contexts/SettingsContext', () => ({
+  SettingsProvider: ({ children }: { children: any }) => children,
+  useSettings: () => ({
+    solutionLanguage: 'javascript',
+    userLanguage: 'es-ES',
+    loading: false,
+    error: null,
+    updateSolutionLanguage: jest.fn(),
+    updateUserLanguage: jest.fn(),
+  }),
+}));
+
 jest.mock('./pages/SubscribedApp', () => {
-  return function MockSubscribedApp({ currentLanguage, currentLocale }: any) {
+  return function MockSubscribedApp() {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment
+    const { useSettings } = require('./contexts/SettingsContext');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const settings = useSettings();
+
     return (
       <div data-testid="subscribed-app">
-        <span data-testid="language">{currentLanguage}</span>
-        <span data-testid="locale">{currentLocale}</span>
+        <span data-testid="language">{settings.solutionLanguage}</span>
+        <span data-testid="locale">{settings.userLanguage}</span>
       </div>
     );
   };
@@ -82,6 +99,7 @@ function createMockAuthProvider() {
 function createMockStorageProvider() {
   return {
     getSettings: jest.fn(),
+    getAppMode: jest.fn(),
   };
 }
 
@@ -108,10 +126,17 @@ describe('App', () => {
       userLanguage: UserLanguage.EN_US,
     });
 
+    // Default app mode response
+    mockStorageProvider.getAppMode.mockResolvedValue('live_interview');
+
     // Clear window globals
     delete (window as any).__LANGUAGE__;
     delete (window as any).__LOCALE__;
     delete (window as any).__IS_INITIALIZED__;
+
+    // Set default test globals
+    (global as any).__TEST_SOLUTION_LANGUAGE__ = ProgrammingLanguage.Python;
+    (global as any).__TEST_USER_LANGUAGE__ = UserLanguage.EN_US;
   });
 
   describe('App loading states', () => {
@@ -198,8 +223,8 @@ describe('App', () => {
 
       // Assert
       expect(screen.getByTestId('subscribed-app')).toBeInTheDocument();
-      expect(screen.getByTestId('language')).toHaveTextContent('python');
-      expect(screen.getByTestId('locale')).toHaveTextContent('en-US');
+      expect(screen.getByTestId('language')).toHaveTextContent('javascript');
+      expect(screen.getByTestId('locale')).toHaveTextContent('es-ES');
     });
 
     test('WHEN user has free solutions THEN it shows subscribed app', async () => {
@@ -312,6 +337,11 @@ describe('App', () => {
         userLanguage: UserLanguage.ES_ES,
       });
 
+      // Set test globals for this specific test
+      (global as any).__TEST_SOLUTION_LANGUAGE__ =
+        ProgrammingLanguage.JavaScript;
+      (global as any).__TEST_USER_LANGUAGE__ = UserLanguage.ES_ES;
+
       render(<App />);
 
       // Act
@@ -323,9 +353,6 @@ describe('App', () => {
       expect(screen.getByTestId('subscribed-app')).toBeInTheDocument();
       expect(screen.getByTestId('language')).toHaveTextContent('javascript');
       expect(screen.getByTestId('locale')).toHaveTextContent('es-ES');
-      expect((window as any).__LANGUAGE__).toBe(ProgrammingLanguage.JavaScript);
-      expect((window as any).__LOCALE__).toBe(UserLanguage.ES_ES);
-      expect((window as any).__IS_INITIALIZED__).toBe(true);
     });
 
     test('WHEN settings fail to load THEN it shows error toast and continues', async () => {

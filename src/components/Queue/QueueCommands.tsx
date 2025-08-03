@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  ProgrammingLanguage,
-  UserLanguage,
-  AuthenticatedUser,
-  SubscriptionLevel,
-} from '../../../shared/api';
+import { AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
 import { COMMAND_KEY } from '../../utils/platform';
 import { authService } from '../../services/auth.ts';
 import { useAppMode } from '../../contexts/appMode';
@@ -16,19 +11,11 @@ import SettingsTooltip from '../shared/commands/SettingsTooltip';
 interface QueueCommandsProps {
   onTooltipVisibilityChange: (visible: boolean, height: number) => void;
   screenshotCount?: number;
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLanguage: (language: ProgrammingLanguage) => void;
-  setLocale: (language: UserLanguage) => void;
 }
 
 const QueueCommands: React.FC<QueueCommandsProps> = ({
   onTooltipVisibilityChange,
   screenshotCount = 0,
-  currentLanguage,
-  currentLocale,
-  setLanguage,
-  setLocale,
 }) => {
   const [isTooltipVisible] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -139,11 +126,7 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
                     condition: screenshotCount > 0,
                   },
                 ]}
-                currentLanguage={currentLanguage}
-                currentLocale={currentLocale}
                 currentAppMode={currentAppMode}
-                setLanguage={setLanguage}
-                setLocale={setLocale}
                 setAppMode={setAppMode}
                 onSignOut={handleSignOut}
                 onTooltipVisibilityChange={onTooltipVisibilityChange}

@@ -1,5 +1,4 @@
 import React from 'react';
-import { ProgrammingLanguage } from '@shared/api.ts';
 import { useDebug } from '../hooks';
 import {
   useAppModeLayout,
@@ -15,13 +14,11 @@ import {
 interface DebugPageProps {
   isProcessing: boolean;
   setIsProcessing: (isProcessing: boolean) => void;
-  currentLanguage: ProgrammingLanguage;
 }
 
 const DebugPage: React.FC<DebugPageProps> = ({
   isProcessing,
   setIsProcessing,
-  currentLanguage,
 }) => {
   const { isLiveInterview } = useAppModeLayout();
   const {
@@ -58,7 +55,6 @@ const DebugPage: React.FC<DebugPageProps> = ({
       thoughtsData={thoughtsData}
       timeComplexityData={timeComplexityData}
       spaceComplexityData={spaceComplexityData}
-      currentLanguage={currentLanguage}
       title="Solution"
     />
   );

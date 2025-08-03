@@ -1,12 +1,7 @@
 import React from 'react';
 import QueueCommands from '../Queue/QueueCommands';
 import SolutionCommands from '../Solutions/SolutionCommands';
-import {
-  ProgrammingLanguage,
-  UserLanguage,
-  Screenshot,
-} from '../../../shared/api';
-// import { useAppModeLayout } from '../../layouts'; // For future mode-specific styling
+import { Screenshot } from '../../../shared/api';
 
 type CommandSectionMode = 'queue' | 'solutions' | 'debug';
 
@@ -15,10 +10,6 @@ interface CommandSectionProps {
   // Queue mode props
   onTooltipVisibilityChange?: (visible: boolean, height: number) => void;
   screenshotCount?: number;
-  currentLanguage?: ProgrammingLanguage;
-  currentLocale?: UserLanguage;
-  setLanguage?: (language: ProgrammingLanguage) => void;
-  setLocale?: (language: UserLanguage) => void;
   // Solutions/Debug mode props
   isProcessing?: boolean;
   screenshots?: Screenshot[];
@@ -30,10 +21,6 @@ export const CommandSection: React.FC<CommandSectionProps> = ({
   mode,
   onTooltipVisibilityChange,
   screenshotCount = 0,
-  currentLanguage,
-  currentLocale,
-  setLanguage,
-  setLocale,
   isProcessing = false,
   screenshots = [],
   extraScreenshots = [],
@@ -42,13 +29,7 @@ export const CommandSection: React.FC<CommandSectionProps> = ({
   // const { isLeetcodeSolver } = useAppModeLayout(); // For future use
 
   if (mode === 'queue') {
-    if (
-      !currentLanguage ||
-      !currentLocale ||
-      !setLanguage ||
-      !setLocale ||
-      !onTooltipVisibilityChange
-    ) {
+    if (!onTooltipVisibilityChange) {
       return null;
     }
 
@@ -57,10 +38,6 @@ export const CommandSection: React.FC<CommandSectionProps> = ({
         <QueueCommands
           onTooltipVisibilityChange={onTooltipVisibilityChange}
           screenshotCount={screenshotCount}
-          currentLanguage={currentLanguage}
-          currentLocale={currentLocale}
-          setLanguage={setLanguage}
-          setLocale={setLocale}
         />
       </div>
     );

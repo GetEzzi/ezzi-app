@@ -18,7 +18,7 @@ export class LiveInterviewProcessor implements AppModeProcessor {
     params: ProcessingParams,
   ): Promise<ProcessingResult<SolveResponse>> {
     try {
-      const { images, language, isMock, locale, signal, headers } = params;
+      const { images, isMock, signal, headers } = params;
 
       const extractResponse = await axios.post<
         SolveRequest,
@@ -27,9 +27,7 @@ export class LiveInterviewProcessor implements AppModeProcessor {
         `${API_BASE_URL}${API_ENDPOINTS.SOLUTIONS.SOLVE}`,
         {
           images,
-          language,
           isMock,
-          locale,
         },
         {
           signal,
@@ -87,14 +85,14 @@ export class LiveInterviewProcessor implements AppModeProcessor {
     params: ProcessingParams,
   ): Promise<ProcessingResult<DebugResponse>> {
     try {
-      const { images, language, isMock, locale, signal, headers } = params;
+      const { images, isMock, signal, headers } = params;
 
       const response = await axios.post<
         DebugRequest,
         AxiosResponse<DebugResponse>
       >(
         `${API_BASE_URL}${API_ENDPOINTS.SOLUTIONS.DEBUG}`,
-        { images, language, isMock, locale },
+        { images, isMock },
         {
           signal,
           timeout: 300000,

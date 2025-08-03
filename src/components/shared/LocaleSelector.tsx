@@ -1,6 +1,6 @@
 import React from 'react';
-import { ProgrammingLanguage, UserLanguage } from '../../../shared/api';
-import { getStorageProvider } from '../../services/storage/index';
+import { UserLanguage } from '../../../shared/api';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const LANGUAGE_LABELS: Record<UserLanguage, string> = {
   [UserLanguage.EN_US]: 'English',
@@ -24,39 +24,38 @@ const LANGUAGE_LABELS: Record<UserLanguage, string> = {
   [UserLanguage.AR_EG]: 'العربية (EG)',
 };
 
-interface LanguageSelectorProps {
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLocale: (language: UserLanguage) => void;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface LocaleSelectorProps {}
 
-export const LocaleSelector: React.FC<LanguageSelectorProps> = ({
-  currentLocale,
-  setLocale,
-}) => {
-  const storageProvider = getStorageProvider();
+export const LocaleSelector: React.FC<LocaleSelectorProps> = () => {
+  const { userLanguage, updateUserLanguage, loading, error } = useSettings();
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value as UserLanguage;
-    storageProvider
-      .setUserLanguage(newLanguage)
-      .then(() => {
-        window.__LOCALE__ = newLanguage;
-        setLocale(newLanguage);
-      })
-      .catch((error) => {
-        console.error('Error updating language:', error);
-      });
+    updateUserLanguage(newLanguage).catch((error) => {
+      console.error('Error updating language:', error);
+    });
   };
+
+  if (error) {
+    return (
+      <div className="mb-3 px-2 space-y-1">
+        <div className="text-[11px] text-red-400">
+          Error loading locale settings
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-3 px-2 space-y-1">
       <div className="flex items-center justify-between text-[13px] font-medium text-white/90">
-        <span>Thoughts in</span>
+        <span>Thoughts in{loading ? ' (loading...)' : ''}</span>
         <select
-          value={currentLocale}
+          value={userLanguage}
           onChange={handleLanguageChange}
-          className="bg-white/10 rounded-sm px-2 py-1 text-sm outline-hidden border border-white/10 focus:border-white/20"
+          disabled={loading}
+          className="bg-white/10 rounded-sm px-2 py-1 text-sm outline-hidden border border-white/10 focus:border-white/20 disabled:opacity-50"
         >
           {Object.entries(LANGUAGE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>

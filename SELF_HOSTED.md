@@ -39,8 +39,6 @@ Process screenshots to generate initial solution with detailed analysis
 ```typescript
 interface SolveRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for solution
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 ```
@@ -49,8 +47,6 @@ interface SolveRequest {
 ```json
 {
   "images": ["base64image1", "base64image2"],
-  "language": "python",
-  "locale": "en-US",
   "isMock": false
 }
 ```
@@ -88,8 +84,6 @@ Process additional screenshots to debug/improve existing solution with detailed 
 ```typescript
 interface DebugRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for debugging
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 ```
@@ -98,8 +92,6 @@ interface DebugRequest {
 ```json
 {
   "images": ["base64image1", "base64image2"],
-  "language": "python",
-  "locale": "en-US",
   "isMock": false
 }
 ```
@@ -137,8 +129,6 @@ Process screenshots to generate code solution (streamlined response for speed)
 ```typescript
 interface LeetCodeSolveRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for solution
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 ```
@@ -147,8 +137,6 @@ interface LeetCodeSolveRequest {
 ```json
 {
   "images": ["base64image1", "base64image2"],
-  "language": "python",
-  "locale": "en-US",
   "isMock": false
 }
 ```
@@ -174,8 +162,6 @@ Process additional screenshots to debug/improve existing solution (streamlined r
 ```typescript
 interface LeetCodeDebugRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for debugging
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 ```
@@ -184,8 +170,6 @@ interface LeetCodeDebugRequest {
 ```json
 {
   "images": ["base64image1", "base64image2"],
-  "language": "python",
-  "locale": "en-US",
   "isMock": false
 }
 ```
@@ -290,13 +274,13 @@ app.use(cors());
 // Live Interview - Solve endpoint
 app.post('/solutions/solve', async (req, res) => {
   try {
-    const { images, language, locale, isMock } = req.body;
+    const { images, isMock } = req.body;
     
     // Handle mock mode
     if (isMock) {
       return res.json({
         thoughts: ["This is a mock response for testing"],
-        code: `def mock_solution():\n    return "Mock solution in ${language}"`,
+        code: `def mock_solution():\n    return "Mock solution"`,
         time_complexity: "O(1)",
         space_complexity: "O(1)",
         problem_statement: "Mock problem statement"
@@ -309,7 +293,7 @@ app.post('/solutions/solve', async (req, res) => {
     // 3. Generate solution using AI (OpenAI, Claude, etc.)
     // 4. Analyze complexity and provide detailed thoughts
     
-    const result = await processLiveInterviewSolve(images, language, locale);
+    const result = await processLiveInterviewSolve(images);
     
     res.json({
       thoughts: result.thoughts,
@@ -327,13 +311,13 @@ app.post('/solutions/solve', async (req, res) => {
 // Live Interview - Debug endpoint
 app.post('/solutions/debug', async (req, res) => {
   try {
-    const { images, language, locale, isMock } = req.body;
+    const { images, isMock } = req.body;
     
     // Handle mock mode
     if (isMock) {
       return res.json({
         thoughts: ["This is a mock debug response"],
-        code: `def improved_mock_solution():\n    return "Improved mock solution in ${language}"`,
+        code: `def improved_mock_solution():\n    return "Improved mock solution"`,
         time_complexity: "O(1)",
         space_complexity: "O(1)"
       });
@@ -344,7 +328,7 @@ app.post('/solutions/debug', async (req, res) => {
     // 2. Analyze existing code for issues
     // 3. Generate improved solution with detailed analysis
     
-    const result = await processLiveInterviewDebug(images, language, locale);
+    const result = await processLiveInterviewDebug(images);
     
     res.json({
       thoughts: result.thoughts,
@@ -365,12 +349,12 @@ app.post('/solutions/debug', async (req, res) => {
 // LeetCode - Solve endpoint
 app.post('/solutions/leetcode/solve', async (req, res) => {
   try {
-    const { images, language, locale, isMock } = req.body;
+    const { images, isMock } = req.body;
     
     // Handle mock mode
     if (isMock) {
       return res.json({
-        code: `def mock_leetcode_solution():\n    return "Mock LeetCode solution in ${language}"`
+        code: `def mock_leetcode_solution():\n    return "Mock LeetCode solution"`
       });
     }
     
@@ -378,7 +362,7 @@ app.post('/solutions/leetcode/solve', async (req, res) => {
     // 1. Process base64 images quickly
     // 2. Generate code solution (no detailed analysis needed)
     
-    const result = await processLeetCodeSolve(images, language, locale);
+    const result = await processLeetCodeSolve(images);
     
     res.json({
       code: result.code
@@ -392,12 +376,12 @@ app.post('/solutions/leetcode/solve', async (req, res) => {
 // LeetCode - Debug endpoint
 app.post('/solutions/leetcode/debug', async (req, res) => {
   try {
-    const { images, language, locale, isMock } = req.body;
+    const { images, isMock } = req.body;
     
     // Handle mock mode
     if (isMock) {
       return res.json({
-        code: `def improved_mock_leetcode_solution():\n    return "Improved mock LeetCode solution in ${language}"`
+        code: `def improved_mock_leetcode_solution():\n    return "Improved mock LeetCode solution"`
       });
     }
     
@@ -405,7 +389,7 @@ app.post('/solutions/leetcode/debug', async (req, res) => {
     // 1. Process images to understand the debugging request
     // 2. Generate improved code solution (streamlined response)
     
-    const result = await processLeetCodeDebug(images, language, locale);
+    const result = await processLeetCodeDebug(images);
     
     res.json({
       code: result.code
@@ -439,27 +423,27 @@ app.listen(PORT, () => {
 // Implement these functions with your chosen AI service
 
 // Live Interview processing functions
-async function processLiveInterviewSolve(images, language, locale) {
+async function processLiveInterviewSolve(images) {
   // Implement your AI processing logic here for detailed analysis
   // This is where you'd integrate with OpenAI, Claude, or your own AI models
   // Should return: { thoughts, code, timeComplexity, spaceComplexity, problemStatement }
   throw new Error('Live Interview solve processing not implemented');
 }
 
-async function processLiveInterviewDebug(images, language, locale) {
+async function processLiveInterviewDebug(images) {
   // Implement your debugging logic here for detailed analysis
   // Should return: { thoughts, code, timeComplexity, spaceComplexity }
   throw new Error('Live Interview debug processing not implemented');
 }
 
 // LeetCode processing functions
-async function processLeetCodeSolve(images, language, locale) {
+async function processLeetCodeSolve(images) {
   // Implement your AI processing logic here for quick code generation
   // Should return: { code }
   throw new Error('LeetCode solve processing not implemented');
 }
 
-async function processLeetCodeDebug(images, language, locale) {
+async function processLeetCodeDebug(images) {
   // Implement your debugging logic here for quick code improvement
   // Should return: { code }
   throw new Error('LeetCode debug processing not implemented');
@@ -493,8 +477,6 @@ app.add_middleware(
 # Shared request models
 class BaseRequest(BaseModel):
     images: List[str]
-    language: str
-    locale: str
     isMock: Optional[bool] = False
 
 # Live Interview models
@@ -541,16 +523,14 @@ async def solve_problem(request: SolveRequest):
         if request.isMock:
             return SolveResponse(
                 thoughts=["This is a mock response for testing"],
-                code=f"def mock_solution():\n    return 'Mock solution in {request.language}'",
+                code="def mock_solution():\n    return 'Mock solution'",
                 time_complexity="O(1)",
                 space_complexity="O(1)",
                 problem_statement="Mock problem statement"
             )
         
         # Your AI processing logic here for Live Interview mode
-        result = await process_live_interview_solve(
-            request.images, request.language, request.locale
-        )
+        result = await process_live_interview_solve(request.images)
         return result
         
     except Exception as e:
@@ -563,15 +543,13 @@ async def debug_solution(request: DebugRequest):
         if request.isMock:
             return DebugResponse(
                 thoughts=["This is a mock debug response"],
-                code=f"def improved_mock_solution():\n    return 'Improved mock solution in {request.language}'",
+                code="def improved_mock_solution():\n    return 'Improved mock solution'",
                 time_complexity="O(1)",
                 space_complexity="O(1)"
             )
         
         # Your debugging logic here for Live Interview mode
-        result = await process_live_interview_debug(
-            request.images, request.language, request.locale
-        )
+        result = await process_live_interview_debug(request.images)
         return result
         
     except Exception as e:
@@ -587,13 +565,11 @@ async def solve_leetcode_problem(request: LeetCodeSolveRequest):
     try:
         if request.isMock:
             return LeetCodeSolveResponse(
-                code=f"def mock_leetcode_solution():\n    return 'Mock LeetCode solution in {request.language}'"
+                code="def mock_leetcode_solution():\n    return 'Mock LeetCode solution'"
             )
         
         # Your AI processing logic here for LeetCode mode
-        result = await process_leetcode_solve(
-            request.images, request.language, request.locale
-        )
+        result = await process_leetcode_solve(request.images)
         return result
         
     except Exception as e:
@@ -605,13 +581,11 @@ async def debug_leetcode_solution(request: LeetCodeDebugRequest):
     try:
         if request.isMock:
             return LeetCodeDebugResponse(
-                code=f"def improved_mock_leetcode_solution():\n    return 'Improved mock LeetCode solution in {request.language}'"
+                code="def improved_mock_leetcode_solution():\n    return 'Improved mock LeetCode solution'"
             )
         
         # Your debugging logic here for LeetCode mode
-        result = await process_leetcode_debug(
-            request.images, request.language, request.locale
-        )
+        result = await process_leetcode_debug(request.images)
         return result
         
     except Exception as e:
@@ -638,24 +612,24 @@ async def health_check():
 # Implement these functions with your chosen AI service
 
 # Live Interview processing functions
-async def process_live_interview_solve(images: List[str], language: str, locale: str) -> SolveResponse:
+async def process_live_interview_solve(images: List[str]) -> SolveResponse:
     """Implement your AI processing logic here for detailed analysis"""
     # This is where you'd integrate with OpenAI, Claude, or your own AI models
     # Should return SolveResponse with: thoughts, code, time_complexity, space_complexity, problem_statement
     raise NotImplementedError("Live Interview solve processing not implemented")
 
-async def process_live_interview_debug(images: List[str], language: str, locale: str) -> DebugResponse:
+async def process_live_interview_debug(images: List[str]) -> DebugResponse:
     """Implement your debugging logic here for detailed analysis"""
     # Should return DebugResponse with: thoughts, code, time_complexity, space_complexity
     raise NotImplementedError("Live Interview debug processing not implemented")
 
 # LeetCode processing functions
-async def process_leetcode_solve(images: List[str], language: str, locale: str) -> LeetCodeSolveResponse:
+async def process_leetcode_solve(images: List[str]) -> LeetCodeSolveResponse:
     """Implement your AI processing logic here for quick code generation"""
     # Should return LeetCodeSolveResponse with: code
     raise NotImplementedError("LeetCode solve processing not implemented")
 
-async def process_leetcode_debug(images: List[str], language: str, locale: str) -> LeetCodeDebugResponse:
+async def process_leetcode_debug(images: List[str]) -> LeetCodeDebugResponse:
     """Implement your debugging logic here for quick code improvement"""
     # Should return LeetCodeDebugResponse with: code
     raise NotImplementedError("LeetCode debug processing not implemented")
@@ -681,10 +655,11 @@ if __name__ == "__main__":
 - Images typically contain screenshots of coding problems
 - Consider implementing proper error handling for invalid images
 
-### Localization
-- Response language is determined by the `locale` parameter
-- Code solutions should be in the specified `language` parameter
-- Thoughts and explanations should be in the user's preferred locale
+### Settings Management
+- User language and programming language preferences are managed through the client application settings
+- These settings are stored locally in self-hosted mode (or sent to backend via separate settings endpoints in cloud mode)
+- Self-hosted API endpoints do not receive language/locale parameters - responses can be in a default language
+- Programming language preferences are handled client-side for code display and syntax highlighting
 
 ### Mock Mode
 - When `isMock=true`, return predefined responses for testing
@@ -707,13 +682,40 @@ if __name__ == "__main__":
 
 ## Client Settings
 
-In self-hosted mode, user settings are stored locally in the browser:
+In self-hosted mode, user settings are stored locally in the browser and do not affect API requests:
 
 **Default Settings:**
-- Solution Language: Python
-- User Language: English (en-US)
+- Solution Language: Python (for client-side code display/syntax highlighting)
+- User Language: English (en-US) (for client-side UI)
 
-Users can change these settings through the application UI, and they will persist locally.
+**Settings Behavior:**
+- Users can change these settings through the application UI
+- Settings persist locally in browser storage
+- Settings do NOT affect the API request format (no language/locale parameters are sent)
+- Self-hosted implementations can respond in any language since localization is handled client-side
+- Programming language setting affects syntax highlighting and code display, not the actual API processing
+
+## API Design Changes (v2.0+)
+
+**Important:** Starting from version 2.0, the Ezzi API has been simplified:
+
+**What Changed:**
+- Removed `language` and `locale` parameters from all request interfaces
+- Language and locale preferences are now managed entirely client-side
+- Self-hosted implementations no longer need to handle localization in API endpoints
+
+**Migration from v1.x:**
+If you have an existing v1.x self-hosted implementation that expects `language` and `locale` parameters:
+1. Update your request handlers to not expect these parameters
+2. Remove language/locale-specific processing logic
+3. Return responses in your preferred default language
+4. The client will handle language preferences and code syntax highlighting
+
+**Benefits:**
+- Simplified API interface with fewer parameters
+- Reduced backend complexity (no localization logic needed)
+- Better performance (fewer parameters to process)
+- Client-side settings management provides better user experience
 
 ## Development Testing
 
