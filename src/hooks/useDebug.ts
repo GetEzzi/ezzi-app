@@ -107,6 +107,7 @@ export function useDebug(
 
     const cleanupFunctions = [
       window.electronAPI.onScreenshotTaken(() => refetch()),
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       window.electronAPI.onResetView(() => refetch()),
       window.electronAPI.onDebugSuccess(() => setIsProcessing(false)),
       window.electronAPI.onDebugStart(() => setIsProcessing(true)),
