@@ -12,12 +12,7 @@ import {
 } from './components/ui/toast';
 import { ToastContext } from './contexts/toast';
 import { AppModeProvider } from './contexts/appMode';
-import {
-  AuthenticatedUser,
-  ProgrammingLanguage,
-  SubscriptionLevel,
-  UserLanguage,
-} from '../shared/api';
+import { AuthenticatedUser, SubscriptionLevel } from '../shared/api';
 import { authService } from './services/auth.ts';
 import { getStorageProvider } from './services/storage';
 import { getAuthProvider } from './services/auth/index';
@@ -34,8 +29,6 @@ interface AppState {
   isInitialized: boolean;
   user: AuthenticatedUser | null;
   loading: boolean;
-  currentLanguage: ProgrammingLanguage;
-  userLocale: UserLanguage;
 }
 
 const queryClient = new QueryClient({
@@ -55,20 +48,9 @@ const queryClient = new QueryClient({
 interface AppContentProps {
   isInitialized: boolean;
   user: AuthenticatedUser;
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLanguage: (language: ProgrammingLanguage) => void;
-  setLocale: (language: UserLanguage) => void;
 }
 
-function AppContent({
-  isInitialized,
-  user,
-  currentLanguage,
-  currentLocale,
-  setLanguage,
-  setLocale,
-}: AppContentProps) {
+function AppContent({ isInitialized, user }: AppContentProps) {
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -157,14 +139,7 @@ function AppContent({
     return <SubscribePage user={user} />;
   }
 
-  return (
-    <SubscribedApp
-      currentLanguage={currentLanguage}
-      currentLocale={currentLocale}
-      setLanguage={setLanguage}
-      setLocale={setLocale}
-    />
-  );
+  return <SubscribedApp />;
 }
 
 function useAppInitialization() {
@@ -172,8 +147,6 @@ function useAppInitialization() {
     isInitialized: false,
     user: null,
     loading: true,
-    currentLanguage: ProgrammingLanguage.Python,
-    userLocale: UserLanguage.EN_US,
   });
 
   const [toastState, setToastState] = useState<ToastState>({
@@ -189,28 +162,6 @@ function useAppInitialization() {
   }>({
     isInitializing: false,
   });
-
-  const updateLanguage = useCallback((newLanguage: ProgrammingLanguage) => {
-    if (!mountedRef.current) {
-      return;
-    }
-    setAppState((prev) => ({
-      ...prev,
-      currentLanguage: newLanguage,
-    }));
-    window.__LANGUAGE__ = newLanguage;
-  }, []);
-
-  const updateLocale = useCallback((newLocale: UserLanguage) => {
-    if (!mountedRef.current) {
-      return;
-    }
-    setAppState((prev) => ({
-      ...prev,
-      userLocale: newLocale,
-    }));
-    window.__LOCALE__ = newLocale;
-  }, []);
 
   const markInitialized = useCallback(() => {
     if (!mountedRef.current) {
@@ -282,14 +233,11 @@ function useAppInitialization() {
       }
 
       try {
-        const userSettings = await getStorageProvider().getSettings();
+        await getStorageProvider().getSettings();
 
         if (!mountedRef.current) {
           return;
         }
-
-        updateLanguage(userSettings.solutionLanguage);
-        updateLocale(userSettings.userLanguage);
 
         markInitialized();
       } catch (settingsError) {
@@ -315,7 +263,7 @@ function useAppInitialization() {
         initializationRef.current.isInitializing = false;
       }
     }
-  }, [setAppState, updateLanguage, markInitialized, showToast, updateLocale]);
+  }, [setAppState, markInitialized, showToast]);
 
   const setUser = useCallback(
     async (user: AuthenticatedUser | null) => {
@@ -331,9 +279,7 @@ function useAppInitialization() {
         if (isSelfHosted()) {
           // In self-hosted mode, initialize settings directly
           try {
-            const userSettings = await getStorageProvider().getSettings();
-            updateLanguage(userSettings.solutionLanguage);
-            updateLocale(userSettings.userLanguage);
+            await getStorageProvider().getSettings();
             markInitialized();
           } catch (settingsError) {
             console.error(
@@ -348,7 +294,7 @@ function useAppInitialization() {
         }
       }
     },
-    [initializeApp, updateLanguage, updateLocale, markInitialized, showToast],
+    [initializeApp, markInitialized, showToast],
   );
 
   useEffect(() => {
@@ -365,22 +311,13 @@ function useAppInitialization() {
     toastState,
     setToastState,
     setUser,
-    updateLanguage,
     showToast,
-    updateLocale,
   };
 }
 
 function App() {
-  const {
-    appState,
-    toastState,
-    setToastState,
-    setUser,
-    updateLanguage,
-    showToast,
-    updateLocale,
-  } = useAppInitialization();
+  const { appState, toastState, setToastState, setUser, showToast } =
+    useAppInitialization();
 
   const loadingSpinner = useMemo(
     () => (
@@ -407,10 +344,6 @@ function App() {
               <AppContent
                 isInitialized={appState.isInitialized}
                 user={appState.user}
-                currentLanguage={appState.currentLanguage}
-                currentLocale={appState.userLocale}
-                setLanguage={updateLanguage}
-                setLocale={updateLocale}
               />
             ) : (
               <AuthForm

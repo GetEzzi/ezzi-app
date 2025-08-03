@@ -90,8 +90,6 @@ export interface AuthenticatedUser {
 
 export interface SolveRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for solution
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 
@@ -105,8 +103,6 @@ export interface SolveResponse {
 
 export interface DebugRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for debugging
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 
@@ -123,8 +119,6 @@ export interface DebugResponse {
 
 export interface LeetCodeSolveRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for solution
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 
@@ -134,8 +128,6 @@ export interface LeetCodeSolveResponse {
 
 export interface LeetCodeDebugRequest {
   images: string[]; // Array of base64-encoded images
-  language: string; // Programming language for debugging
-  locale: string; // User locale for response language
   isMock?: boolean; // Optional flag for mock responses
 }
 
@@ -173,9 +165,8 @@ export interface UserSettingsUpdateRequest {
  * - Check subscription level and remaining free solutions before processing
  *
  * LOCALIZATION:
- * - Response language is determined by 'locale' parameter
- * - Code solutions are in the specified 'language' parameter
- * - Thoughts and explanations are in the user's preferred locale
+ * - Response language and code solutions are handled by backend
+ * - User language and solution language preferences are managed via settings
  *
  * MOCK MODE:
  * - When isMock=true, return predefined responses for testing
