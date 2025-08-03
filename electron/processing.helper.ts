@@ -52,58 +52,6 @@ export class ProcessingHelper {
     throw new Error('App failed to initialize after 5 seconds');
   }
 
-  private async getLanguage(): Promise<string> {
-    const mainWindow = this.deps.getMainWindow();
-    if (!mainWindow) {
-      return 'python';
-    }
-
-    try {
-      await this.waitForInitialization(mainWindow);
-      const language: string = (await mainWindow.webContents.executeJavaScript(
-        'window.__LANGUAGE__',
-      )) as string;
-
-      if (typeof language !== 'string') {
-        console.warn('Language not properly initialized');
-
-        return 'python';
-      }
-
-      return language;
-    } catch (error) {
-      console.error('Error getting language:', error);
-
-      return 'python';
-    }
-  }
-
-  private async getLocale(): Promise<string> {
-    const mainWindow = this.deps.getMainWindow();
-    if (!mainWindow) {
-      return 'en-US';
-    }
-
-    try {
-      await this.waitForInitialization(mainWindow);
-      const locale = (await mainWindow.webContents.executeJavaScript(
-        'window.__LOCALE__',
-      )) as string;
-
-      if (typeof locale !== 'string') {
-        console.warn('Locale not properly initialized');
-
-        return 'en-US';
-      }
-
-      return locale;
-    } catch (error) {
-      console.error('Error getting locale:', error);
-
-      return 'python';
-    }
-  }
-
   private getAuthToken(): string | null {
     // In self-hosted mode, skip authentication
     if (isSelfHosted()) {
@@ -284,8 +232,6 @@ export class ProcessingHelper {
     try {
       const images = screenshots.map((screenshot) => screenshot.data);
       const mainWindow = this.deps.getMainWindow();
-      const language = await this.getLanguage();
-      const locale = await this.getLocale();
       const isMock = process.env.IS_MOCK === 'true';
       if (isMock) {
         console.log('Running mock mode');
@@ -319,8 +265,6 @@ export class ProcessingHelper {
 
       const processingParams: ProcessingParams = {
         images,
-        language,
-        locale,
         isMock,
         signal,
         headers,
@@ -366,8 +310,6 @@ export class ProcessingHelper {
   }> {
     try {
       const images = screenshots.map((screenshot) => screenshot.data);
-      const language = await this.getLanguage();
-      const locale = await this.getLocale();
       const token = this.getAuthToken();
       const isMock = process.env.IS_MOCK === 'true';
       if (isMock) {
@@ -396,8 +338,6 @@ export class ProcessingHelper {
 
       const processingParams: ProcessingParams = {
         images,
-        language,
-        locale,
         isMock,
         signal,
         headers,

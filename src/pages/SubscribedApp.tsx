@@ -3,21 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
-import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
 
-interface SubscribedAppProps {
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLanguage: (language: ProgrammingLanguage) => void;
-  setLocale: (language: UserLanguage) => void;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface SubscribedAppProps {}
 
-const SubscribedApp: React.FC<SubscribedAppProps> = ({
-  currentLanguage,
-  currentLocale,
-  setLanguage,
-  setLocale,
-}) => {
+const SubscribedApp: React.FC<SubscribedAppProps> = () => {
   const queryClient = useQueryClient();
   const [view, setView] = useState<'queue' | 'solutions' | 'debug'>('queue');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -114,15 +104,9 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({
     <AppModeLayoutProvider>
       <div ref={containerRef} className="min-h-0">
         {view === 'queue' ? (
-          <QueuePage
-            setView={setView}
-            currentLanguage={currentLanguage}
-            currentLocale={currentLocale}
-            setLanguage={setLanguage}
-            setLocale={setLocale}
-          />
+          <QueuePage setView={setView} />
         ) : view === 'solutions' ? (
-          <SolutionsPage setView={setView} currentLanguage={currentLanguage} />
+          <SolutionsPage setView={setView} />
         ) : null}
       </div>
     </AppModeLayoutProvider>

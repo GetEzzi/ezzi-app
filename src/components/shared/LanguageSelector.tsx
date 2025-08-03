@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
+import { ProgrammingLanguage } from '@shared/api.ts';
 import { getStorageProvider } from '../../services/storage/index';
 
 const LANGUAGE_LABELS: Record<ProgrammingLanguage, string> = {
@@ -17,25 +17,27 @@ const LANGUAGE_LABELS: Record<ProgrammingLanguage, string> = {
   [ProgrammingLanguage.PHP]: 'PHP',
 };
 
-interface LanguageSelectorProps {
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLanguage: (language: ProgrammingLanguage) => void;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface LanguageSelectorProps {}
 
-export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
-  currentLanguage,
-  setLanguage,
-}) => {
+export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
   const storageProvider = getStorageProvider();
+  const [currentLanguage, setCurrentLanguage] =
+    React.useState<ProgrammingLanguage>(ProgrammingLanguage.Python);
+
+  React.useEffect(() => {
+    storageProvider
+      .getSolutionLanguage()
+      .then(setCurrentLanguage)
+      .catch(console.error);
+  }, [storageProvider]);
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value as ProgrammingLanguage;
     storageProvider
       .setSolutionLanguage(newLanguage)
       .then(() => {
-        window.__LANGUAGE__ = newLanguage;
-        setLanguage(newLanguage);
+        setCurrentLanguage(newLanguage);
       })
       .catch((error) => {
         console.error('Error updating language:', error);

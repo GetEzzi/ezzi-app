@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProgrammingLanguage, UserLanguage } from '../../../shared/api';
+import { UserLanguage } from '../../../shared/api';
 import { getStorageProvider } from '../../services/storage/index';
 
 const LANGUAGE_LABELS: Record<UserLanguage, string> = {
@@ -24,25 +24,28 @@ const LANGUAGE_LABELS: Record<UserLanguage, string> = {
   [UserLanguage.AR_EG]: 'العربية (EG)',
 };
 
-interface LanguageSelectorProps {
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
-  setLocale: (language: UserLanguage) => void;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface LocaleSelectorProps {}
 
-export const LocaleSelector: React.FC<LanguageSelectorProps> = ({
-  currentLocale,
-  setLocale,
-}) => {
+export const LocaleSelector: React.FC<LocaleSelectorProps> = () => {
   const storageProvider = getStorageProvider();
+  const [currentLocale, setCurrentLocale] = React.useState<UserLanguage>(
+    UserLanguage.EN_US,
+  );
+
+  React.useEffect(() => {
+    storageProvider
+      .getUserLanguage()
+      .then(setCurrentLocale)
+      .catch(console.error);
+  }, [storageProvider]);
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value as UserLanguage;
     storageProvider
       .setUserLanguage(newLanguage)
       .then(() => {
-        window.__LOCALE__ = newLanguage;
-        setLocale(newLanguage);
+        setCurrentLocale(newLanguage);
       })
       .catch((error) => {
         console.error('Error updating language:', error);

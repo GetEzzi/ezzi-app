@@ -1,5 +1,4 @@
 import React from 'react';
-import { ProgrammingLanguage } from '@shared/api.ts';
 import { useSolutions } from '../hooks';
 import {
   useAppModeLayout,
@@ -16,13 +15,9 @@ import { useQueryClient } from '@tanstack/react-query';
 
 interface SolutionsPageProps {
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
-  currentLanguage: ProgrammingLanguage;
 }
 
-const SolutionsPage: React.FC<SolutionsPageProps> = ({
-  setView: _setView,
-  currentLanguage,
-}) => {
+const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
   const { isLiveInterview } = useAppModeLayout();
   const queryClient = useQueryClient();
   const {
@@ -44,7 +39,6 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({
       <DebugPage
         isProcessing={debugProcessing}
         setIsProcessing={setDebugProcessing}
-        currentLanguage={currentLanguage}
       />
     );
   }
@@ -72,7 +66,6 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({
       thoughtsData={thoughtsData}
       timeComplexityData={timeComplexityData}
       spaceComplexityData={spaceComplexityData}
-      currentLanguage={currentLanguage}
       isGenerating={!solutionData}
     />
   );

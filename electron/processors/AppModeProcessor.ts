@@ -13,8 +13,6 @@ export interface ProcessingResult<T = any> {
 
 export interface ProcessingParams {
   images: string[];
-  language: string;
-  locale: string;
   isMock: boolean;
   signal: AbortSignal;
   headers: Record<string, string>;

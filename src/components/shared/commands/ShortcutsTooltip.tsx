@@ -4,7 +4,7 @@ import { sendToElectron } from '../../../utils/electron';
 import { IPC_EVENTS } from '@shared/constants.ts';
 import { LocaleSelector } from '../LocaleSelector.tsx';
 import { AppModeSelector } from '../AppModeSelector';
-import { ProgrammingLanguage, UserLanguage, AppMode } from '@shared/api.ts';
+import { AppMode } from '@shared/api.ts';
 
 export interface ShortcutItem {
   label: string;
@@ -16,26 +16,18 @@ export interface ShortcutItem {
 interface ShortcutsTooltipProps {
   tooltipRef: React.RefObject<HTMLDivElement | null>;
   shortcuts: ShortcutItem[];
-  currentLanguage: ProgrammingLanguage;
-  currentLocale: UserLanguage;
   currentAppMode: AppMode;
-  setLanguage: (language: ProgrammingLanguage) => void;
   onSignOut: () => void;
   className?: string;
-  setLocale: (language: UserLanguage) => void;
   setAppMode: (appMode: AppMode) => void;
 }
 
 const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
   tooltipRef,
   shortcuts,
-  currentLanguage,
-  currentLocale,
   currentAppMode,
-  setLanguage,
   onSignOut,
   className = '',
-  setLocale,
   setAppMode,
 }) => {
   return (
@@ -85,17 +77,9 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
               setAppMode={setAppMode}
             />
 
-            <LanguageSelector
-              currentLanguage={currentLanguage}
-              currentLocale={currentLocale}
-              setLanguage={setLanguage}
-            />
+            <LanguageSelector />
 
-            <LocaleSelector
-              currentLanguage={currentLanguage}
-              currentLocale={currentLocale}
-              setLocale={setLocale}
-            />
+            <LocaleSelector />
 
             <div className="flex items-center justify-between">
               <button
