@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
+import { SettingsProvider } from '../contexts/SettingsContext';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface SubscribedAppProps {}
@@ -101,15 +102,17 @@ const SubscribedApp: React.FC<SubscribedAppProps> = () => {
   }, [view]);
 
   return (
-    <AppModeLayoutProvider>
-      <div ref={containerRef} className="min-h-0">
-        {view === 'queue' ? (
-          <QueuePage setView={setView} />
-        ) : view === 'solutions' ? (
-          <SolutionsPage setView={setView} />
-        ) : null}
-      </div>
-    </AppModeLayoutProvider>
+    <SettingsProvider>
+      <AppModeLayoutProvider>
+        <div ref={containerRef} className="min-h-0">
+          {view === 'queue' ? (
+            <QueuePage setView={setView} />
+          ) : view === 'solutions' ? (
+            <SolutionsPage setView={setView} />
+          ) : null}
+        </div>
+      </AppModeLayoutProvider>
+    </SettingsProvider>
   );
 };
 

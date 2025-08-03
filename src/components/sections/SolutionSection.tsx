@@ -2,9 +2,8 @@ import React from 'react';
 import SolutionContent from '../Solutions/SolutionContent';
 import ThoughtsList from '../Solutions/ThoughtsList';
 import CodeBlock from '../Solutions/CodeBlock';
-import { ProgrammingLanguage } from '../../../shared/api';
 import { useAppModeLayout } from '../../layouts';
-import { getStorageProvider } from '../../services/storage';
+import { useSettings } from '../../contexts/SettingsContext';
 
 interface SolutionSectionProps {
   solutionData?: string | null;
@@ -16,7 +15,7 @@ interface SolutionSectionProps {
   className?: string;
 }
 
-export const SolutionSection: React.FC<SolutionSectionProps> = ({
+const SolutionSectionInner: React.FC<SolutionSectionProps> = ({
   solutionData,
   thoughtsData,
   timeComplexityData,
@@ -26,15 +25,8 @@ export const SolutionSection: React.FC<SolutionSectionProps> = ({
   className = '',
 }) => {
   const { isLeetcodeSolver } = useAppModeLayout();
-  const [currentLanguage, setCurrentLanguage] =
-    React.useState<ProgrammingLanguage>(ProgrammingLanguage.Python);
-
-  React.useEffect(() => {
-    getStorageProvider()
-      .getSolutionLanguage()
-      .then(setCurrentLanguage)
-      .catch(console.error);
-  }, []);
+  const { solutionLanguage } = useSettings();
+  const currentLanguage = solutionLanguage;
 
   if (isGenerating) {
     return (
@@ -129,3 +121,6 @@ export const SolutionSection: React.FC<SolutionSectionProps> = ({
     </div>
   );
 };
+
+export const SolutionSection: React.FC<SolutionSectionProps> =
+  SolutionSectionInner;

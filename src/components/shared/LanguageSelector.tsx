@@ -1,6 +1,6 @@
 import React from 'react';
 import { ProgrammingLanguage } from '@shared/api.ts';
-import { getStorageProvider } from '../../services/storage/index';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const LANGUAGE_LABELS: Record<ProgrammingLanguage, string> = {
   [ProgrammingLanguage.Python]: 'Python',
@@ -21,37 +21,35 @@ const LANGUAGE_LABELS: Record<ProgrammingLanguage, string> = {
 interface LanguageSelectorProps {}
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
-  const storageProvider = getStorageProvider();
-  const [currentLanguage, setCurrentLanguage] =
-    React.useState<ProgrammingLanguage>(ProgrammingLanguage.Python);
-
-  React.useEffect(() => {
-    storageProvider
-      .getSolutionLanguage()
-      .then(setCurrentLanguage)
-      .catch(console.error);
-  }, [storageProvider]);
+  const { solutionLanguage, updateSolutionLanguage, loading, error } =
+    useSettings();
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value as ProgrammingLanguage;
-    storageProvider
-      .setSolutionLanguage(newLanguage)
-      .then(() => {
-        setCurrentLanguage(newLanguage);
-      })
-      .catch((error) => {
-        console.error('Error updating language:', error);
-      });
+    updateSolutionLanguage(newLanguage).catch((error) => {
+      console.error('Error updating language:', error);
+    });
   };
+
+  if (error) {
+    return (
+      <div className="mb-3 px-2 space-y-1">
+        <div className="text-[11px] text-red-400">
+          Error loading language settings
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-3 px-2 space-y-1">
       <div className="flex items-center justify-between text-[13px] font-medium text-white/90">
-        <span>Code in</span>
+        <span>Code in{loading ? ' (loading...)' : ''}</span>
         <select
-          value={currentLanguage}
+          value={solutionLanguage}
           onChange={handleLanguageChange}
-          className="bg-white/10 rounded-sm px-2 py-1 text-sm outline-hidden border border-white/10 focus:border-white/20"
+          disabled={loading}
+          className="bg-white/10 rounded-sm px-2 py-1 text-sm outline-hidden border border-white/10 focus:border-white/20 disabled:opacity-50"
         >
           {Object.entries(LANGUAGE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>

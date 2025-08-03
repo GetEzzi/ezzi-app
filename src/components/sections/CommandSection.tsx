@@ -1,10 +1,7 @@
 import React from 'react';
 import QueueCommands from '../Queue/QueueCommands';
 import SolutionCommands from '../Solutions/SolutionCommands';
-import {
-  Screenshot,
-} from '../../../shared/api';
-// import { useAppModeLayout } from '../../layouts'; // For future mode-specific styling
+import { Screenshot } from '../../../shared/api';
 
 type CommandSectionMode = 'queue' | 'solutions' | 'debug';
 
