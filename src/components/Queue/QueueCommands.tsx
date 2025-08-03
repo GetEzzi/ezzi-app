@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  AuthenticatedUser,
-  SubscriptionLevel,
-} from '../../../shared/api';
+import { AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
 import { COMMAND_KEY } from '../../utils/platform';
 import { authService } from '../../services/auth.ts';
 import { useAppMode } from '../../contexts/appMode';

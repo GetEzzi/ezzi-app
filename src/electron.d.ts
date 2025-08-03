@@ -32,14 +32,7 @@ export interface ElectronAPI {
       >
     >,
   ) => () => Promise<void>;
-  onResetView: (
-    callback: () => Promise<
-      QueryObserverResult<
-        [TQueryFnData][TQueryFnData extends any ? 0 : never],
-        Register extends { defaultError: infer TError } ? TError : Error
-      >
-    >,
-  ) => () => Promise<void>;
+  onResetView: (callback: () => void) => () => Promise<void>;
   onSolutionStart: (callback: () => void) => () => void;
   onDebugStart: (callback: () => void) => () => void;
   onDebugSuccess: (callback: (data: any) => void) => () => void;
