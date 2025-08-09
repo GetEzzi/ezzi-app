@@ -85,14 +85,22 @@ export class LeetCodeProcessor implements AppModeProcessor {
     params: ProcessingParams,
   ): Promise<ProcessingResult<LeetCodeDebugResponse>> {
     try {
-      const { images, isMock, signal, headers } = params;
+      const { images, isMock, signal, headers, conversationId } = params;
+
+      if (!conversationId) {
+        return {
+          success: false,
+          error:
+            'Conversation ID is required for debug requests. Please solve a problem first.',
+        };
+      }
 
       const response = await axios.post<
         LeetCodeDebugRequest,
         AxiosResponse<LeetCodeDebugResponse>
       >(
         `${API_BASE_URL}${API_ENDPOINTS.LEETCODE.DEBUG}`,
-        { images, isMock },
+        { images, conversationId, isMock },
         {
           signal,
           timeout: 300000,
