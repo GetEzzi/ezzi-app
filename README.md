@@ -93,6 +93,8 @@ The application supports various configuration options through environment varia
 
 Ezzi remains completely invisible during coding interviews across all major platforms.
 
+📋 **[Complete Undetectability Guide](UNDETECTABILITY.md)** - Comprehensive documentation covering all stealth features, detection evasion techniques, and platform-specific compatibility details.
+
 ### Works anywhere. Stays invisible.
 
 From HackerRank to CoderPad, Ezzi runs in the background — undetectable, seamless, and always on your side.
