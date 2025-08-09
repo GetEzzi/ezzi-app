@@ -278,6 +278,11 @@ export class ProcessingHelper {
 
       const solutionData = result.data;
 
+      if (solutionData && 'conversationId' in solutionData) {
+        this.deps.setConversationId(solutionData.conversationId);
+        console.log('Stored conversationId:', solutionData.conversationId);
+      }
+
       this.screenshotHelper.clearExtraScreenshotQueue();
       mainWindow.webContents.send(
         this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
@@ -341,11 +346,10 @@ export class ProcessingHelper {
         isMock,
         signal,
         headers,
+        conversationId: this.deps.getConversationId() || undefined,
       };
 
-      const result = await processor.processDebug(processingParams);
-
-      return result;
+      return await processor.processDebug(processingParams);
     } catch (error: unknown) {
       console.error('Debug Processing Helper Error:', error);
 

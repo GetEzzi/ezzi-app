@@ -16,6 +16,7 @@ export interface ProcessingParams {
   isMock: boolean;
   signal: AbortSignal;
   headers: Record<string, string>;
+  conversationId?: string;
 }
 
 export interface AppModeProcessor {

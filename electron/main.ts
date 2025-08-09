@@ -28,6 +28,7 @@ const state = {
   view: 'queue' as 'queue' | 'solutions' | 'debug',
   hasDebugged: false,
   appMode: AppMode.LIVE_INTERVIEW as AppMode,
+  conversationId: null as string | null,
 
   PROCESSING_EVENTS: {
     UNAUTHORIZED: 'processing-unauthorized',
@@ -58,6 +59,8 @@ export interface IProcessingHelperDeps {
   setHasDebugged: (value: boolean) => void;
   getHasDebugged: () => boolean;
   getAppMode: () => AppMode;
+  getConversationId: () => string | null;
+  setConversationId: (conversationId: string | null) => void;
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
 }
 
@@ -122,6 +125,8 @@ function initializeHelpers() {
     setHasDebugged,
     getHasDebugged,
     getAppMode,
+    getConversationId,
+    setConversationId,
     PROCESSING_EVENTS: state.PROCESSING_EVENTS,
   } as IProcessingHelperDeps);
   state.shortcutsHelper = new ShortcutsHelper({
@@ -687,6 +692,14 @@ function setAppMode(appMode: AppMode): void {
   state.appMode = appMode;
 }
 
+function getConversationId(): string | null {
+  return state.conversationId;
+}
+
+function setConversationId(conversationId: string | null): void {
+  state.conversationId = conversationId;
+}
+
 function getScreenshotHelper(): ScreenshotHelper | null {
   return state.screenshotHelper;
 }
@@ -701,6 +714,7 @@ function getExtraScreenshotQueue(): string[] {
 
 function clearQueues(): void {
   state.screenshotHelper?.clearQueues();
+  state.conversationId = null;
   setView('queue');
 }
 
@@ -857,6 +871,8 @@ export {
   deleteScreenshot,
   setHasDebugged,
   getHasDebugged,
+  getConversationId,
+  setConversationId,
   applyQueueWindowBehavior,
   preserveWindowPosition,
 };
