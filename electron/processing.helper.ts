@@ -154,11 +154,10 @@ export class ProcessingHelper {
         this.currentProcessingAbortController = null;
       }
     } else {
-      // view == 'solutions'
-      const extraScreenshotQueue =
-        this.screenshotHelper.getExtraScreenshotQueue();
-      console.log('Processing extra queue screenshots:', extraScreenshotQueue);
-      if (extraScreenshotQueue.length === 0) {
+      // view == 'solutions' or 'debug' - process debug screenshots
+      const screenshotQueue = this.screenshotHelper.getScreenshotQueue();
+      console.log('Processing debug screenshots:', screenshotQueue);
+      if (screenshotQueue.length === 0) {
         mainWindow.webContents.send(this.deps.PROCESSING_EVENTS.NO_SCREENSHOTS);
 
         return;
@@ -171,17 +170,14 @@ export class ProcessingHelper {
 
       try {
         const screenshots = await Promise.all(
-          [
-            ...this.screenshotHelper.getScreenshotQueue(),
-            ...extraScreenshotQueue,
-          ].map(async (path) => ({
+          screenshotQueue.map(async (path) => ({
             path,
             preview: await this.screenshotHelper.getImagePreview(path),
             data: fs.readFileSync(path).toString('base64'),
           })),
         );
         console.log(
-          'Combined screenshots for processing:',
+          'Debug screenshots for processing:',
           screenshots.map((s) => s.path),
         );
 
@@ -203,11 +199,11 @@ export class ProcessingHelper {
           );
         }
       } catch (error: any) {
-        console.error('Extra processing error:', error);
+        console.error('Debug processing error:', error);
         if (axios.isCancel(error)) {
           mainWindow.webContents.send(
             this.deps.PROCESSING_EVENTS.DEBUG_ERROR,
-            'Extra processing was canceled by the user.',
+            'Debug processing was canceled by the user.',
           );
         } else {
           mainWindow.webContents.send(
@@ -283,7 +279,6 @@ export class ProcessingHelper {
         console.log('Stored conversationId:', solutionData.conversationId);
       }
 
-      this.screenshotHelper.clearExtraScreenshotQueue();
       mainWindow.webContents.send(
         this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
         solutionData,
@@ -378,8 +373,9 @@ export class ProcessingHelper {
       wasCancelled = true;
     }
 
-    // Reset hasDebugged flag
+    // Reset hasDebugged flag and reset screenshot queue for debug
     this.deps.setHasDebugged(false);
+    this.screenshotHelper.resetQueue();
 
     const mainWindow = this.deps.getMainWindow();
     if (wasCancelled && mainWindow && !mainWindow.isDestroyed()) {

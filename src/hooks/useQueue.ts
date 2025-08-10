@@ -79,6 +79,7 @@ export function useQueue() {
     }
 
     const cleanupFunctions = [
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       window.electronAPI.onScreenshotTaken(() => refetch()),
       window.electronAPI.onResetView(() => {
         queryClient.removeQueries({

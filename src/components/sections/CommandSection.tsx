@@ -13,7 +13,6 @@ interface CommandSectionProps {
   // Solutions/Debug mode props
   isProcessing?: boolean;
   screenshots?: Screenshot[];
-  extraScreenshots?: Screenshot[];
   className?: string;
 }
 
@@ -23,7 +22,6 @@ export const CommandSection: React.FC<CommandSectionProps> = ({
   screenshotCount = 0,
   isProcessing = false,
   screenshots = [],
-  extraScreenshots = [],
   className = '',
 }) => {
   // const { isLeetcodeSolver } = useAppModeLayout(); // For future use
@@ -49,7 +47,6 @@ export const CommandSection: React.FC<CommandSectionProps> = ({
         <SolutionCommands
           isProcessing={isProcessing}
           screenshots={screenshots}
-          extraScreenshots={extraScreenshots}
         />
       </div>
     );

@@ -27,9 +27,9 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
     timeComplexityData,
     spaceComplexityData,
     isResetting,
-    extraScreenshots,
+    screenshots,
     contentRef,
-    handleDeleteExtraScreenshot,
+    handleDeleteScreenshot,
     setDebugProcessing,
   } = useSolutions();
 
@@ -44,10 +44,10 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
   }
 
   const screenshotSection =
-    solutionData && extraScreenshots.length > 0 ? (
+    solutionData && screenshots.length > 0 ? (
       <ScreenshotSection
-        screenshots={extraScreenshots}
-        onDeleteScreenshot={handleDeleteExtraScreenshot}
+        screenshots={screenshots}
+        onDeleteScreenshot={handleDeleteScreenshot}
         isLoading={debugProcessing}
       />
     ) : null;
@@ -56,7 +56,7 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
     <CommandSection
       mode="solutions"
       isProcessing={!solutionData}
-      extraScreenshots={extraScreenshots}
+      screenshots={screenshots}
     />
   );
 
