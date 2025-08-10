@@ -22,7 +22,7 @@ export function useSolutions() {
     null,
   );
   const [isResetting, setIsResetting] = useState(false);
-  const [extraScreenshots, setExtraScreenshots] = useState<Screenshot[]>([]);
+  const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
 
   const fetchScreenshots = async () => {
     try {
@@ -35,15 +35,15 @@ export function useSolutions() {
           timestamp: Date.now(),
         }),
       );
-      setExtraScreenshots(screenshots);
+      setScreenshots(screenshots);
     } catch (error) {
-      console.error('Error loading extra screenshots:', error);
-      setExtraScreenshots([]);
+      console.error('Error loading screenshots:', error);
+      setScreenshots([]);
     }
   };
 
-  const handleDeleteExtraScreenshot = async (index: number) => {
-    const screenshotToDelete = extraScreenshots[index];
+  const handleDeleteScreenshot = async (index: number) => {
+    const screenshotToDelete = screenshots[index];
 
     try {
       const response = await window.electronAPI.deleteScreenshot(
@@ -60,13 +60,13 @@ export function useSolutions() {
             timestamp: Date.now(),
           }),
         );
-        setExtraScreenshots(screenshots);
+        setScreenshots(screenshots);
       } else {
-        console.error('Failed to delete extra screenshot:', response.error);
+        console.error('Failed to delete screenshot:', response.error);
         showToast('Error', 'Failed to delete the screenshot', 'error');
       }
     } catch (error) {
-      console.error('Error deleting extra screenshot:', error);
+      console.error('Error deleting screenshot:', error);
       showToast('Error', 'Failed to delete the screenshot', 'error');
     }
   };
@@ -115,7 +115,7 @@ export function useSolutions() {
         setIsResetting(true);
         queryClient.removeQueries({ queryKey: ['solution'] });
         queryClient.removeQueries({ queryKey: ['new_solution'] });
-        setExtraScreenshots([]);
+        setScreenshots([]);
         setTimeout(() => setIsResetting(false), 0);
       }),
       window.electronAPI.onSolutionStart(() => {
@@ -151,7 +151,7 @@ export function useSolutions() {
           setSpaceComplexityData(
             'space_complexity' in data ? data.space_complexity || null : null,
           );
-          setExtraScreenshots([]);
+          setScreenshots([]);
         },
       ),
       window.electronAPI.onDebugStart(() => setDebugProcessing(true)),
@@ -170,7 +170,7 @@ export function useSolutions() {
       window.electronAPI.onProcessingNoScreenshots(() => {
         showToast(
           'No Screenshots',
-          'There are no extra screenshots to process.',
+          'There are no screenshots to process.',
           'neutral',
         );
       }),
@@ -212,9 +212,9 @@ export function useSolutions() {
     timeComplexityData,
     spaceComplexityData,
     isResetting,
-    extraScreenshots,
+    screenshots,
     contentRef,
-    handleDeleteExtraScreenshot,
+    handleDeleteScreenshot,
     setDebugProcessing,
   };
 }

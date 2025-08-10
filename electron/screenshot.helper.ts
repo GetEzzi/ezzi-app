@@ -9,11 +9,9 @@ const execFileAsync = promisify(execFile);
 
 export class ScreenshotHelper {
   private screenshotQueue: string[] = [];
-  private extraScreenshotQueue: string[] = [];
   private readonly MAX_SCREENSHOTS = 2;
 
   private readonly screenshotDir: string;
-  private readonly extraScreenshotDir: string;
 
   private view: 'queue' | 'solutions' | 'debug' = 'queue';
 
@@ -22,17 +20,10 @@ export class ScreenshotHelper {
 
     // Initialize directories
     this.screenshotDir = path.join(app.getPath('userData'), 'screenshots');
-    this.extraScreenshotDir = path.join(
-      app.getPath('userData'),
-      'extra_screenshots',
-    );
 
     // Create directories if they don't exist
     if (!fs.existsSync(this.screenshotDir)) {
       fs.mkdirSync(this.screenshotDir);
-    }
-    if (!fs.existsSync(this.extraScreenshotDir)) {
-      fs.mkdirSync(this.extraScreenshotDir);
     }
   }
 
@@ -42,23 +33,12 @@ export class ScreenshotHelper {
 
   public setView(view: 'queue' | 'solutions' | 'debug'): void {
     console.log('Setting view in ScreenshotHelper:', view);
-    console.log(
-      'Current queues - Main:',
-      this.screenshotQueue,
-      'Extra:',
-      this.extraScreenshotQueue,
-    );
+    console.log('Current queue:', this.screenshotQueue);
     this.view = view;
   }
 
   public getScreenshotQueue(): string[] {
     return this.screenshotQueue;
-  }
-
-  public getExtraScreenshotQueue(): string[] {
-    console.log('Getting extra screenshot queue:', this.extraScreenshotQueue);
-
-    return this.extraScreenshotQueue;
   }
 
   public clearQueues(): void {
@@ -71,19 +51,6 @@ export class ScreenshotHelper {
       });
     });
     this.screenshotQueue = [];
-
-    // Clear extraScreenshotQueue
-    this.extraScreenshotQueue.forEach((screenshotPath) => {
-      fs.unlink(screenshotPath, (err) => {
-        if (err) {
-          console.error(
-            `Error deleting extra screenshot at ${screenshotPath}:`,
-            err,
-          );
-        }
-      });
-    });
-    this.extraScreenshotQueue = [];
   }
 
   private async captureScreenshotMac(): Promise<Buffer> {
@@ -185,44 +152,19 @@ export class ScreenshotHelper {
       }
       console.log('Screenshot captured, saving to file...');
 
-      // Save and manage the screenshot based on current view
-      if (this.view === 'queue') {
-        screenshotPath = path.join(this.screenshotDir, `${uuidv4()}.png`);
-        await fs.promises.writeFile(screenshotPath, screenshotBuffer);
-        console.log('Adding screenshot to main queue:', screenshotPath);
-        this.screenshotQueue.push(screenshotPath);
-        if (this.screenshotQueue.length > this.MAX_SCREENSHOTS) {
-          const removedPath = this.screenshotQueue.shift();
-          if (removedPath) {
-            try {
-              await fs.promises.unlink(removedPath);
-              console.log(
-                'Removed old screenshot from main queue:',
-                removedPath,
-              );
-            } catch (error) {
-              console.error('Error removing old screenshot:', error);
-            }
-          }
-        }
-      } else {
-        // In solutions view, only add to extra queue
-        screenshotPath = path.join(this.extraScreenshotDir, `${uuidv4()}.png`);
-        await fs.promises.writeFile(screenshotPath, screenshotBuffer);
-        console.log('Adding screenshot to extra queue:', screenshotPath);
-        this.extraScreenshotQueue.push(screenshotPath);
-        if (this.extraScreenshotQueue.length > this.MAX_SCREENSHOTS) {
-          const removedPath = this.extraScreenshotQueue.shift();
-          if (removedPath) {
-            try {
-              await fs.promises.unlink(removedPath);
-              console.log(
-                'Removed old screenshot from extra queue:',
-                removedPath,
-              );
-            } catch (error) {
-              console.error('Error removing old screenshot:', error);
-            }
+      // Save and manage screenshot in single queue
+      screenshotPath = path.join(this.screenshotDir, `${uuidv4()}.png`);
+      await fs.promises.writeFile(screenshotPath, screenshotBuffer);
+      console.log('Adding screenshot to queue:', screenshotPath);
+      this.screenshotQueue.push(screenshotPath);
+      if (this.screenshotQueue.length > this.MAX_SCREENSHOTS) {
+        const removedPath = this.screenshotQueue.shift();
+        if (removedPath) {
+          try {
+            await fs.promises.unlink(removedPath);
+            console.log('Removed old screenshot from queue:', removedPath);
+          } catch (error) {
+            console.error('Error removing old screenshot:', error);
           }
         }
       }
@@ -256,15 +198,9 @@ export class ScreenshotHelper {
   ): Promise<{ success: boolean; error?: string }> {
     try {
       await fs.promises.unlink(path);
-      if (this.view === 'queue') {
-        this.screenshotQueue = this.screenshotQueue.filter(
-          (filePath) => filePath !== path,
-        );
-      } else {
-        this.extraScreenshotQueue = this.extraScreenshotQueue.filter(
-          (filePath) => filePath !== path,
-        );
-      }
+      this.screenshotQueue = this.screenshotQueue.filter(
+        (filePath) => filePath !== path,
+      );
 
       console.log('Screenshot deleted', path);
 
@@ -276,18 +212,16 @@ export class ScreenshotHelper {
     }
   }
 
-  public clearExtraScreenshotQueue(): void {
-    // Clear extraScreenshotQueue
-    this.extraScreenshotQueue.forEach((screenshotPath) => {
+  public resetQueue(): void {
+    console.log('Resetting screenshot queue');
+    // Clear current queue for fresh session
+    this.screenshotQueue.forEach((screenshotPath) => {
       fs.unlink(screenshotPath, (err) => {
         if (err) {
-          console.error(
-            `Error deleting extra screenshot at ${screenshotPath}:`,
-            err,
-          );
+          console.error(`Error deleting screenshot at ${screenshotPath}:`, err);
         }
       });
     });
-    this.extraScreenshotQueue = [];
+    this.screenshotQueue = [];
   }
 }

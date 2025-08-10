@@ -10,12 +10,11 @@ import { authService } from '../../services/auth.ts';
 export interface SolutionCommandsProps {
   isProcessing: boolean;
   screenshots?: Screenshot[];
-  extraScreenshots?: Screenshot[];
 }
 
 const SolutionCommands: React.FC<SolutionCommandsProps> = ({
   isProcessing,
-  extraScreenshots = [],
+  screenshots = [],
 }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
 
@@ -44,14 +43,14 @@ const SolutionCommands: React.FC<SolutionCommandsProps> = ({
               <>
                 <CommandButton
                   label={
-                    extraScreenshots.length === 0
+                    screenshots.length === 0
                       ? 'Screenshot your code'
                       : 'Screenshot'
                   }
                   shortcut="H"
                 />
 
-                {extraScreenshots.length > 0 && (
+                {screenshots.length > 0 && (
                   <CommandButton label="Debug" shortcut="↵" />
                 )}
               </>

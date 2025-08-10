@@ -49,7 +49,7 @@ export function useDebug(
     null,
   );
 
-  const handleDeleteExtraScreenshot = async (index: number) => {
+  const handleDeleteScreenshot = async (index: number) => {
     const screenshotToDelete = screenshots[index];
 
     try {
@@ -60,10 +60,10 @@ export function useDebug(
       if (response.success) {
         await refetch();
       } else {
-        console.error('Failed to delete extra screenshot:', response.error);
+        console.error('Failed to delete screenshot:', response.error);
       }
     } catch (error) {
-      console.error('Error deleting extra screenshot:', error);
+      console.error('Error deleting screenshot:', error);
     }
   };
 
@@ -106,6 +106,7 @@ export function useDebug(
     }
 
     const cleanupFunctions = [
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       window.electronAPI.onScreenshotTaken(() => refetch()),
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       window.electronAPI.onResetView(() => refetch()),
@@ -141,7 +142,7 @@ export function useDebug(
     timeComplexityData,
     spaceComplexityData,
     contentRef,
-    handleDeleteExtraScreenshot,
+    handleDeleteScreenshot,
     refetch,
   };
 }
