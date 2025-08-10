@@ -1,15 +1,18 @@
-import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
 import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
 import { SettingsProvider } from '../contexts/SettingsContext';
+import {
+  SolutionProvider,
+  useSolutionContext,
+} from '../contexts/SolutionContext';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface SubscribedAppProps {}
 
-const SubscribedApp: React.FC<SubscribedAppProps> = () => {
-  const queryClient = useQueryClient();
+const SubscribedAppContent: React.FC = () => {
+  const { clearAll } = useSolutionContext();
   const [view, setView] = useState<'queue' | 'solutions' | 'debug'>('queue');
   const containerRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
@@ -60,37 +63,11 @@ const SubscribedApp: React.FC<SubscribedAppProps> = () => {
         setView('solutions');
       }),
       window.electronAPI.onUnauthorized(() => {
-        queryClient.removeQueries({
-          queryKey: ['screenshots'],
-        });
-        queryClient.removeQueries({
-          queryKey: ['solution'],
-        });
+        clearAll();
         setView('queue');
       }),
       window.electronAPI.onResetView(() => {
-        queryClient.removeQueries({
-          queryKey: ['screenshots'],
-        });
-        queryClient.removeQueries({
-          queryKey: ['solution'],
-        });
-
-        // Query cleanup
-        const queryKeys = [
-          'screenshots',
-          'problem_statement',
-          'solution',
-          'new_solution',
-        ];
-        Promise.all(
-          queryKeys.map((key) =>
-            queryClient.invalidateQueries({
-              queryKey: [key],
-            }),
-          ),
-        ).catch(console.error);
-
+        clearAll();
         setView('queue');
       }),
       window.electronAPI.onSolutionError((error: string) => {
@@ -99,19 +76,27 @@ const SubscribedApp: React.FC<SubscribedAppProps> = () => {
     ];
 
     return () => cleanupFunctions.forEach((fn) => fn());
-  }, [view]);
+  }, [clearAll, showToast]);
 
   return (
+    <AppModeLayoutProvider>
+      <div ref={containerRef} className="min-h-0">
+        {view === 'queue' ? (
+          <QueuePage setView={setView} />
+        ) : view === 'solutions' ? (
+          <SolutionsPage setView={setView} />
+        ) : null}
+      </div>
+    </AppModeLayoutProvider>
+  );
+};
+
+const SubscribedApp: React.FC<SubscribedAppProps> = () => {
+  return (
     <SettingsProvider>
-      <AppModeLayoutProvider>
-        <div ref={containerRef} className="min-h-0">
-          {view === 'queue' ? (
-            <QueuePage setView={setView} />
-          ) : view === 'solutions' ? (
-            <SolutionsPage setView={setView} />
-          ) : null}
-        </div>
-      </AppModeLayoutProvider>
+      <SolutionProvider>
+        <SubscribedAppContent />
+      </SolutionProvider>
     </SettingsProvider>
   );
 };
