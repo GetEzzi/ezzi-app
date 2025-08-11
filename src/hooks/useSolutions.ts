@@ -29,7 +29,8 @@ export function useSolutions() {
   const {
     screenshots,
     handleDeleteScreenshot: deleteScreenshot,
-    clearScreenshots,
+    clearAllScreenshots,
+    refetch,
   } = useScreenshots();
 
   const handleDeleteScreenshot = async (index: number) => {
@@ -136,7 +137,7 @@ export function useSolutions() {
           setSpaceComplexityData(
             'space_complexity' in data ? data.space_complexity || null : null,
           );
-          clearScreenshots();
+          void clearAllScreenshots();
         },
       ),
       window.electronAPI.onDebugStart(() => setDebugProcessing(true)),
@@ -144,7 +145,7 @@ export function useSolutions() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setNewSolution(data);
         setDebugProcessing(false);
-        clearScreenshots();
+        void clearAllScreenshots();
       }),
       window.electronAPI.onDebugError(() => {
         showToast(
@@ -173,10 +174,11 @@ export function useSolutions() {
     setSolution,
     setNewSolution,
     solutionState.solution,
-    clearScreenshots,
+    clearAllScreenshots,
   ]);
 
   useScreenshotEvents({
+    refetch,
     onResetView: () => {
       setIsResetting(true);
       clearAll();

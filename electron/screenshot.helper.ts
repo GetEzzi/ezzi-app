@@ -10,6 +10,7 @@ const execFileAsync = promisify(execFile);
 export class ScreenshotHelper {
   private screenshotQueue: string[] = [];
   private readonly MAX_SCREENSHOTS = 2;
+  private clearingInProgress = false;
 
   private readonly screenshotDir: string;
 
@@ -209,6 +210,75 @@ export class ScreenshotHelper {
       console.error('Error deleting file:', error);
 
       return { success: false, error: (error as Error).message };
+    }
+  }
+
+  public async clearAllScreenshots(): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    // Guard against concurrent calls
+    if (this.clearingInProgress) {
+      console.log('Screenshot clearing already in progress, skipping');
+
+      return { success: true };
+    }
+
+    try {
+      this.clearingInProgress = true;
+      console.log('Clearing all screenshots');
+
+      // Make queue clearing atomic - copy and clear immediately
+      const pathsToDelete = [...this.screenshotQueue];
+      this.screenshotQueue = [];
+
+      if (pathsToDelete.length === 0) {
+        console.log('No screenshots to clear');
+
+        return { success: true };
+      }
+
+      // Delete files with improved error handling
+      const deletePromises = pathsToDelete.map(async (screenshotPath) => {
+        try {
+          // Check if file exists before attempting deletion
+          if (!fs.existsSync(screenshotPath)) {
+            console.log('Screenshot already deleted:', screenshotPath);
+
+            return; // Not an error - file already cleaned up
+          }
+
+          await fs.promises.unlink(screenshotPath);
+          console.log('Deleted screenshot:', screenshotPath);
+        } catch (error) {
+          // Handle ENOENT (file not found) gracefully
+          if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            console.log('Screenshot was already deleted:', screenshotPath);
+
+            return; // Not an error - file already cleaned up
+          }
+
+          // Log other errors but don't fail the entire operation
+          console.error(
+            `Error deleting screenshot at ${screenshotPath}:`,
+            error,
+          );
+          // Don't throw - continue processing other files
+        }
+      });
+
+      // Wait for all deletion attempts to complete
+      await Promise.all(deletePromises);
+
+      console.log('Successfully cleared all screenshots');
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error clearing all screenshots:', error);
+
+      return { success: false, error: (error as Error).message };
+    } finally {
+      this.clearingInProgress = false;
     }
   }
 

@@ -44,6 +44,10 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     return deps.deleteScreenshot(path);
   });
 
+  ipcMain.handle('clear-all-screenshots', async () => {
+    return deps.clearAllScreenshots();
+  });
+
   ipcMain.handle('get-image-preview', async (_event, path: string) => {
     return deps.getImagePreview(path);
   });
