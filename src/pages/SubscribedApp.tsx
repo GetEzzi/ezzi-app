@@ -7,6 +7,7 @@ import {
   SolutionProvider,
   useSolutionContext,
 } from '../contexts/SolutionContext';
+import { ScreenshotProvider } from '../contexts/ScreenshotContext';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface SubscribedAppProps {}
@@ -95,7 +96,9 @@ const SubscribedApp: React.FC<SubscribedAppProps> = () => {
   return (
     <SettingsProvider>
       <SolutionProvider>
-        <SubscribedAppContent />
+        <ScreenshotProvider>
+          <SubscribedAppContent />
+        </ScreenshotProvider>
       </SolutionProvider>
     </SettingsProvider>
   );

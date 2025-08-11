@@ -85,6 +85,7 @@ export interface IIpcHandlerDeps {
   deleteScreenshot: (
     path: string,
   ) => Promise<{ success: boolean; error?: string }>;
+  clearAllScreenshots: () => Promise<{ success: boolean; error?: string }>;
   getImagePreview: (filepath: string) => Promise<string>;
   processingHelper: ProcessingHelper | null;
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
@@ -608,6 +609,7 @@ async function initializeApp() {
       setWindowDimensions,
       getScreenshotQueue,
       deleteScreenshot,
+      clearAllScreenshots,
       getImagePreview,
       processingHelper: state.processingHelper,
       PROCESSING_EVENTS: state.PROCESSING_EVENTS,
@@ -746,6 +748,18 @@ async function deleteScreenshot(
 ): Promise<{ success: boolean; error?: string }> {
   return (
     (await state.screenshotHelper?.deleteScreenshot(path)) || {
+      success: false,
+      error: 'Screenshot helper not initialized',
+    }
+  );
+}
+
+async function clearAllScreenshots(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  return (
+    (await state.screenshotHelper?.clearAllScreenshots()) || {
       success: false,
       error: 'Screenshot helper not initialized',
     }
