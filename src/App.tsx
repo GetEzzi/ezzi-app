@@ -1,7 +1,6 @@
 import SubscribedApp from './pages/SubscribedApp';
 import SubscribePage from './pages/SubscribePage';
 import { AuthForm } from './pages/AuthForm.tsx';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Toast,
@@ -30,20 +29,6 @@ interface AppState {
   user: AuthenticatedUser | null;
   loading: boolean;
 }
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 0,
-      gcTime: Infinity,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 1,
-    },
-  },
-});
 
 interface AppContentProps {
   isInitialized: boolean;
@@ -336,38 +321,36 @@ function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <ToastContext.Provider value={{ showToast }}>
-          <AppModeProvider>
-            {appState.user ? (
-              <AppContent
-                isInitialized={appState.isInitialized}
-                user={appState.user}
-              />
-            ) : (
-              <AuthForm
-                setUser={(user) => {
-                  setUser(user).catch(console.error);
-                }}
-              />
-            )}
-            <Toast
-              open={toastState.open}
-              onOpenChange={(open) =>
-                setToastState((prev) => ({ ...prev, open }))
-              }
-              variant={toastState.variant}
-              duration={1500}
-            >
-              <ToastTitle>{toastState.title}</ToastTitle>
-              <ToastDescription>{toastState.description}</ToastDescription>
-            </Toast>
-            <ToastViewport />
-          </AppModeProvider>
-        </ToastContext.Provider>
-      </ToastProvider>
-    </QueryClientProvider>
+    <ToastProvider>
+      <ToastContext.Provider value={{ showToast }}>
+        <AppModeProvider>
+          {appState.user ? (
+            <AppContent
+              isInitialized={appState.isInitialized}
+              user={appState.user}
+            />
+          ) : (
+            <AuthForm
+              setUser={(user) => {
+                setUser(user).catch(console.error);
+              }}
+            />
+          )}
+          <Toast
+            open={toastState.open}
+            onOpenChange={(open) =>
+              setToastState((prev) => ({ ...prev, open }))
+            }
+            variant={toastState.variant}
+            duration={1500}
+          >
+            <ToastTitle>{toastState.title}</ToastTitle>
+            <ToastDescription>{toastState.description}</ToastDescription>
+          </Toast>
+          <ToastViewport />
+        </AppModeProvider>
+      </ToastContext.Provider>
+    </ToastProvider>
   );
 }
 

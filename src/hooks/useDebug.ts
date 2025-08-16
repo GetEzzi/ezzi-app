@@ -1,44 +1,22 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import {
-  DebugResponse,
-  LeetCodeDebugResponse,
-  Screenshot,
-} from '@shared/api.ts';
 import { useToast } from '../contexts/toast';
-
-async function fetchScreenshots() {
-  try {
-    const existing = await window.electronAPI.getScreenshots();
-
-    return (Array.isArray(existing) ? existing : []).map((p) => ({
-      id: p.path,
-      path: p.path,
-      preview: p.preview,
-      timestamp: Date.now(),
-    }));
-  } catch (error) {
-    console.error('Error loading screenshots:', error);
-
-    throw error;
-  }
-}
+import { useScreenshots } from './useScreenshots';
+import { useScreenshotEvents } from './useScreenshotEvents';
+import { useSolutionContext } from '../contexts/SolutionContext';
 
 export function useDebug(
   isProcessing: boolean,
   setIsProcessing: (processing: boolean) => void,
 ) {
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
+  const { state: solutionState } = useSolutionContext();
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { data: screenshots = [], refetch } = useQuery<Screenshot[]>({
-    queryKey: ['screenshots'],
-    queryFn: fetchScreenshots,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnWindowFocus: false,
-  });
+  const {
+    screenshots,
+    refetch,
+    handleDeleteScreenshot: deleteScreenshot,
+  } = useScreenshots();
 
   const [newCode, setNewCode] = useState<string | null>(null);
   const [thoughtsData, setThoughtsData] = useState<string[] | null>(null);
@@ -49,22 +27,8 @@ export function useDebug(
     null,
   );
 
-  const handleDeleteExtraScreenshot = async (index: number) => {
-    const screenshotToDelete = screenshots[index];
-
-    try {
-      const response = await window.electronAPI.deleteScreenshot(
-        screenshotToDelete.path,
-      );
-
-      if (response.success) {
-        await refetch();
-      } else {
-        console.error('Failed to delete extra screenshot:', response.error);
-      }
-    } catch (error) {
-      console.error('Error deleting extra screenshot:', error);
-    }
+  const handleDeleteScreenshot = async (index: number) => {
+    await deleteScreenshot(index);
   };
 
   const updateDimensions = () => {
@@ -83,32 +47,27 @@ export function useDebug(
   };
 
   useEffect(() => {
-    const newSolution = queryClient.getQueryData(['new_solution']) as
-      | DebugResponse
-      | LeetCodeDebugResponse;
-
-    if (newSolution) {
-      setNewCode(newSolution.code || null);
+    if (solutionState.newSolution) {
+      setNewCode(solutionState.newSolution.code || null);
       setThoughtsData(
-        'thoughts' in newSolution ? newSolution.thoughts || null : null,
+        'thoughts' in solutionState.newSolution
+          ? solutionState.newSolution.thoughts || null
+          : null,
       );
       setTimeComplexityData(
-        'time_complexity' in newSolution
-          ? newSolution.time_complexity || null
+        'time_complexity' in solutionState.newSolution
+          ? solutionState.newSolution.time_complexity || null
           : null,
       );
       setSpaceComplexityData(
-        'space_complexity' in newSolution
-          ? newSolution.space_complexity || null
+        'space_complexity' in solutionState.newSolution
+          ? solutionState.newSolution.space_complexity || null
           : null,
       );
       setIsProcessing(false);
     }
 
     const cleanupFunctions = [
-      window.electronAPI.onScreenshotTaken(() => refetch()),
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      window.electronAPI.onResetView(() => refetch()),
       window.electronAPI.onDebugSuccess(() => setIsProcessing(false)),
       window.electronAPI.onDebugStart(() => setIsProcessing(true)),
       window.electronAPI.onDebugError((error: string) => {
@@ -132,7 +91,9 @@ export function useDebug(
       resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
-  }, [queryClient, setIsProcessing, showToast, refetch]);
+  }, [solutionState.newSolution, setIsProcessing, showToast]);
+
+  useScreenshotEvents({ refetch });
 
   return {
     screenshots,
@@ -141,7 +102,7 @@ export function useDebug(
     timeComplexityData,
     spaceComplexityData,
     contentRef,
-    handleDeleteExtraScreenshot,
+    handleDeleteScreenshot,
     refetch,
   };
 }

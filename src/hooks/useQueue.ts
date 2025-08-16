@@ -1,51 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/toast';
-import { Screenshot } from '@shared/api.ts';
 import { sendToElectron } from '../utils/electron';
 import { IPC_EVENTS } from '@shared/constants.ts';
-
-async function fetchScreenshots() {
-  try {
-    return await window.electronAPI.getScreenshots();
-  } catch (error) {
-    console.error('Error loading screenshots:', error);
-
-    throw error;
-  }
-}
+import { useScreenshots } from './useScreenshots';
+import { useScreenshotEvents } from './useScreenshotEvents';
 
 export function useQueue() {
-  const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipHeight, setTooltipHeight] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { data: screenshots = [], refetch } = useQuery<Screenshot[]>({
-    queryKey: ['screenshots'],
-    queryFn: fetchScreenshots,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnWindowFocus: false,
-  });
+  const {
+    screenshots,
+    refetch,
+    handleDeleteScreenshot: deleteScreenshot,
+  } = useScreenshots();
 
   const handleDeleteScreenshot = async (index: number) => {
-    const screenshotToDelete = screenshots[index];
-
-    try {
-      const response = await window.electronAPI.deleteScreenshot(
-        screenshotToDelete.path,
-      );
-
-      if (response.success) {
-        await refetch();
-      } else {
-        console.error('Failed to delete screenshot:', response.error);
-        showToast('Error', 'Failed to delete the screenshot file', 'error');
-      }
-    } catch (error) {
-      console.error('Error deleting screenshot:', error);
+    const success = await deleteScreenshot(index);
+    if (!success) {
+      showToast('Error', 'Failed to delete the screenshot file', 'error');
     }
   };
 
@@ -71,6 +46,8 @@ export function useQueue() {
     }
   }, [isTooltipVisible, tooltipHeight]);
 
+  useScreenshotEvents({ refetch });
+
   // Separate effect for resize observation and event listeners (doesn't depend on tooltip state)
   useEffect(() => {
     const resizeObserver = new ResizeObserver(updateDimensions);
@@ -79,13 +56,6 @@ export function useQueue() {
     }
 
     const cleanupFunctions = [
-      window.electronAPI.onScreenshotTaken(() => refetch()),
-      window.electronAPI.onResetView(() => {
-        queryClient.removeQueries({
-          queryKey: ['screenshots'],
-        });
-        refetch().catch(console.error);
-      }),
       window.electronAPI.onSolutionError((error: string) => {
         showToast(
           'Processing Failed',
@@ -107,7 +77,7 @@ export function useQueue() {
       resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
-  }, [refetch, showToast, queryClient, updateDimensions]);
+  }, [showToast, updateDimensions]);
 
   // Separate effect for tooltip-triggered dimension updates
   useEffect(() => {

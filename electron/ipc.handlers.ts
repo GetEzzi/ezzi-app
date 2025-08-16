@@ -40,12 +40,12 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     return deps.getScreenshotQueue();
   });
 
-  ipcMain.handle('get-extra-screenshot-queue', () => {
-    return deps.getExtraScreenshotQueue();
-  });
-
   ipcMain.handle('delete-screenshot', async (_event, path: string) => {
     return deps.deleteScreenshot(path);
+  });
+
+  ipcMain.handle('clear-all-screenshots', async () => {
+    return deps.clearAllScreenshots();
   });
 
   ipcMain.handle('get-image-preview', async (_event, path: string) => {
@@ -89,29 +89,13 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   // Screenshot management handlers
   ipcMain.handle('get-screenshots', async () => {
     try {
-      let previews: {
-        path: string;
-        preview: string;
-      }[];
-      const currentView = deps.getView();
-
-      if (currentView === 'queue') {
-        const queue = deps.getScreenshotQueue();
-        previews = await Promise.all(
-          queue.map(async (path) => ({
-            path,
-            preview: await deps.getImagePreview(path),
-          })),
-        );
-      } else {
-        const extraQueue = deps.getExtraScreenshotQueue();
-        previews = await Promise.all(
-          extraQueue.map(async (path) => ({
-            path,
-            preview: await deps.getImagePreview(path),
-          })),
-        );
-      }
+      const queue = deps.getScreenshotQueue();
+      const previews = await Promise.all(
+        queue.map(async (path) => ({
+          path,
+          preview: await deps.getImagePreview(path),
+        })),
+      );
 
       return previews;
     } catch (error) {

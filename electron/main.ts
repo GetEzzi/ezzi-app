@@ -28,6 +28,7 @@ const state = {
   view: 'queue' as 'queue' | 'solutions' | 'debug',
   hasDebugged: false,
   appMode: AppMode.LIVE_INTERVIEW as AppMode,
+  conversationId: null as string | null,
 
   PROCESSING_EVENTS: {
     UNAUTHORIZED: 'processing-unauthorized',
@@ -48,7 +49,6 @@ export interface IProcessingHelperDeps {
   getView: () => 'queue' | 'solutions' | 'debug';
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
   getScreenshotQueue: () => string[];
-  getExtraScreenshotQueue: () => string[];
   clearQueues: () => void;
   takeScreenshot: () => Promise<string>;
   getImagePreview: (filepath: string) => Promise<string>;
@@ -58,6 +58,8 @@ export interface IProcessingHelperDeps {
   setHasDebugged: (value: boolean) => void;
   getHasDebugged: () => boolean;
   getAppMode: () => AppMode;
+  getConversationId: () => string | null;
+  setConversationId: (conversationId: string | null) => void;
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
 }
 
@@ -80,10 +82,10 @@ export interface IIpcHandlerDeps {
   getMainWindow: () => BrowserWindow | null;
   setWindowDimensions: (width: number, height: number, source: string) => void;
   getScreenshotQueue: () => string[];
-  getExtraScreenshotQueue: () => string[];
   deleteScreenshot: (
     path: string,
   ) => Promise<{ success: boolean; error?: string }>;
+  clearAllScreenshots: () => Promise<{ success: boolean; error?: string }>;
   getImagePreview: (filepath: string) => Promise<string>;
   processingHelper: ProcessingHelper | null;
   PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS;
@@ -114,7 +116,6 @@ function initializeHelpers() {
     getView,
     setView,
     getScreenshotQueue,
-    getExtraScreenshotQueue,
     clearQueues,
     takeScreenshot,
     getImagePreview,
@@ -122,6 +123,8 @@ function initializeHelpers() {
     setHasDebugged,
     getHasDebugged,
     getAppMode,
+    getConversationId,
+    setConversationId,
     PROCESSING_EVENTS: state.PROCESSING_EVENTS,
   } as IProcessingHelperDeps);
   state.shortcutsHelper = new ShortcutsHelper({
@@ -605,8 +608,8 @@ async function initializeApp() {
       getMainWindow,
       setWindowDimensions,
       getScreenshotQueue,
-      getExtraScreenshotQueue,
       deleteScreenshot,
+      clearAllScreenshots,
       getImagePreview,
       processingHelper: state.processingHelper,
       PROCESSING_EVENTS: state.PROCESSING_EVENTS,
@@ -675,8 +678,22 @@ function getView(): 'queue' | 'solutions' | 'debug' {
 }
 
 function setView(view: 'queue' | 'solutions' | 'debug'): void {
+  console.log('Setting view to:', view);
+  const previousView = state.view;
   state.view = view;
   state.screenshotHelper?.setView(view);
+
+  // Reset screenshot queue when transitioning from queue to solutions
+  if (view === 'solutions' && previousView === 'queue') {
+    console.log('Resetting screenshot queue for solutions mode');
+    state.screenshotHelper?.resetQueue();
+  }
+
+  // Reset screenshot queue when transitioning from solutions to debug
+  if (view === 'debug' && previousView === 'solutions') {
+    console.log('Resetting screenshot queue for debug mode');
+    state.screenshotHelper?.resetQueue();
+  }
 }
 
 function getAppMode(): AppMode {
@@ -687,6 +704,14 @@ function setAppMode(appMode: AppMode): void {
   state.appMode = appMode;
 }
 
+function getConversationId(): string | null {
+  return state.conversationId;
+}
+
+function setConversationId(conversationId: string | null): void {
+  state.conversationId = conversationId;
+}
+
 function getScreenshotHelper(): ScreenshotHelper | null {
   return state.screenshotHelper;
 }
@@ -695,12 +720,9 @@ function getScreenshotQueue(): string[] {
   return state.screenshotHelper?.getScreenshotQueue() || [];
 }
 
-function getExtraScreenshotQueue(): string[] {
-  return state.screenshotHelper?.getExtraScreenshotQueue() || [];
-}
-
 function clearQueues(): void {
   state.screenshotHelper?.clearQueues();
+  state.conversationId = null;
   setView('queue');
 }
 
@@ -726,6 +748,18 @@ async function deleteScreenshot(
 ): Promise<{ success: boolean; error?: string }> {
   return (
     (await state.screenshotHelper?.deleteScreenshot(path)) || {
+      success: false,
+      error: 'Screenshot helper not initialized',
+    }
+  );
+}
+
+async function clearAllScreenshots(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  return (
+    (await state.screenshotHelper?.clearAllScreenshots()) || {
       success: false,
       error: 'Screenshot helper not initialized',
     }
@@ -850,13 +884,14 @@ export {
   setAppMode,
   getScreenshotHelper,
   getScreenshotQueue,
-  getExtraScreenshotQueue,
   clearQueues,
   takeScreenshot,
   getImagePreview,
   deleteScreenshot,
   setHasDebugged,
   getHasDebugged,
+  getConversationId,
+  setConversationId,
   applyQueueWindowBehavior,
   preserveWindowPosition,
 };

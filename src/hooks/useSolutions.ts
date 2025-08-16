@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import {
-  Screenshot,
-  SolveResponse,
-  LeetCodeSolveResponse,
-} from '@shared/api.ts';
+import { SolveResponse, LeetCodeSolveResponse } from '@shared/api.ts';
 import { useToast } from '../contexts/toast';
+import { useScreenshots } from './useScreenshots';
+import { useScreenshotEvents } from './useScreenshotEvents';
+import { useSolutionContext } from '../contexts/SolutionContext';
 
 export function useSolutions() {
-  const queryClient = useQueryClient();
+  const {
+    state: solutionState,
+    setSolution,
+    setNewSolution,
+    clearAll,
+  } = useSolutionContext();
   const contentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
@@ -22,51 +25,17 @@ export function useSolutions() {
     null,
   );
   const [isResetting, setIsResetting] = useState(false);
-  const [extraScreenshots, setExtraScreenshots] = useState<Screenshot[]>([]);
 
-  const fetchScreenshots = async () => {
-    try {
-      const existing = await window.electronAPI.getScreenshots();
-      const screenshots = (Array.isArray(existing) ? existing : []).map(
-        (p) => ({
-          id: p.path,
-          path: p.path,
-          preview: p.preview,
-          timestamp: Date.now(),
-        }),
-      );
-      setExtraScreenshots(screenshots);
-    } catch (error) {
-      console.error('Error loading extra screenshots:', error);
-      setExtraScreenshots([]);
-    }
-  };
+  const {
+    screenshots,
+    handleDeleteScreenshot: deleteScreenshot,
+    clearAllScreenshots,
+    refetch,
+  } = useScreenshots();
 
-  const handleDeleteExtraScreenshot = async (index: number) => {
-    const screenshotToDelete = extraScreenshots[index];
-
-    try {
-      const response = await window.electronAPI.deleteScreenshot(
-        screenshotToDelete.path,
-      );
-
-      if (response.success) {
-        const existing = await window.electronAPI.getScreenshots();
-        const screenshots = (Array.isArray(existing) ? existing : []).map(
-          (p) => ({
-            id: p.path,
-            path: p.path,
-            preview: p.preview,
-            timestamp: Date.now(),
-          }),
-        );
-        setExtraScreenshots(screenshots);
-      } else {
-        console.error('Failed to delete extra screenshot:', response.error);
-        showToast('Error', 'Failed to delete the screenshot', 'error');
-      }
-    } catch (error) {
-      console.error('Error deleting extra screenshot:', error);
+  const handleDeleteScreenshot = async (index: number) => {
+    const success = await deleteScreenshot(index);
+    if (!success) {
       showToast('Error', 'Failed to delete the screenshot', 'error');
     }
   };
@@ -85,9 +54,27 @@ export function useSolutions() {
     }
   };
 
+  // Update local state when context solution changes
   useEffect(() => {
-    fetchScreenshots().catch(console.error);
-  }, [solutionData]);
+    if (solutionState.solution) {
+      setSolutionData(solutionState.solution.code || null);
+      setThoughtsData(
+        'thoughts' in solutionState.solution
+          ? solutionState.solution.thoughts || null
+          : null,
+      );
+      setTimeComplexityData(
+        'time_complexity' in solutionState.solution
+          ? solutionState.solution.time_complexity || null
+          : null,
+      );
+      setSpaceComplexityData(
+        'space_complexity' in solutionState.solution
+          ? solutionState.solution.space_complexity || null
+          : null,
+      );
+    }
+  }, [solutionState.solution]);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(updateDimensions);
@@ -108,16 +95,6 @@ export function useSolutions() {
     updateDimensions();
 
     const cleanupFunctions = [
-      window.electronAPI.onScreenshotTaken(() => {
-        fetchScreenshots().catch(console.error);
-      }),
-      window.electronAPI.onResetView(() => {
-        setIsResetting(true);
-        queryClient.removeQueries({ queryKey: ['solution'] });
-        queryClient.removeQueries({ queryKey: ['new_solution'] });
-        setExtraScreenshots([]);
-        setTimeout(() => setIsResetting(false), 0);
-      }),
       window.electronAPI.onSolutionStart(() => {
         setSolutionData(null);
         setThoughtsData(null);
@@ -126,23 +103,32 @@ export function useSolutions() {
       }),
       window.electronAPI.onSolutionError((error: string) => {
         showToast('Processing Failed', error, 'error');
-        const solution = queryClient.getQueryData(['solution']) as {
-          code: string;
-          thoughts: string[];
-          time_complexity: string;
-          space_complexity: string;
-        } | null;
-        setSolutionData(solution?.code || null);
-        setThoughtsData(solution?.thoughts || null);
-        setTimeComplexityData(solution?.time_complexity || null);
-        setSpaceComplexityData(solution?.space_complexity || null);
+        // Restore previous solution data on error
+        if (solutionState.solution) {
+          setSolutionData(solutionState.solution.code || null);
+          setThoughtsData(
+            'thoughts' in solutionState.solution
+              ? solutionState.solution.thoughts || null
+              : null,
+          );
+          setTimeComplexityData(
+            'time_complexity' in solutionState.solution
+              ? solutionState.solution.time_complexity || null
+              : null,
+          );
+          setSpaceComplexityData(
+            'space_complexity' in solutionState.solution
+              ? solutionState.solution.space_complexity || null
+              : null,
+          );
+        }
       }),
       window.electronAPI.onSolutionSuccess(
         (data: SolveResponse | LeetCodeSolveResponse) => {
           if (!data) {
             return;
           }
-          queryClient.setQueryData(['solution'], data);
+          setSolution(data);
           setSolutionData(data.code || null);
           setThoughtsData('thoughts' in data ? data.thoughts || null : null);
           setTimeComplexityData(
@@ -151,13 +137,15 @@ export function useSolutions() {
           setSpaceComplexityData(
             'space_complexity' in data ? data.space_complexity || null : null,
           );
-          setExtraScreenshots([]);
+          void clearAllScreenshots();
         },
       ),
       window.electronAPI.onDebugStart(() => setDebugProcessing(true)),
-      window.electronAPI.onDebugSuccess((data) => {
-        queryClient.setQueryData(['new_solution'], data);
+      window.electronAPI.onDebugSuccess((data: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        setNewSolution(data);
         setDebugProcessing(false);
+        void clearAllScreenshots();
       }),
       window.electronAPI.onDebugError(() => {
         showToast(
@@ -170,7 +158,7 @@ export function useSolutions() {
       window.electronAPI.onProcessingNoScreenshots(() => {
         showToast(
           'No Screenshots',
-          'There are no extra screenshots to process.',
+          'There are no screenshots to process.',
           'neutral',
         );
       }),
@@ -181,29 +169,22 @@ export function useSolutions() {
       mutationObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
     };
-  }, [queryClient, showToast]);
+  }, [
+    showToast,
+    setSolution,
+    setNewSolution,
+    solutionState.solution,
+    clearAllScreenshots,
+  ]);
 
-  useEffect(() => {
-    setSolutionData(queryClient.getQueryData(['solution']) || null);
-
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (
-        event?.query.queryKey &&
-        Array.isArray(event.query.queryKey) &&
-        event.query.queryKey[0] === 'solution'
-      ) {
-        const solution = queryClient.getQueryData([
-          'solution',
-        ]) as SolveResponse;
-        setSolutionData(solution?.code ?? null);
-        setThoughtsData(solution?.thoughts ?? null);
-        setTimeComplexityData(solution?.time_complexity ?? null);
-        setSpaceComplexityData(solution?.space_complexity ?? null);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [queryClient]);
+  useScreenshotEvents({
+    refetch,
+    onResetView: () => {
+      setIsResetting(true);
+      clearAll();
+      setTimeout(() => setIsResetting(false), 0);
+    },
+  });
 
   return {
     debugProcessing,
@@ -212,9 +193,9 @@ export function useSolutions() {
     timeComplexityData,
     spaceComplexityData,
     isResetting,
-    extraScreenshots,
+    screenshots,
     contentRef,
-    handleDeleteExtraScreenshot,
+    handleDeleteScreenshot,
     setDebugProcessing,
   };
 }

@@ -11,7 +11,7 @@ import {
   CommandSection,
 } from '../components/sections';
 import DebugPage from './DebugPage';
-import { useQueryClient } from '@tanstack/react-query';
+import { useSolutionContext } from '../contexts/SolutionContext';
 
 interface SolutionsPageProps {
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
@@ -19,7 +19,7 @@ interface SolutionsPageProps {
 
 const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
   const { isLiveInterview } = useAppModeLayout();
-  const queryClient = useQueryClient();
+  const { state: solutionState } = useSolutionContext();
   const {
     debugProcessing,
     solutionData,
@@ -27,14 +27,14 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
     timeComplexityData,
     spaceComplexityData,
     isResetting,
-    extraScreenshots,
+    screenshots,
     contentRef,
-    handleDeleteExtraScreenshot,
+    handleDeleteScreenshot,
     setDebugProcessing,
   } = useSolutions();
 
   // Check if we should show debug view
-  if (!isResetting && queryClient.getQueryData(['new_solution'])) {
+  if (!isResetting && solutionState.newSolution) {
     return (
       <DebugPage
         isProcessing={debugProcessing}
@@ -44,10 +44,10 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
   }
 
   const screenshotSection =
-    solutionData && extraScreenshots.length > 0 ? (
+    solutionData && screenshots.length > 0 ? (
       <ScreenshotSection
-        screenshots={extraScreenshots}
-        onDeleteScreenshot={handleDeleteExtraScreenshot}
+        screenshots={screenshots}
+        onDeleteScreenshot={handleDeleteScreenshot}
         isLoading={debugProcessing}
       />
     ) : null;
@@ -56,7 +56,7 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
     <CommandSection
       mode="solutions"
       isProcessing={!solutionData}
-      extraScreenshots={extraScreenshots}
+      screenshots={screenshots}
     />
   );
 
