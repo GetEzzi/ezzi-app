@@ -124,10 +124,12 @@ export interface LeetCodeSolveRequest {
 
 export interface LeetCodeSolveResponse {
   code: string; // Generated code solution
+  conversationId: string; // Conversation ID for context continuity
 }
 
 export interface LeetCodeDebugRequest {
   images: string[]; // Array of base64-encoded images
+  conversationId: string; // Required conversation ID from previous solve request
   isMock?: boolean; // Optional flag for mock responses
 }
 

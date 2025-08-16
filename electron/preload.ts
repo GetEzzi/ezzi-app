@@ -22,6 +22,7 @@ interface ElectronAPI {
   deleteScreenshot: (
     path: string,
   ) => Promise<{ success: boolean; error?: string }>;
+  clearAllScreenshots: () => Promise<{ success: boolean; error?: string }>;
   onScreenshotTaken: (
     callback: (data: { path: string; preview: string }) => void,
   ) => () => void;
@@ -110,6 +111,7 @@ const electronAPI = {
   getScreenshots: () => ipcRenderer.invoke('get-screenshots'),
   deleteScreenshot: (path: string) =>
     ipcRenderer.invoke('delete-screenshot', path),
+  clearAllScreenshots: () => ipcRenderer.invoke('clear-all-screenshots'),
   toggleMainWindow: async () => {
     console.log('toggleMainWindow called from preload');
     try {

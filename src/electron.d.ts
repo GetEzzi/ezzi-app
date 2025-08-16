@@ -1,4 +1,3 @@
-import { QueryObserverResult, Register } from '@tanstack/react-query';
 import { AppMode } from '../shared/api';
 
 export interface ElectronAPI {
@@ -20,18 +19,8 @@ export interface ElectronAPI {
   deleteScreenshot: (
     path: string,
   ) => Promise<{ success: boolean; error?: string }>;
-  onScreenshotTaken: (
-    callback: () => Promise<
-      QueryObserverResult<
-        [TQueryFnData][TQueryFnData extends any ? 0 : never],
-        Register extends {
-          defaultError: infer TError;
-        }
-          ? TError
-          : Error
-      >
-    >,
-  ) => () => Promise<void>;
+  clearAllScreenshots: () => Promise<{ success: boolean; error?: string }>;
+  onScreenshotTaken: (callback: () => void) => () => Promise<void>;
   onResetView: (callback: () => void) => () => Promise<void>;
   onSolutionStart: (callback: () => void) => () => void;
   onDebugStart: (callback: () => void) => () => void;

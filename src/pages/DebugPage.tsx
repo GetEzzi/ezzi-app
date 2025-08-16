@@ -28,14 +28,14 @@ const DebugPage: React.FC<DebugPageProps> = ({
     timeComplexityData,
     spaceComplexityData,
     contentRef,
-    handleDeleteExtraScreenshot,
+    handleDeleteScreenshot,
   } = useDebug(isProcessing, setIsProcessing);
 
   const screenshotSection =
     screenshots.length > 0 ? (
       <ScreenshotSection
         screenshots={screenshots}
-        onDeleteScreenshot={handleDeleteExtraScreenshot}
+        onDeleteScreenshot={handleDeleteScreenshot}
         isLoading={isProcessing}
       />
     ) : null;
@@ -45,7 +45,6 @@ const DebugPage: React.FC<DebugPageProps> = ({
       mode="debug"
       isProcessing={isProcessing}
       screenshots={screenshots}
-      extraScreenshots={screenshots}
     />
   );
 
