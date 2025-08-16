@@ -30,6 +30,14 @@ The app mode is managed client-side and determines which endpoints are called. S
 
 You need to implement exactly **4 endpoints** for self-hosted mode (2 per app mode):
 
+### Conversation ID Support (New in v1.0.4)
+
+Starting with v1.0.4, LeetCode mode endpoints support conversation tracking:
+- **LeetCode Solve** returns a `conversationId` for context continuity
+- **LeetCode Debug** requires the `conversationId` from the previous solve request
+- This enables better debugging by maintaining context between solve and debug operations
+- Live Interview mode does not use conversation IDs (operates independently)
+
 ### Live Interview Mode Endpoints
 
 #### POST /solutions/solve
@@ -145,13 +153,15 @@ interface LeetCodeSolveRequest {
 ```typescript
 interface LeetCodeSolveResponse {
   code: string; // Generated code solution
+  conversationId: string; // Conversation ID for context continuity
 }
 ```
 
 **Example Response:**
 ```json
 {
-  "code": "def solution(nums):\n    # Implementation\n    result = 0\n    # Logic here\n    return result"
+  "code": "def solution(nums):\n    # Implementation\n    result = 0\n    # Logic here\n    return result",
+  "conversationId": "conv_abc123def456"
 }
 ```
 
@@ -162,6 +172,7 @@ Process additional screenshots to debug/improve existing solution (streamlined r
 ```typescript
 interface LeetCodeDebugRequest {
   images: string[]; // Array of base64-encoded images
+  conversationId: string; // Required conversation ID from previous solve request
   isMock?: boolean; // Optional flag for mock responses
 }
 ```
@@ -170,6 +181,7 @@ interface LeetCodeDebugRequest {
 ```json
 {
   "images": ["base64image1", "base64image2"],
+  "conversationId": "conv_abc123def456",
   "isMock": false
 }
 ```
@@ -354,7 +366,8 @@ app.post('/solutions/leetcode/solve', async (req, res) => {
     // Handle mock mode
     if (isMock) {
       return res.json({
-        code: `def mock_leetcode_solution():\n    return "Mock LeetCode solution"`
+        code: `def mock_leetcode_solution():\n    return "Mock LeetCode solution"`,
+        conversationId: "mock_conv_123"
       });
     }
     
@@ -365,7 +378,8 @@ app.post('/solutions/leetcode/solve', async (req, res) => {
     const result = await processLeetCodeSolve(images);
     
     res.json({
-      code: result.code
+      code: result.code,
+      conversationId: result.conversationId
     });
   } catch (error) {
     console.error('LeetCode Solve error:', error);
@@ -376,7 +390,7 @@ app.post('/solutions/leetcode/solve', async (req, res) => {
 // LeetCode - Debug endpoint
 app.post('/solutions/leetcode/debug', async (req, res) => {
   try {
-    const { images, isMock } = req.body;
+    const { images, conversationId, isMock } = req.body;
     
     // Handle mock mode
     if (isMock) {
@@ -389,7 +403,7 @@ app.post('/solutions/leetcode/debug', async (req, res) => {
     // 1. Process images to understand the debugging request
     // 2. Generate improved code solution (streamlined response)
     
-    const result = await processLeetCodeDebug(images);
+    const result = await processLeetCodeDebug(images, conversationId);
     
     res.json({
       code: result.code
@@ -439,13 +453,14 @@ async function processLiveInterviewDebug(images) {
 // LeetCode processing functions
 async function processLeetCodeSolve(images) {
   // Implement your AI processing logic here for quick code generation
-  // Should return: { code }
+  // Should return: { code, conversationId }
   throw new Error('LeetCode solve processing not implemented');
 }
 
-async function processLeetCodeDebug(images) {
+async function processLeetCodeDebug(images, conversationId) {
   // Implement your debugging logic here for quick code improvement
   // Should return: { code }
+  // Use conversationId to maintain context with previous solve request
   throw new Error('LeetCode debug processing not implemented');
 }
 ```
@@ -504,10 +519,11 @@ class LeetCodeSolveRequest(BaseRequest):
     pass
 
 class LeetCodeDebugRequest(BaseRequest):
-    pass
+    conversationId: str
 
 class LeetCodeSolveResponse(BaseModel):
     code: str
+    conversationId: str
 
 class LeetCodeDebugResponse(BaseModel):
     code: str
@@ -565,7 +581,8 @@ async def solve_leetcode_problem(request: LeetCodeSolveRequest):
     try:
         if request.isMock:
             return LeetCodeSolveResponse(
-                code="def mock_leetcode_solution():\n    return 'Mock LeetCode solution'"
+                code="def mock_leetcode_solution():\n    return 'Mock LeetCode solution'",
+                conversationId="mock_conv_123"
             )
         
         # Your AI processing logic here for LeetCode mode
@@ -626,7 +643,7 @@ async def process_live_interview_debug(images: List[str]) -> DebugResponse:
 # LeetCode processing functions
 async def process_leetcode_solve(images: List[str]) -> LeetCodeSolveResponse:
     """Implement your AI processing logic here for quick code generation"""
-    # Should return LeetCodeSolveResponse with: code
+    # Should return LeetCodeSolveResponse with: code, conversationId
     raise NotImplementedError("LeetCode solve processing not implemented")
 
 async def process_leetcode_debug(images: List[str]) -> LeetCodeDebugResponse:
