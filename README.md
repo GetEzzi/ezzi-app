@@ -47,11 +47,11 @@ Here's what we're planning to develop for Ezzi:
 ### Live Interview ✅ (Done)
 A helpful tool that shows your problem, thoughts, and code all in one view. It works as an invisible layer during coding interviews.
 
+### Leetcode solver ✅ (Done)
+Helps you solve one coding problem at a time with a focus on finding the best solution.
+
 ### Hint-only 🔄 (Planned)
 Gives you helpful tips on how to solve coding problems. Suggests which algorithms to use and helps identify problem types. Shows different solution approaches with their good and bad points. You can also see the complete solution if needed.
-
-### Leetcode solver 🔄 (Beta)
-Helps you solve one coding problem at a time with a focus on finding the best solution.
 
 ### Quiz 🔄 (Planned)
 Solve multiple choice questions that have time limits. Quickly.
