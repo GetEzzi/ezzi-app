@@ -64,6 +64,11 @@ export interface ElectronAPI {
   setAppMode: (
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
+  getAppMode: () => Promise<{
+    success: boolean;
+    appMode?: AppMode;
+    error?: string;
+  }>;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
   copyAndRefreshWindow: (
     text: string,

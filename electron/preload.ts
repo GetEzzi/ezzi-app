@@ -261,6 +261,7 @@ const electronAPI = {
   authIsAuthenticated: () => ipcRenderer.invoke('auth-is-authenticated'),
   setAppMode: (appMode: AppMode) =>
     ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
+  getAppMode: () => ipcRenderer.invoke('get-app-mode'),
   writeText: (text: string) => ipcRenderer.invoke('write-text', text),
   copyAndRefreshWindow: (text: string, waitDuration?: number) =>
     ipcRenderer.invoke('copy-and-refresh-window', text, waitDuration),
