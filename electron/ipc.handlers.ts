@@ -3,11 +3,13 @@ import { IIpcHandlerDeps } from './main';
 import { IPC_EVENTS } from '../shared/constants';
 import { AppMode } from '../shared/api';
 import { AuthStorage } from './auth.storage';
+import { AppStorage } from './app.storage';
 
 export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   console.log('Initializing IPC handlers');
 
   const authStorage = AuthStorage.getInstance();
+  const appStorage = AppStorage.getInstance();
 
   ipcMain.handle(IPC_EVENTS.TOOLTIP.MOUSE_ENTER, () => {
     console.log('Tooltip mouse enter');
@@ -90,14 +92,13 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   ipcMain.handle('get-screenshots', async () => {
     try {
       const queue = deps.getScreenshotQueue();
-      const previews = await Promise.all(
+
+      return await Promise.all(
         queue.map(async (path) => ({
           path,
           preview: await deps.getImagePreview(path),
         })),
       );
-
-      return previews;
     } catch (error) {
       console.error('Error getting screenshots:', error);
 
@@ -328,6 +329,9 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       if (Object.values(AppMode).includes(appMode as AppMode)) {
         deps.setAppMode(appMode as AppMode);
 
+        appStorage.setAppMode(appMode as AppMode);
+        console.log('App mode saved to storage:', appMode);
+
         const mainWindow = deps.getMainWindow();
         if (mainWindow && !mainWindow.isDestroyed()) {
           const currentView = deps.getView();
@@ -344,6 +348,19 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       console.error('Error changing app mode:', error);
 
       return { error: 'Failed to change app mode' };
+    }
+  });
+
+  ipcMain.handle('get-app-mode', () => {
+    try {
+      const appMode = deps.getAppMode();
+      console.log('Getting app mode:', appMode);
+
+      return { success: true, appMode };
+    } catch (error) {
+      console.error('Error getting app mode:', error);
+
+      return { error: 'Failed to get app mode' };
     }
   });
 

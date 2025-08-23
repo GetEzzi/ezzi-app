@@ -1,8 +1,9 @@
 import { IStorageProvider, UserSettings } from './StorageProvider';
 import { ProgrammingLanguage, UserLanguage, AppMode } from '@shared/api.ts';
+import { LOCAL_STORAGE_KEYS } from '@shared/storage';
 
 export class LocalStorageProvider implements IStorageProvider {
-  private readonly STORAGE_KEY = 'ezzi-settings';
+  private readonly STORAGE_KEY = LOCAL_STORAGE_KEYS.EZZI_SETTINGS;
 
   getSettings(): Promise<UserSettings> {
     const stored = localStorage.getItem(this.STORAGE_KEY);

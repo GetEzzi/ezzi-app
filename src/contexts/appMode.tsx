@@ -29,9 +29,17 @@ export const AppModeProvider: React.FC<AppModeProviderProps> = ({
   useEffect(() => {
     const loadInitialAppMode = async () => {
       try {
-        const storageProvider = getStorageProvider();
-        const storedAppMode = await storageProvider.getAppMode();
-        setCurrentAppMode(storedAppMode);
+        if (window.electronAPI?.getAppMode) {
+          const result = await window.electronAPI.getAppMode();
+          if (result.success && result.appMode) {
+            setCurrentAppMode(result.appMode);
+            console.log('Loaded app mode from Electron:', result.appMode);
+          }
+        } else {
+          const storageProvider = getStorageProvider();
+          const storedAppMode = await storageProvider.getAppMode();
+          setCurrentAppMode(storedAppMode);
+        }
       } catch (error) {
         console.error('Error loading initial app mode:', error);
       }
