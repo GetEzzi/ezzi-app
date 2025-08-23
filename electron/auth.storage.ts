@@ -1,9 +1,9 @@
 import Store from 'electron-store';
-
-interface AuthStoreSchema {
-  authToken: string | null;
-  tokenExpiry: number | null;
-}
+import {
+  ELECTRON_STORES,
+  ELECTRON_STORAGE_KEYS,
+  AuthStoreSchema,
+} from '../shared/storage';
 
 export interface IAuthStore {
   set(
@@ -15,14 +15,14 @@ export interface IAuthStore {
 }
 
 const store = new Store<AuthStoreSchema>({
-  name: 'auth',
+  name: ELECTRON_STORES.AUTH,
   schema: {
-    authToken: {
+    [ELECTRON_STORAGE_KEYS.AUTH.TOKEN]: {
       type: 'string',
       nullable: true,
       default: null,
     },
-    tokenExpiry: {
+    [ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY]: {
       type: 'number',
       nullable: true,
       default: null,
@@ -47,15 +47,19 @@ export class AuthStorage {
   }
 
   setAuthToken(token: string, expiryTimestamp?: number): void {
-    this.store.set('authToken', token);
+    this.store.set(ELECTRON_STORAGE_KEYS.AUTH.TOKEN, token);
     if (expiryTimestamp) {
-      this.store.set('tokenExpiry', expiryTimestamp);
+      this.store.set(ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY, expiryTimestamp);
     }
   }
 
   getAuthToken(): string | null {
-    const token = this.store.get('authToken') as string | null;
-    const expiry = this.store.get('tokenExpiry') as number | null;
+    const token = this.store.get(ELECTRON_STORAGE_KEYS.AUTH.TOKEN) as
+      | string
+      | null;
+    const expiry = this.store.get(ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY) as
+      | number
+      | null;
 
     // Check if token has expired
     if (expiry && Date.now() > expiry) {
@@ -68,8 +72,8 @@ export class AuthStorage {
   }
 
   clearAuthToken(): void {
-    this.store.delete('authToken');
-    this.store.delete('tokenExpiry');
+    this.store.delete(ELECTRON_STORAGE_KEYS.AUTH.TOKEN);
+    this.store.delete(ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY);
   }
 
   isAuthenticated(): boolean {

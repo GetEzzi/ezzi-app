@@ -21,23 +21,14 @@ export const AppModeSelector: React.FC<AppModeSelectorProps> = ({
 
   const handleAppModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newAppMode = e.target.value as AppMode;
-    storageProvider
-      .setAppMode(newAppMode)
-      .then(() => {
-        setAppMode(newAppMode);
 
-        if (window.electronAPI?.setAppMode) {
-          window.electronAPI.setAppMode(newAppMode).catch((error: any) => {
-            console.error(
-              'Error notifying Electron of app mode change:',
-              error,
-            );
-          });
-        }
-      })
-      .catch((error) => {
-        console.error('Error updating app mode:', error);
+    setAppMode(newAppMode);
+
+    if (!window.electronAPI) {
+      storageProvider.setAppMode(newAppMode).catch((error) => {
+        console.error('Error setting app mode in storage:', error);
       });
+    }
   };
 
   return (

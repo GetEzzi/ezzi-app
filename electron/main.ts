@@ -6,6 +6,7 @@ import { ScreenshotHelper } from './screenshot.helper';
 import { ShortcutsHelper } from './shortcuts';
 import { AppMode } from '../shared/api';
 import { WindowConfigFactory } from './window-config/WindowConfigFactory';
+import { AppStorage } from './app.storage';
 import * as dotenv from 'dotenv';
 
 const isDev = !app.isPackaged;
@@ -603,6 +604,12 @@ function loadEnvVariables(): void {
 async function initializeApp() {
   try {
     loadEnvVariables();
+
+    const appStorage = AppStorage.getInstance();
+    const savedAppMode = appStorage.getAppMode();
+    state.appMode = savedAppMode;
+    console.log('Loaded app mode from storage:', savedAppMode);
+
     initializeHelpers();
     initializeIpcHandlers({
       getMainWindow,
