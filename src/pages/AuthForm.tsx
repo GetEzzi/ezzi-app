@@ -33,6 +33,23 @@ export function AuthForm({ setUser }: AuthFormProps) {
   const [formState, setFormState] = useState<FormState>(initialState);
   const authProvider = getAuthProvider();
 
+  React.useEffect(() => {
+    const loadLastUsedEmail = async () => {
+      try {
+        const result = await window.electronAPI.authGetLastUsedEmail();
+        if (result.success && result.email) {
+          setFormState((prev) => ({ ...prev, email: result.email! }));
+        }
+      } catch (error) {
+        console.error('Error loading last used email:', error);
+      }
+    };
+
+    if (!isSelfHosted()) {
+      loadLastUsedEmail().catch(console.error);
+    }
+  }, []);
+
   // In self-hosted mode, automatically authenticate
   React.useEffect(() => {
     if (isSelfHosted()) {
@@ -98,6 +115,11 @@ export function AuthForm({ setUser }: AuthFormProps) {
 
       const userResponse = await authProvider.getCurrentUser();
       if (userResponse) {
+        try {
+          await window.electronAPI.authSetLastUsedEmail(formState.email);
+        } catch (error) {
+          console.error('Error saving last used email:', error);
+        }
         setUser(userResponse);
       }
 
@@ -140,6 +162,11 @@ export function AuthForm({ setUser }: AuthFormProps) {
 
       const userResponse = await authProvider.getCurrentUser();
       if (userResponse) {
+        try {
+          await window.electronAPI.authSetLastUsedEmail(formState.email);
+        } catch (error) {
+          console.error('Error saving last used email:', error);
+        }
         setUser(userResponse);
       }
     } else {

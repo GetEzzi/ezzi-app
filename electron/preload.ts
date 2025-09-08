@@ -67,6 +67,14 @@ interface ElectronAPI {
     isAuthenticated?: boolean;
     error?: string;
   }>;
+  authSetLastUsedEmail: (
+    email: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  authGetLastUsedEmail: () => Promise<{
+    success: boolean;
+    email?: string | null;
+    error?: string;
+  }>;
   setAppMode: (
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
@@ -259,6 +267,9 @@ const electronAPI = {
   authGetToken: () => ipcRenderer.invoke('auth-get-token'),
   authClearToken: () => ipcRenderer.invoke('auth-clear-token'),
   authIsAuthenticated: () => ipcRenderer.invoke('auth-is-authenticated'),
+  authSetLastUsedEmail: (email: string) =>
+    ipcRenderer.invoke('auth-set-last-used-email', email),
+  authGetLastUsedEmail: () => ipcRenderer.invoke('auth-get-last-used-email'),
   setAppMode: (appMode: AppMode) =>
     ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
   getAppMode: () => ipcRenderer.invoke('get-app-mode'),

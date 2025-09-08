@@ -15,6 +15,7 @@ export const ELECTRON_STORAGE_KEYS = {
   AUTH: {
     TOKEN: 'authToken',
     TOKEN_EXPIRY: 'tokenExpiry',
+    LAST_USED_EMAIL: 'lastUsedEmail',
   },
   APP_SETTINGS: {
     APP_MODE: 'appMode',
@@ -30,6 +31,7 @@ export const LOCAL_STORAGE_KEYS = {
 export interface AuthStoreSchema {
   authToken: string | null;
   tokenExpiry: number | null;
+  lastUsedEmail: string | null;
 }
 
 export interface AppStoreSchema {
