@@ -61,6 +61,14 @@ export interface ElectronAPI {
     isAuthenticated?: boolean;
     error?: string;
   }>;
+  authSetLastUsedEmail: (
+    email: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  authGetLastUsedEmail: () => Promise<{
+    success: boolean;
+    email?: string | null;
+    error?: string;
+  }>;
   setAppMode: (
     appMode: AppMode,
   ) => Promise<{ success: boolean; error?: string }>;
