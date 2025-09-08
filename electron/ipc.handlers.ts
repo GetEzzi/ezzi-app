@@ -322,6 +322,30 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     }
   });
 
+  ipcMain.handle('auth-set-last-used-email', (_event, email: string) => {
+    try {
+      authStorage.setLastUsedEmail(email);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting last used email:', error);
+
+      return { error: 'Failed to set last used email' };
+    }
+  });
+
+  ipcMain.handle('auth-get-last-used-email', () => {
+    try {
+      const email = authStorage.getLastUsedEmail();
+
+      return { success: true, email };
+    } catch (error) {
+      console.error('Error getting last used email:', error);
+
+      return { error: 'Failed to get last used email' };
+    }
+  });
+
   ipcMain.handle(IPC_EVENTS.APP_MODE.CHANGE, (_event, appMode: string) => {
     try {
       console.log('App mode changed to:', appMode);

@@ -27,6 +27,11 @@ const store = new Store<AuthStoreSchema>({
       nullable: true,
       default: null,
     },
+    [ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL]: {
+      type: 'string',
+      nullable: true,
+      default: null,
+    },
   },
 }) as unknown as IAuthStore;
 
@@ -78,5 +83,15 @@ export class AuthStorage {
 
   isAuthenticated(): boolean {
     return this.getAuthToken() !== null;
+  }
+
+  setLastUsedEmail(email: string): void {
+    this.store.set(ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL, email);
+  }
+
+  getLastUsedEmail(): string | null {
+    return this.store.get(ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL) as
+      | string
+      | null;
   }
 }
