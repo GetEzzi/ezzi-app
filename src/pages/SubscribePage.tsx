@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { authService } from '../services/auth.ts';
-import { AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
+import { AuthenticatedUser } from '@shared/api.ts';
 import { sendToElectron } from '../utils/electron';
 import { IPC_EVENTS } from '@shared/constants.ts';
 import CommandButton from '../components/shared/commands/CommandButton';
@@ -62,42 +62,6 @@ export default function SubscribePage({ user }: SubscribePageProps) {
             <h2 className="text-lg font-semibold text-gray-100">
               Welcome to Ezzi
             </h2>
-            {user.subscription.level === SubscriptionLevel.FREE && (
-              <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2 text-center">
-                <p className="text-green-400 text-sm font-medium">
-                  You have {user.subscription.freeSolutions} free solution
-                  {user.subscription.freeSolutions !== 1 ? 's' : ''} left
-                </p>
-                <p className="text-green-300/70 text-xs mt-1">
-                  Free solutions reset at midnight UTC
-                  {(() => {
-                    // Convert UTC midnight to local time
-                    const now = new Date();
-                    const utcMidnight = new Date(
-                      Date.UTC(
-                        now.getUTCFullYear(),
-                        now.getUTCMonth(),
-                        now.getUTCDate() + 1, // next day
-                        0,
-                        0,
-                        0,
-                        0, // midnight
-                      ),
-                    );
-
-                    // Only show local time if it's different from UTC
-                    if (
-                      utcMidnight.getHours() !== 0 ||
-                      utcMidnight.getMinutes() !== 0
-                    ) {
-                      return ` (${utcMidnight.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} your time)`;
-                    }
-
-                    return '';
-                  })()}
-                </p>
-              </div>
-            )}
             <p className="text-gray-400 text-sm text-center">
               To start cracking code interviews, you'll need to upgrade your
               plan.

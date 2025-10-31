@@ -43,14 +43,7 @@ function AppContent({ isInitialized, user }: AppContentProps) {
   const checkSubscription = () => {
     try {
       setSubscriptionLoading(true);
-      if (
-        user.subscription.level === SubscriptionLevel.FREE &&
-        user.subscription.freeSolutions === 0
-      ) {
-        setIsSubscribed(false);
-      } else {
-        setIsSubscribed(true);
-      }
+      setIsSubscribed(user.subscription.level !== SubscriptionLevel.FREE);
     } catch (_err) {
       setError('Failed to check subscription status');
     } finally {
@@ -75,8 +68,7 @@ function AppContent({ isInitialized, user }: AppContentProps) {
         .then((updatedUser) => {
           if (
             updatedUser &&
-            (updatedUser.subscription.level === SubscriptionLevel.PRO ||
-              updatedUser.subscription.freeSolutions > 0)
+            updatedUser.subscription.level !== SubscriptionLevel.FREE
           ) {
             setIsSubscribed(true);
           }
