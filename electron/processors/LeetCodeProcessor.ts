@@ -66,8 +66,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error:
-            'You have used up your free solutions. Please upgrade to continue.',
+          error: 'You need an active subscription to continue. Please upgrade.',
         };
       }
 
@@ -138,8 +137,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error:
-            'You have used up your free solutions. Please upgrade to continue.',
+          error: 'You need an active subscription to continue. Please upgrade.',
         };
       }
 

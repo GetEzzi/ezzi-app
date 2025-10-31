@@ -162,9 +162,9 @@ export interface UserSettingsUpdateRequest {
  * - Images typically contain screenshots of coding problems
  *
  * SUBSCRIPTION VALIDATION:
- * - Free tier users have limited solutions (freeSolutions count)
- * - PRO users have unlimited solutions during active subscription
- * - Check subscription level and remaining free solutions before processing
+ * - Free tier users cannot generate solutions
+ * - Paid subscriptions have unlimited solutions during the active period
+ * - Check subscription level before processing requests
  *
  * LOCALIZATION:
  * - Response language and code solutions are handled by backend

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
+import { AuthenticatedUser } from '@shared/api.ts';
 import { COMMAND_KEY } from '../../utils/platform';
 import { authService } from '../../services/auth.ts';
 import { useAppMode } from '../../contexts/appMode';
@@ -59,18 +59,6 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
 
           {/* Bottom section - All buttons in horizontal layout */}
           <div className="flex items-center justify-center gap-4">
-            {/* Free Plan Pill - Only show for FREE plan users */}
-            {user && user.subscription.level === SubscriptionLevel.FREE && (
-              <div className="w-33 bg-green-500/10 flex items-center gap-2 cursor-default rounded-sm px-2 py-1.5 transition-colors">
-                <span className="leading-none bg-green-500/10">FREE</span>
-                <div className="flex gap-1">
-                  <button className="border border-green-500/20 cursor-default rounded-md px-1.5 py-1 leading-none text-green-400 font-medium">
-                    solutions: {user.subscription.freeSolutions}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Screenshot */}
             <CommandButton
               label={
