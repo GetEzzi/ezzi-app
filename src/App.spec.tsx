@@ -76,11 +76,17 @@ jest.mock('./pages/AuthForm.tsx', () => {
 function createMockUser(
   overrides: Partial<AuthenticatedUser> = {},
 ): AuthenticatedUser {
+  const defaultSubscription: AuthenticatedUser['subscription'] = {
+    active_from: '2024-01-01T00:00:00.000Z',
+    active_to: null,
+    level: SubscriptionLevel.PRO,
+  };
+
   return {
     id: 'test-user-id',
     email: 'test@example.com',
     subscription: {
-      level: SubscriptionLevel.PRO,
+      ...defaultSubscription,
       ...overrides.subscription,
     },
     ...overrides,
