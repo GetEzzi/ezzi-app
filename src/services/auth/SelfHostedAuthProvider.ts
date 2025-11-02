@@ -22,7 +22,6 @@ export class SelfHostedAuthProvider implements IAuthProvider {
           new Date().setMonth(new Date().getMonth() + 1),
         ).toISOString(),
         level: SubscriptionLevel.PRO,
-        freeSolutions: 0,
       },
       settings: {
         solutionLanguage: settings.solutionLanguage,

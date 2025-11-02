@@ -76,7 +76,6 @@ export interface AuthenticatedUser {
     active_from: string | null;
     active_to: string | null;
     level: SubscriptionLevel;
-    freeSolutions: number;
   };
   settings: {
     solutionLanguage: ProgrammingLanguage;
