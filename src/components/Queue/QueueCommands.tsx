@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { AuthenticatedUser } from '@shared/api.ts';
+import React from 'react';
 import { COMMAND_KEY } from '../../utils/platform';
 import { authService } from '../../services/auth.ts';
 import { useAppMode } from '../../contexts/appMode';
@@ -17,32 +16,7 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
   onTooltipVisibilityChange,
   screenshotCount = 0,
 }) => {
-  const [isTooltipVisible] = useState(false);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const { currentAppMode, setAppMode } = useAppMode();
-
-  useEffect(() => {
-    // Fetch the current user when the component mounts
-    const fetchUser = async () => {
-      try {
-        const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      }
-    };
-
-    fetchUser().catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    let tooltipHeight = 0;
-    if (tooltipRef.current && isTooltipVisible) {
-      tooltipHeight = tooltipRef.current.offsetHeight + 10;
-    }
-    onTooltipVisibilityChange(isTooltipVisible, tooltipHeight);
-  }, [isTooltipVisible]);
 
   const handleSignOut = () => {
     authService.signOut().catch(console.error);
