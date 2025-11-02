@@ -81,7 +81,6 @@ function createMockUser(
     email: 'test@example.com',
     subscription: {
       level: SubscriptionLevel.PRO,
-      freeSolutions: 0,
       ...overrides.subscription,
     },
     ...overrides,
