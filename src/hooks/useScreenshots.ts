@@ -1,5 +1,4 @@
 import { useEffect, useCallback } from 'react';
-import { Screenshot } from '@shared/api.ts';
 import { useScreenshotContext } from '../contexts/ScreenshotContext';
 
 export function useScreenshots() {
