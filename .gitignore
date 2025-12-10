@@ -2,6 +2,8 @@ node_modules
 dist-electron
 release
 dist
+*.txt
+*.py
 **/.DS_Store
 **/.vscode
 **/.idea
