@@ -8,9 +8,10 @@ import {
   useSolutionContext,
 } from '../contexts/SolutionContext';
 import { ScreenshotProvider } from '../contexts/ScreenshotContext';
+import { ConversationProvider } from '../contexts/ConversationContext';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface SubscribedAppProps {}
+interface SubscribedAppProps { }
 
 const SubscribedAppContent: React.FC = () => {
   const { clearAll } = useSolutionContext();
@@ -97,7 +98,9 @@ const SubscribedApp: React.FC<SubscribedAppProps> = () => {
     <SettingsProvider>
       <SolutionProvider>
         <ScreenshotProvider>
-          <SubscribedAppContent />
+          <ConversationProvider>
+            <SubscribedAppContent />
+          </ConversationProvider>
         </ScreenshotProvider>
       </SolutionProvider>
     </SettingsProvider>

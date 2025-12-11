@@ -6,7 +6,7 @@ import { AppModeIndicator } from './AppModeIndicator';
 import CommandButton from '../shared/commands/CommandButton';
 import CommandSeparator from '../shared/commands/CommandSeparator';
 import SettingsTooltip from '../shared/commands/SettingsTooltip';
-import { LiveAudioRecorder } from './LiveAudioRecorder'; 
+import { ConversationMode } from '../Conversation';
 
 interface QueueCommandsProps {
   onTooltipVisibilityChange: (visible: boolean, height: number) => void;
@@ -35,9 +35,9 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
           {/* Bottom section - All buttons in horizontal layout */}
           <div className="flex items-center justify-center gap-4">
 
-            {/* NEW: Live Audio Recorder Button */}
-            <LiveAudioRecorder />
-            
+            {/* Conversation Mode - Audio transcription and AI answers */}
+            <ConversationMode />
+
             <CommandSeparator />
 
             {/* Screenshot */}
