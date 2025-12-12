@@ -30,26 +30,26 @@ export const TranscriptDisplay: React.FC<TranscriptDisplayProps> = ({
     return (
         <div
             ref={scrollRef}
-            className={`overflow-y-auto space-y-2 pr-2 ${className}`}
-            style={{ maxHeight: '300px' }}
+            className={`overflow-y-auto space-y-1.5 pr-2 ${className}`}
+            style={{ maxHeight: '280px' }}
         >
             {transcripts.map((message) => (
                 <div
                     key={message.id}
-                    className={`px-4 py-2.5 rounded-lg text-sm ${message.role === 'interviewer'
-                            ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
-                            : 'bg-pink-100 text-pink-900 border border-pink-200'
+                    className={`px-3 py-2 rounded-lg text-xs ${message.role === 'interviewer'
+                        ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                        : 'bg-pink-100 text-pink-900 border border-pink-200'
                         } ${!message.isFinal ? 'opacity-60' : ''}`}
                 >
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-xs uppercase tracking-wide opacity-70">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="font-medium text-[10px] uppercase tracking-wide opacity-70">
                             {message.role === 'interviewer' ? 'Interviewer' : 'You'}
                         </span>
                         {!message.isFinal && (
-                            <span className="text-xs opacity-50">(typing...)</span>
+                            <span className="text-[10px] opacity-50">(typing...)</span>
                         )}
                     </div>
-                    <p className="leading-relaxed">{message.text}</p>
+                    <p className="leading-snug">{message.text}</p>
                 </div>
             ))}
         </div>

@@ -1,9 +1,11 @@
 /**
- * ConversationService - Manages dual WebSocket connections for real-time audio transcription
+ * ConversationService - Manages real-time audio transcription via Python backend
  * 
- * Connects to backend via:
- * - ws://localhost:8000/ws/audio/mic/{conversation_id}
- * - ws://localhost:8000/ws/audio/system/{conversation_id}
+ * New Architecture:
+ * - Frontend sends START command to backend
+ * - Backend captures Mic + System audio
+ * - Backend streams to Deepgram
+ * - Backend broadcasts transcripts to Frontend via WebSocket
  */
 
 const BACKEND_WS_URL = 'ws://localhost:8000';
@@ -29,17 +31,9 @@ type StatusCallback = (status: 'idle' | 'connecting' | 'active' | 'error') => vo
 
 class ConversationService {
     private conversationId: string | null = null;
-    private micSocket: WebSocket | null = null;
-    private systemSocket: WebSocket | null = null;
+    private socket: WebSocket | null = null;
 
-    private micAudioContext: AudioContext | null = null;
-    private micProcessor: ScriptProcessorNode | null = null;
-    private micStream: MediaStream | null = null;
-
-    private systemAudioContext: AudioContext | null = null;
-    private systemProcessor: ScriptProcessorNode | null = null;
-    private systemStream: MediaStream | null = null;
-
+    // Callbacks
     private transcriptCallbacks: TranscriptCallback[] = [];
     private answerCallbacks: AnswerCallback[] = [];
     private statusCallbacks: StatusCallback[] = [];
@@ -54,18 +48,6 @@ class ConversationService {
     }
 
     /**
-     * Convert Float32 audio data to 16-bit PCM
-     */
-    private floatTo16BitPCM(input: Float32Array): ArrayBuffer {
-        const output = new Int16Array(input.length);
-        for (let i = 0; i < input.length; i++) {
-            const s = Math.max(-1, Math.min(1, input[i]));
-            output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        }
-        return output.buffer;
-    }
-
-    /**
      * Start a new conversation session
      */
     async startConversation(): Promise<void> {
@@ -73,13 +55,28 @@ class ConversationService {
         this.conversationId = this.generateConversationId();
 
         try {
-            // Start both audio streams concurrently
-            await Promise.all([
-                this.startMicAudio(),
-                this.startSystemAudio(),
-            ]);
+            // 1. Connect to Transcript WebSocket first
+            await this.connectWebSocket();
+
+            // 2. Trigger audio capture on backend
+            const response = await fetch(`${BACKEND_API_URL}/api/conversation/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: this.conversationId,
+                    // Optional: pass device indices if you have a settings UI
+                    // mic_device_index: 1, 
+                    // system_device_index: 2 
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to start conversation: ${response.statusText}`);
+            }
 
             this.notifyStatus('active');
+            console.log('Conversation started successfully');
+
         } catch (error) {
             console.error('Failed to start conversation:', error);
             this.notifyStatus('error');
@@ -89,188 +86,65 @@ class ConversationService {
     }
 
     /**
-     * Stop the current conversation session
+     * Connect to the single transcript WebSocket
      */
-    stopConversation(): void {
-        // Close WebSockets
-        if (this.micSocket) {
-            this.micSocket.close();
-            this.micSocket = null;
-        }
-        if (this.systemSocket) {
-            this.systemSocket.close();
-            this.systemSocket = null;
-        }
+    private async connectWebSocket(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const wsUrl = `${BACKEND_WS_URL}/ws/conversation/${this.conversationId}`;
+            this.socket = new WebSocket(wsUrl);
 
-        // Cleanup mic audio
-        if (this.micStream) {
-            this.micStream.getTracks().forEach(track => track.stop());
-            this.micStream = null;
-        }
-        if (this.micProcessor) {
-            this.micProcessor.disconnect();
-            this.micProcessor = null;
-        }
-        if (this.micAudioContext) {
-            this.micAudioContext.close();
-            this.micAudioContext = null;
-        }
-
-        // Cleanup system audio
-        if (this.systemStream) {
-            this.systemStream.getTracks().forEach(track => track.stop());
-            this.systemStream = null;
-        }
-        if (this.systemProcessor) {
-            this.systemProcessor.disconnect();
-            this.systemProcessor = null;
-        }
-        if (this.systemAudioContext) {
-            this.systemAudioContext.close();
-            this.systemAudioContext = null;
-        }
-
-        this.conversationId = null;
-        this.notifyStatus('idle');
-    }
-
-    /**
-     * Start microphone audio capture and streaming
-     */
-    private async startMicAudio(): Promise<void> {
-        // Get microphone stream
-        this.micStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                channelCount: 1,
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-                sampleRate: 16000,
-            },
-        });
-
-        // Create WebSocket connection
-        const wsUrl = `${BACKEND_WS_URL}/ws/audio/mic/${this.conversationId}`;
-        this.micSocket = new WebSocket(wsUrl);
-
-        this.micSocket.onopen = () => {
-            console.log('🎤 Mic WebSocket connected');
-            this.setupAudioProcessor(
-                this.micStream!,
-                this.micSocket!,
-                'mic'
-            );
-        };
-
-        this.micSocket.onmessage = (event) => {
-            this.handleTranscriptMessage(event.data);
-        };
-
-        this.micSocket.onerror = (error) => {
-            console.error('Mic WebSocket error:', error);
-        };
-
-        this.micSocket.onclose = () => {
-            console.log('🎤 Mic WebSocket closed');
-        };
-
-        // Wait for connection to open
-        await new Promise<void>((resolve, reject) => {
-            if (!this.micSocket) return reject(new Error('No mic socket'));
-            this.micSocket.onopen = () => {
-                this.setupAudioProcessor(this.micStream!, this.micSocket!, 'mic');
+            this.socket.onopen = () => {
+                console.log('🔌 Transcript WebSocket connected');
                 resolve();
             };
-            this.micSocket.onerror = () => reject(new Error('Mic WebSocket connection failed'));
-        });
-    }
 
-    /**
-     * Start system audio capture and streaming
-     * Uses Electron's desktopCapturer to capture system audio
-     */
-    private async startSystemAudio(): Promise<void> {
-        try {
-            // Request screen share with audio - this captures system audio on Windows
-            this.systemStream = await navigator.mediaDevices.getDisplayMedia({
-                video: { width: 1, height: 1 }, // Minimal video (required but we don't use it)
-                audio: {
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false,
-                } as MediaTrackConstraints,
-            });
-
-            // Stop video track immediately - we only need audio
-            this.systemStream.getVideoTracks().forEach(track => track.stop());
-
-            // Check if we got audio
-            const audioTracks = this.systemStream.getAudioTracks();
-            if (audioTracks.length === 0) {
-                console.warn('⚠️ No system audio track available. Continuing with mic only.');
-                return;
-            }
-
-            // Create WebSocket connection
-            const wsUrl = `${BACKEND_WS_URL}/ws/audio/system/${this.conversationId}`;
-            this.systemSocket = new WebSocket(wsUrl);
-
-            // Wait for connection to open
-            await new Promise<void>((resolve, reject) => {
-                if (!this.systemSocket) return reject(new Error('No system socket'));
-                this.systemSocket.onopen = () => {
-                    console.log('🔊 System WebSocket connected');
-                    this.setupAudioProcessor(this.systemStream!, this.systemSocket!, 'system');
-                    resolve();
-                };
-                this.systemSocket.onerror = () => {
-                    console.warn('System WebSocket connection failed - continuing without system audio');
-                    resolve(); // Don't fail the whole conversation
-                };
-            });
-
-            this.systemSocket.onmessage = (event) => {
+            this.socket.onmessage = (event) => {
                 this.handleTranscriptMessage(event.data);
             };
 
-            this.systemSocket.onclose = () => {
-                console.log('🔊 System WebSocket closed');
+            this.socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                // Only reject if we haven't connected yet
+                if (this.socket?.readyState !== WebSocket.OPEN) {
+                    reject(error);
+                }
             };
-        } catch (error) {
-            // System audio is optional - user may deny permission
-            console.warn('⚠️ System audio capture not available:', error);
-        }
+
+            this.socket.onclose = () => {
+                console.log('🔌 Transcript WebSocket closed');
+                if (this.conversationId) {
+                    // unexpected close
+                    this.notifyStatus('error');
+                }
+            };
+        });
     }
 
     /**
-     * Setup audio processor for a given stream
+     * Stop the current conversation session
      */
-    private setupAudioProcessor(
-        stream: MediaStream,
-        socket: WebSocket,
-        source: 'mic' | 'system'
-    ): void {
-        const audioContext = new AudioContext({ sampleRate: 16000 });
-        const sourceNode = audioContext.createMediaStreamSource(stream);
-        const processor = audioContext.createScriptProcessor(4096, 1, 1);
+    async stopConversation(): Promise<void> {
+        if (!this.conversationId) return;
 
-        processor.onaudioprocess = (event) => {
-            if (socket.readyState === WebSocket.OPEN) {
-                const inputData = event.inputBuffer.getChannelData(0);
-                const pcmData = this.floatTo16BitPCM(inputData);
-                socket.send(pcmData);
+        try {
+            // 1. Tell backend to stop capture
+            await fetch(`${BACKEND_API_URL}/api/conversation/stop`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    conversation_id: this.conversationId
+                })
+            }).catch(e => console.warn("Failed to call stop API:", e));
+
+        } finally {
+            // 2. Close WebSocket
+            if (this.socket) {
+                this.socket.close();
+                this.socket = null;
             }
-        };
 
-        sourceNode.connect(processor);
-        processor.connect(audioContext.destination);
-
-        if (source === 'mic') {
-            this.micAudioContext = audioContext;
-            this.micProcessor = processor;
-        } else {
-            this.systemAudioContext = audioContext;
-            this.systemProcessor = processor;
+            this.conversationId = null;
+            this.notifyStatus('idle');
         }
     }
 

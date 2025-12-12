@@ -546,7 +546,7 @@ function setWindowDimensions(
     const [currentX, currentY] = state.mainWindow.getPosition();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workAreaSize;
-    const maxWidth = Math.floor(workArea.width * 0.4);
+    const maxWidth = Math.floor(workArea.width * 0.6);
 
     // let extra = 0;
     // // TODO: prevents infinite resize loops (bug with hooks and updateContentDimensions())

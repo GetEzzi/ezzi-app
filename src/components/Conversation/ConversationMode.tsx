@@ -38,18 +38,18 @@ export const ConversationMode: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col gap-3">
-            {/* Control Buttons */}
-            <div className="flex items-center gap-2">
+        <div className="flex gap-4">
+            {/* Left Side - Control Buttons */}
+            <div className="flex flex-col gap-2">
                 {/* Conversation Toggle Button */}
                 <button
                     onClick={handleConversationToggle}
                     disabled={isConnecting}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${isActive
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30'
-                            : isConnecting
-                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 cursor-wait'
-                                : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30'
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30'
+                        : isConnecting
+                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 cursor-wait'
+                            : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30'
                         }`}
                 >
                     {isActive ? (
@@ -76,8 +76,8 @@ export const ConversationMode: React.FC = () => {
                         onClick={handleAnswerClick}
                         disabled={isLoadingAnswer || transcripts.length === 0}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${isLoadingAnswer || transcripts.length === 0
-                                ? 'bg-gray-500/10 text-gray-500 border border-gray-500/30 cursor-not-allowed'
-                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
+                            ? 'bg-gray-500/10 text-gray-500 border border-gray-500/30 cursor-not-allowed'
+                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
                             }`}
                     >
                         {isLoadingAnswer ? (
@@ -103,9 +103,9 @@ export const ConversationMode: React.FC = () => {
                 )}
             </div>
 
-            {/* Content Area - Only show when conversation has started */}
+            {/* Right Side - Content Area (Chat Transcript) */}
             {hasContent && (
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 min-w-[380px] max-w-[420px]">
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 min-w-[400px] max-w-[600px]">
                     {/* Transcript Section */}
                     <TranscriptDisplay
                         transcripts={transcripts}
