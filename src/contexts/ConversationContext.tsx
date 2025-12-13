@@ -17,7 +17,7 @@ type ConversationStatus = 'idle' | 'connecting' | 'active' | 'error';
 interface ConversationContextType {
     status: ConversationStatus;
     transcripts: TranscriptMessage[];
-    answer: AIResponse | null;
+    answers: AIResponse[];
     isLoadingAnswer: boolean;
     startConversation: () => Promise<void>;
     stopConversation: () => void;
@@ -38,7 +38,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
 }) => {
     const [status, setStatus] = useState<ConversationStatus>('idle');
     const [transcripts, setTranscripts] = useState<TranscriptMessage[]>([]);
-    const [answer, setAnswer] = useState<AIResponse | null>(null);
+    const [answers, setAnswers] = useState<AIResponse[]>([]);
     const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
 
     // Subscribe to service events
@@ -70,7 +70,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
         });
 
         const unsubscribeAnswer = conversationService.onAnswer((newAnswer) => {
-            setAnswer(newAnswer);
+            setAnswers((prev) => [...prev, newAnswer]);
         });
 
         const unsubscribeStatus = conversationService.onStatusChange((newStatus) => {
@@ -86,7 +86,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
 
     const startConversation = useCallback(async () => {
         setTranscripts([]);
-        setAnswer(null);
+        setAnswers([]);
         await conversationService.startConversation();
     }, []);
 
@@ -107,7 +107,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
 
     const clearTranscripts = useCallback(() => {
         setTranscripts([]);
-        setAnswer(null);
+        setAnswers([]);
     }, []);
 
     return (
@@ -115,7 +115,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
             value={{
                 status,
                 transcripts,
-                answer,
+                answers,
                 isLoadingAnswer,
                 startConversation,
                 stopConversation,
