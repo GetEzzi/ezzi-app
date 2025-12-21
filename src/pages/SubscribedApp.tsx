@@ -19,28 +19,71 @@ const SubscribedAppContent: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastDimensionsRef = useRef<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
+  const isInitializedRef = useRef(false);
+
+  // Debounced dimension update function
+  const updateDimensions = React.useCallback(() => {
+    if (!containerRef.current) return;
+
+    const height = containerRef.current.scrollHeight;
+    const width = containerRef.current.scrollWidth;
+
+    // For the first update, always apply it
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      lastDimensionsRef.current = { width, height };
+
+      window.electronAPI
+        ?.updateContentDimensions({ width, height, source: 'SubscribedApp' })
+        .catch(console.error);
+      return;
+    }
+
+    // Only update if dimensions changed significantly (more than 10px)
+    const hasSignificantChange =
+      Math.abs(lastDimensionsRef.current.width - width) > 10 ||
+      Math.abs(lastDimensionsRef.current.height - height) > 10;
+
+    if (hasSignificantChange) {
+      lastDimensionsRef.current = { width, height };
+
+      window.electronAPI
+        ?.updateContentDimensions({ width, height, source: 'SubscribedApp' })
+        .catch(console.error);
+    }
+  }, []);
+
+  const debouncedUpdateDimensions = React.useCallback(() => {
+    if (resizeTimeoutRef.current) {
+      clearTimeout(resizeTimeoutRef.current);
+    }
+
+    resizeTimeoutRef.current = setTimeout(() => {
+      updateDimensions();
+    }, 200); // 200ms debounce
+  }, [updateDimensions]);
+
   // Dynamically update the window size
   useEffect(() => {
     if (!containerRef.current) {
       return;
     }
 
-    const updateDimensions = () => {
-      if (!containerRef.current) {
-        return;
-      }
-      const height = containerRef.current.scrollHeight;
-      const width = containerRef.current.scrollWidth;
-      window.electronAPI
-        ?.updateContentDimensions({ width, height, source: 'SubscribedApp' })
-        .catch(console.error);
-    };
-
-    const resizeObserver = new ResizeObserver(updateDimensions);
+    const resizeObserver = new ResizeObserver(() => {
+      debouncedUpdateDimensions();
+    });
     resizeObserver.observe(containerRef.current);
 
-    // Also watch DOM changes
-    const mutationObserver = new MutationObserver(updateDimensions);
+    // Watch DOM changes
+    const mutationObserver = new MutationObserver(() => {
+      debouncedUpdateDimensions();
+    });
+
     mutationObserver.observe(containerRef.current, {
       childList: true,
       subtree: true,
@@ -48,14 +91,20 @@ const SubscribedAppContent: React.FC = () => {
       characterData: true,
     });
 
-    // Initial dimension update
-    updateDimensions();
+    // Initial dimension update after a small delay
+    const initialUpdateTimer = setTimeout(() => {
+      updateDimensions();
+    }, 100);
 
     return () => {
+      clearTimeout(initialUpdateTimer);
       resizeObserver.disconnect();
       mutationObserver.disconnect();
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
     };
-  }, [view]);
+  }, [debouncedUpdateDimensions, updateDimensions]);
 
   // Listen for events that might switch views or show errors
   useEffect(() => {

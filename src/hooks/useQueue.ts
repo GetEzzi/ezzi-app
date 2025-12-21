@@ -11,6 +11,13 @@ export function useQueue() {
   const [tooltipHeight, setTooltipHeight] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastDimensionsRef = useRef<{ width: number; height: number }>({
+    width: 0,
+    height: 0
+  });
+  const isInitializedRef = useRef(false);
+
   const {
     screenshots,
     refetch,
@@ -30,12 +37,39 @@ export function useQueue() {
   };
 
   const updateDimensions = useCallback(() => {
-    if (contentRef.current) {
-      let contentHeight = contentRef.current.scrollHeight;
-      const contentWidth = contentRef.current.scrollWidth;
-      if (isTooltipVisible) {
-        contentHeight += tooltipHeight;
-      }
+    if (!contentRef.current) return;
+
+    let contentHeight = contentRef.current.scrollHeight;
+    const contentWidth = contentRef.current.scrollWidth;
+
+    if (isTooltipVisible) {
+      contentHeight += tooltipHeight;
+    }
+
+    // For the first update, always apply it
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      lastDimensionsRef.current = { width: contentWidth, height: contentHeight };
+
+      window.electronAPI
+        .updateContentDimensions({
+          width: contentWidth,
+          height: contentHeight,
+          source: 'useQueue',
+        })
+        .catch(console.error);
+      return;
+
+    }
+
+    // For subsequent updates, only update if dimensions have changed significantly
+    const hasSignificantChange =
+      Math.abs(lastDimensionsRef.current.width - contentWidth) > 10 ||
+      Math.abs(lastDimensionsRef.current.height - contentHeight) > 10;
+
+    if (hasSignificantChange) {
+      lastDimensionsRef.current = { width: contentWidth, height: contentHeight };
+
       window.electronAPI
         .updateContentDimensions({
           width: contentWidth,
@@ -46,11 +80,23 @@ export function useQueue() {
     }
   }, [isTooltipVisible, tooltipHeight]);
 
+  const debouncedUpdateDimensions = useCallback(() => {
+    if (resizeTimeoutRef.current) {
+      clearTimeout(resizeTimeoutRef.current);
+    }
+
+    resizeTimeoutRef.current = setTimeout(() => {
+      updateDimensions();
+    }, 200); // 200ms debounce for smoother experience
+  }, [updateDimensions]);
+
   useScreenshotEvents({ refetch });
 
-  // Separate effect for resize observation and event listeners (doesn't depend on tooltip state)
+  // Main effect for resize observation and event listeners
   useEffect(() => {
-    const resizeObserver = new ResizeObserver(updateDimensions);
+    const resizeObserver = new ResizeObserver(() => {
+      debouncedUpdateDimensions();
+    });
     if (contentRef.current) {
       resizeObserver.observe(contentRef.current);
     }
@@ -73,16 +119,20 @@ export function useQueue() {
       }),
     ];
 
+    // Initial dimension update after a small delay to ensure DOM is ready
+    const initialUpdateTimer = setTimeout(() => {
+      updateDimensions();
+    }, 100);
+
     return () => {
+      clearTimeout(initialUpdateTimer);
       resizeObserver.disconnect();
       cleanupFunctions.forEach((cleanup) => cleanup());
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
     };
-  }, [showToast, updateDimensions]);
-
-  // Separate effect for tooltip-triggered dimension updates
-  useEffect(() => {
-    updateDimensions();
-  }, [isTooltipVisible, tooltipHeight, updateDimensions]);
+  }, [showToast, debouncedUpdateDimensions, updateDimensions]);
 
   useEffect(() => {
     if (screenshots.length === 0) {
