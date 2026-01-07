@@ -129,3 +129,35 @@ layer(base);
   inset: -16px;
   opacity: 1;
 }
+
+/* =========================================
+   CURSOR FIX - Prevent text selection cursor
+   This prevents the I-beam cursor from appearing
+   which could be suspicious during screen sharing
+   ========================================= */
+* {
+  cursor: default !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow pointer cursor on interactive elements */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+/* Allow text input in form fields if needed */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+textarea {
+  cursor: text !important;
+  user-select: text;
+  -webkit-user-select: text;
+}

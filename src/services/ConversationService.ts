@@ -25,8 +25,14 @@ export interface AIResponse {
     code_snippet?: string;
 }
 
+export interface DualAIResponse {
+    quick_points: string;  // Markdown talking points from Groq
+    full_answer: AIResponse;  // Full response from OpenRouter
+}
+
 type TranscriptCallback = (message: TranscriptMessage) => void;
 type AnswerCallback = (answer: AIResponse) => void;
+type QuickPointsCallback = (points: string) => void;
 type StatusCallback = (status: 'idle' | 'connecting' | 'active' | 'error') => void;
 
 class ConversationService {
@@ -36,6 +42,7 @@ class ConversationService {
     // Callbacks
     private transcriptCallbacks: TranscriptCallback[] = [];
     private answerCallbacks: AnswerCallback[] = [];
+    private quickPointsCallbacks: QuickPointsCallback[] = [];
     private statusCallbacks: StatusCallback[] = [];
 
     private messageIdCounter = 0;
@@ -172,14 +179,15 @@ class ConversationService {
     }
 
     /**
-     * Request an AI-generated answer based on current conversation context
+     * Request dual AI-generated answers (quick talking points + full answer)
+     * Calls the /api/analyze-dual endpoint which fires both Groq and OpenRouter simultaneously
      */
-    async requestAnswer(): Promise<AIResponse> {
+    async requestAnswer(): Promise<DualAIResponse> {
         if (!this.conversationId) {
             throw new Error('No active conversation');
         }
 
-        const response = await fetch(`${BACKEND_API_URL}/api/analyze`, {
+        const response = await fetch(`${BACKEND_API_URL}/api/analyze-dual`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -194,9 +202,15 @@ class ConversationService {
             throw new Error(`API error: ${response.status}`);
         }
 
-        const answer: AIResponse = await response.json();
-        this.answerCallbacks.forEach(cb => cb(answer));
-        return answer;
+        const dualResponse: DualAIResponse = await response.json();
+
+        // Notify quick points callbacks
+        this.quickPointsCallbacks.forEach(cb => cb(dualResponse.quick_points));
+
+        // Notify full answer callbacks
+        this.answerCallbacks.forEach(cb => cb(dualResponse.full_answer));
+
+        return dualResponse;
     }
 
     /**
@@ -216,6 +230,16 @@ class ConversationService {
         this.answerCallbacks.push(callback);
         return () => {
             this.answerCallbacks = this.answerCallbacks.filter(cb => cb !== callback);
+        };
+    }
+
+    /**
+     * Subscribe to quick points events
+     */
+    onQuickPoints(callback: QuickPointsCallback): () => void {
+        this.quickPointsCallbacks.push(callback);
+        return () => {
+            this.quickPointsCallbacks = this.quickPointsCallbacks.filter(cb => cb !== callback);
         };
     }
 

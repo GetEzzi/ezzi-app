@@ -3,6 +3,7 @@ import { MessageCircle, Square, Loader2, RotateCcw } from 'lucide-react';
 import { useConversation } from '../../contexts/ConversationContext';
 import { TranscriptDisplay } from './TranscriptDisplay';
 import { AnswerDisplay } from './AnswerDisplay';
+import { TalkingPointsDisplay } from './TalkingPointsDisplay';
 
 interface ConversationModeProps {
     extraActions?: React.ReactNode;
@@ -13,6 +14,7 @@ export const ConversationMode: React.FC<ConversationModeProps> = ({ extraActions
         status,
         transcripts,
         answers,
+        quickPoints,
         isLoadingAnswer,
         startConversation,
         stopConversation,
@@ -22,11 +24,12 @@ export const ConversationMode: React.FC<ConversationModeProps> = ({ extraActions
 
     const isActive = status === 'active';
     const isConnecting = status === 'connecting';
-    const hasContent = transcripts.length > 0 || answers.length > 0;
+    const hasContent = transcripts.length > 0 || answers.length > 0 || quickPoints.length > 0;
 
     // Auto-scroll refs
     const transcriptEndRef = useRef<HTMLDivElement>(null);
     const answerEndRef = useRef<HTMLDivElement>(null);
+    const quickPointsEndRef = useRef<HTMLDivElement>(null);
 
     // Scroll to bottom when content changes
     useEffect(() => {
@@ -40,6 +43,12 @@ export const ConversationMode: React.FC<ConversationModeProps> = ({ extraActions
             answerEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [answers, isLoadingAnswer]);
+
+    useEffect(() => {
+        if (quickPoints.length > 0 || isLoadingAnswer) {
+            quickPointsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [quickPoints, isLoadingAnswer]);
 
     const handleConversationToggle = async () => {
         if (isActive) {
@@ -97,11 +106,11 @@ export const ConversationMode: React.FC<ConversationModeProps> = ({ extraActions
         );
     }
 
-    // Expanded / Active View (3-Column Layout)
+    // Expanded / Active View (4-Column Layout)
     return (
-        <div className="flex gap-4 w-full h-[500px]">
+        <div className="flex gap-3 w-full h-[500px]">
             {/* Column 1: Controls (Left) */}
-            <div className="flex flex-col gap-4 w-[200px] flex-shrink-0">
+            <div className="flex flex-col gap-4 w-[180px] flex-shrink-0">
                 {/* Main Controls */}
                 <div className="flex flex-col gap-2 bg-[#1E2530]/50 p-3 rounded-lg border border-white/5">
                     <button
@@ -165,8 +174,8 @@ export const ConversationMode: React.FC<ConversationModeProps> = ({ extraActions
                 )}
             </div>
 
-            {/* Column 2: Transcript (Middle) */}
-            <div className="flex-1 min-w-[300px] h-full">
+            {/* Column 2: Transcript */}
+            <div className="flex-1 min-w-[250px] h-full">
                 <div className="h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 overflow-y-auto relative">
                     <div className="text-[10px] uppercase text-gray-500 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-white/5">Transcript</div>
                     <TranscriptDisplay
@@ -177,15 +186,27 @@ export const ConversationMode: React.FC<ConversationModeProps> = ({ extraActions
                 </div>
             </div>
 
-            {/* Column 3: Suggestions (Right) */}
-            <div className="flex-1 min-w-[350px] h-full">
+            {/* Column 3: Full Answer (Red Box - Detailed OpenRouter Response) */}
+            <div className="flex-1 min-w-[280px] h-full">
                 <div className="h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 overflow-y-auto relative">
-                    <div className="text-[10px] uppercase text-emerald-600/70 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-white/5">AI Suggestions</div>
+                    <div className="text-[10px] uppercase text-emerald-600/70 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-white/5">Full Answer</div>
                     <AnswerDisplay
                         answers={answers}
                         isLoading={isLoadingAnswer}
                     />
                     <div ref={answerEndRef} />
+                </div>
+            </div>
+
+            {/* Column 4: Quick Talking Points (Blue Box - Fast Groq Response) */}
+            <div className="flex-1 min-w-[280px] h-full">
+                <div className="h-full bg-white/5 backdrop-blur-sm border border-cyan-500/20 rounded-lg p-3 overflow-y-auto relative">
+                    <div className="text-[10px] uppercase text-cyan-500/70 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-cyan-500/10">Quick Talking Points</div>
+                    <TalkingPointsDisplay
+                        quickPoints={quickPoints}
+                        isLoading={isLoadingAnswer}
+                    />
+                    <div ref={quickPointsEndRef} />
                 </div>
             </div>
         </div>

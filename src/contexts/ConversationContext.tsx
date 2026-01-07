@@ -18,6 +18,7 @@ interface ConversationContextType {
     status: ConversationStatus;
     transcripts: TranscriptMessage[];
     answers: AIResponse[];
+    quickPoints: string[];  // Markdown talking points from Groq
     isLoadingAnswer: boolean;
     startConversation: () => Promise<void>;
     stopConversation: () => void;
@@ -39,6 +40,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
     const [status, setStatus] = useState<ConversationStatus>('idle');
     const [transcripts, setTranscripts] = useState<TranscriptMessage[]>([]);
     const [answers, setAnswers] = useState<AIResponse[]>([]);
+    const [quickPoints, setQuickPoints] = useState<string[]>([]);
     const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
 
     // Subscribe to service events
@@ -73,6 +75,10 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
             setAnswers((prev) => [...prev, newAnswer]);
         });
 
+        const unsubscribeQuickPoints = conversationService.onQuickPoints((points) => {
+            setQuickPoints((prev) => [...prev, points]);
+        });
+
         const unsubscribeStatus = conversationService.onStatusChange((newStatus) => {
             setStatus(newStatus);
         });
@@ -80,6 +86,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
         return () => {
             unsubscribeTranscript();
             unsubscribeAnswer();
+            unsubscribeQuickPoints();
             unsubscribeStatus();
         };
     }, []);
@@ -87,6 +94,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
     const startConversation = useCallback(async () => {
         setTranscripts([]);
         setAnswers([]);
+        setQuickPoints([]);
         await conversationService.startConversation();
     }, []);
 
@@ -108,6 +116,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
     const clearTranscripts = useCallback(() => {
         setTranscripts([]);
         setAnswers([]);
+        setQuickPoints([]);
     }, []);
 
     return (
@@ -116,6 +125,7 @@ export const ConversationProvider: React.FC<ConversationProviderProps> = ({
                 status,
                 transcripts,
                 answers,
+                quickPoints,
                 isLoadingAnswer,
                 startConversation,
                 stopConversation,
