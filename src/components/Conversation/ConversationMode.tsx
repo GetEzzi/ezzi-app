@@ -106,107 +106,105 @@ export const ConversationMode: React.FC<ConversationModeProps> = ({ extraActions
         );
     }
 
-    // Expanded / Active View (4-Column Layout)
+    // Expanded / Active View (3-Column Layout matching wireframe)
     return (
-        <div className="flex gap-3 w-full h-[500px]">
-            {/* Column 1: Controls (Left) */}
-            <div className="flex flex-col gap-4 w-[180px] flex-shrink-0">
-                {/* Main Controls */}
-                <div className="flex flex-col gap-2 bg-[#1E2530]/50 p-3 rounded-lg border border-white/5">
-                    <button
-                        onClick={handleConversationToggle}
-                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 w-full ${isActive
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30'
-                            : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30'
-                            }`}
-                    >
-                        {isActive ? (
-                            <>
-                                <Square size={12} fill="currentColor" />
-                                <span>Stop Conversation</span>
-                            </>
-                        ) : (
-                            <>
-                                <Loader2 size={12} className={isConnecting ? "animate-spin" : "hidden"} />
-                                <span>{isConnecting ? 'Connecting...' : 'Resume Conversation'}</span>
-                            </>
-                        )}
-                    </button>
+        <div className="bg-[#1a1d24] p-4 rounded-xl border border-white/10 w-full">
+            <div className="flex gap-4 w-full h-[520px]">
+                {/* Column 1: Controls + Transcript (Stacked) */}
+                <div className="flex flex-col gap-3 w-[220px] flex-shrink-0 h-full">
+                    {/* Controls Section */}
+                    <div className="flex flex-col gap-2 bg-[#1E2530]/50 p-3 rounded-lg border border-white/5">
+                        {/* Top row: Stop + Generate buttons */}
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleConversationToggle}
+                                className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 flex-1 ${isActive
+                                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30'
+                                    : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30'
+                                    }`}
+                            >
+                                {isActive ? (
+                                    <>
+                                        <Square size={10} fill="currentColor" />
+                                        <span>STOP</span>
+                                    </>
+                                ) : (
+                                    <span>{isConnecting ? '...' : 'Start'}</span>
+                                )}
+                            </button>
 
-                    {isActive && (
-                        <button
-                            onClick={handleAnswerClick}
-                            disabled={isLoadingAnswer}
-                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 w-full ${isLoadingAnswer
-                                ? 'bg-gray-500/10 text-gray-500 border border-gray-500/30 cursor-not-allowed'
-                                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-                                }`}
-                            title="Shortcut: Ctrl + Q"
-                        >
-                            {isLoadingAnswer ? (
-                                <>
-                                    <Loader2 size={12} className="animate-spin" />
-                                    <span>Thinking...</span>
-                                </>
-                            ) : (
-                                <span>Generate Answer (Ctrl+Q)</span>
+                            {isActive && (
+                                <button
+                                    onClick={handleAnswerClick}
+                                    disabled={isLoadingAnswer}
+                                    className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 flex-1 ${isLoadingAnswer
+                                        ? 'bg-gray-500/10 text-gray-500 border border-gray-500/30 cursor-not-allowed'
+                                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
+                                        }`}
+                                    title="Shortcut: Ctrl + Q"
+                                >
+                                    {isLoadingAnswer ? (
+                                        <Loader2 size={12} className="animate-spin" />
+                                    ) : (
+                                        <span>Generate</span>
+                                    )}
+                                </button>
                             )}
-                        </button>
-                    )}
-
-                    <button
-                        onClick={clearTranscripts}
-                        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-colors w-full border border-transparent hover:border-white/10"
-                    >
-                        <RotateCcw size={11} />
-                        <span>Clear History</span>
-                    </button>
-                </div>
-
-                {/* Extra Actions */}
-                {extraActions && (
-                    <div className="bg-[#1E2530]/50 p-3 rounded-lg border border-white/5 mt-auto">
-                        <div className="text-[10px] uppercase text-gray-500 font-semibold mb-2">Tools</div>
-                        <div className="flex flex-col gap-2">
-                            {extraActions}
                         </div>
+
+                        {/* Reload/Clear button */}
+                        <button
+                            onClick={clearTranscripts}
+                            className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-colors w-auto self-start border border-white/10"
+                        >
+                            <RotateCcw size={10} />
+                            <span>Reload</span>
+                        </button>
                     </div>
-                )}
-            </div>
 
-            {/* Column 2: Transcript */}
-            <div className="flex-1 min-w-[250px] h-full">
-                <div className="h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 overflow-y-auto relative">
-                    <div className="text-[10px] uppercase text-gray-500 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-white/5">Transcript</div>
-                    <TranscriptDisplay
-                        transcripts={transcripts}
-                        className="mb-2"
-                    />
-                    <div ref={transcriptEndRef} />
+                    {/* Transcript Section (takes remaining space) */}
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-lg p-3 overflow-y-auto relative min-h-0">
+                        <div className="text-[10px] uppercase text-gray-500 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-white/5">Transcript</div>
+                        <TranscriptDisplay
+                            transcripts={transcripts}
+                            className="mb-2"
+                        />
+                        <div ref={transcriptEndRef} />
+                    </div>
+
+                    {/* Tools Section at bottom */}
+                    {extraActions && (
+                        <div className="bg-[#1E2530]/50 p-3 rounded-lg border border-white/5">
+                            <div className="text-[10px] uppercase text-gray-500 font-semibold mb-2">Tools</div>
+                            <div className="flex flex-col gap-2">
+                                {extraActions}
+                            </div>
+                        </div>
+                    )}
                 </div>
-            </div>
 
-            {/* Column 3: Full Answer (Red Box - Detailed OpenRouter Response) */}
-            <div className="flex-1 min-w-[280px] h-full">
-                <div className="h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 overflow-y-auto relative">
-                    <div className="text-[10px] uppercase text-emerald-600/70 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-white/5">Full Answer</div>
-                    <AnswerDisplay
-                        answers={answers}
-                        isLoading={isLoadingAnswer}
-                    />
-                    <div ref={answerEndRef} />
+                {/* Column 2: Full Answer (Middle) */}
+                <div className="flex-1 min-w-[280px] h-full">
+                    <div className="h-full bg-white/5 border border-white/10 rounded-lg p-3 overflow-y-auto relative">
+                        <div className="text-[10px] uppercase text-emerald-600/70 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-white/5">Full Answer</div>
+                        <AnswerDisplay
+                            answers={answers}
+                            isLoading={isLoadingAnswer}
+                        />
+                        <div ref={answerEndRef} />
+                    </div>
                 </div>
-            </div>
 
-            {/* Column 4: Quick Talking Points (Blue Box - Fast Groq Response) */}
-            <div className="flex-1 min-w-[280px] h-full">
-                <div className="h-full bg-white/5 backdrop-blur-sm border border-cyan-500/20 rounded-lg p-3 overflow-y-auto relative">
-                    <div className="text-[10px] uppercase text-cyan-500/70 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-cyan-500/10">Quick Talking Points</div>
-                    <TalkingPointsDisplay
-                        quickPoints={quickPoints}
-                        isLoading={isLoadingAnswer}
-                    />
-                    <div ref={quickPointsEndRef} />
+                {/* Column 3: Quick Talking Points (Right) */}
+                <div className="flex-1 min-w-[280px] h-full">
+                    <div className="h-full bg-white/5 border border-cyan-500/30 rounded-lg p-3 overflow-y-auto relative">
+                        <div className="text-[10px] uppercase text-cyan-500/70 font-semibold mb-2 sticky top-0 bg-[#131416]/90 p-1 backdrop-blur-md z-10 border-b border-cyan-500/20">Quick Talking Points</div>
+                        <TalkingPointsDisplay
+                            quickPoints={quickPoints}
+                            isLoading={isLoadingAnswer}
+                        />
+                        <div ref={quickPointsEndRef} />
+                    </div>
                 </div>
             </div>
         </div>

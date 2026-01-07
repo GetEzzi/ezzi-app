@@ -180,37 +180,53 @@ class ConversationService {
 
     /**
      * Request dual AI-generated answers (quick talking points + full answer)
-     * Calls the /api/analyze-dual endpoint which fires both Groq and OpenRouter simultaneously
+     * Fires BOTH endpoints in parallel - quick points arrive first, full answer later
      */
-    async requestAnswer(): Promise<DualAIResponse> {
+    async requestAnswer(): Promise<void> {
         if (!this.conversationId) {
             throw new Error('No active conversation');
         }
 
-        const response = await fetch(`${BACKEND_API_URL}/api/analyze-dual`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                conversation_id: this.conversationId,
-                context_window_minutes: 15,
-            }),
+        const requestBody = JSON.stringify({
+            conversation_id: this.conversationId,
+            context_window_minutes: 15,
         });
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
+        // Fire both requests independently - don't await together
+        // Quick points request (Groq - fast ~1-2s)
+        const quickPromise = fetch(`${BACKEND_API_URL}/api/analyze-quick`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: requestBody,
+        })
+            .then(async (response) => {
+                if (!response.ok) throw new Error(`Quick API error: ${response.status}`);
+                const data = await response.json();
+                console.log('[QUICK] Response received:', data.quick_points?.substring(0, 50));
+                this.quickPointsCallbacks.forEach(cb => cb(data.quick_points));
+            })
+            .catch(error => {
+                console.error('[QUICK] Failed to get quick points:', error);
+            });
 
-        const dualResponse: DualAIResponse = await response.json();
+        // Full answer request (OpenRouter - slower ~5-10s)
+        const fullPromise = fetch(`${BACKEND_API_URL}/api/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: requestBody,
+        })
+            .then(async (response) => {
+                if (!response.ok) throw new Error(`Full API error: ${response.status}`);
+                const data: AIResponse = await response.json();
+                console.log('[FULL] Response received:', data.suggestion?.substring(0, 50));
+                this.answerCallbacks.forEach(cb => cb(data));
+            })
+            .catch(error => {
+                console.error('[FULL] Failed to get full answer:', error);
+            });
 
-        // Notify quick points callbacks
-        this.quickPointsCallbacks.forEach(cb => cb(dualResponse.quick_points));
-
-        // Notify full answer callbacks
-        this.answerCallbacks.forEach(cb => cb(dualResponse.full_answer));
-
-        return dualResponse;
+        // Wait for both to complete (but they're already running independently)
+        await Promise.all([quickPromise, fullPromise]);
     }
 
     /**
