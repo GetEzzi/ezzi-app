@@ -28,8 +28,9 @@ ToastViewport.displayName = ToastPrimitive.Viewport.displayName;
 
 type ToastVariant = 'neutral' | 'success' | 'error';
 
-interface ToastProps
-  extends React.ComponentPropsWithoutRef<typeof ToastPrimitive.Root> {
+interface ToastProps extends React.ComponentPropsWithoutRef<
+  typeof ToastPrimitive.Root
+> {
   variant?: ToastVariant;
   swipeDirection?: 'right' | 'left' | 'up' | 'down';
 }
