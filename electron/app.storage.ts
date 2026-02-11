@@ -7,11 +7,8 @@ import {
 } from '../shared/storage';
 
 export interface IAppStore {
-  set(
-    key: keyof AppStoreSchema,
-    value: AppStoreSchema[keyof AppStoreSchema],
-  ): void;
-  get(key: keyof AppStoreSchema): AppStoreSchema[keyof AppStoreSchema];
+  set<K extends keyof AppStoreSchema>(key: K, value: AppStoreSchema[K]): void;
+  get<K extends keyof AppStoreSchema>(key: K): AppStoreSchema[K];
   delete(key: keyof AppStoreSchema): void;
 }
 
@@ -52,7 +49,7 @@ export class AppStorage {
   getAppMode(): AppMode {
     const storedMode = this.store.get(
       ELECTRON_STORAGE_KEYS.APP_SETTINGS.APP_MODE,
-    ) as AppMode | null;
+    );
 
     return storedMode || AppMode.LIVE_INTERVIEW;
   }
@@ -66,9 +63,8 @@ export class AppStorage {
 
   getReadableVarNames(): boolean {
     return (
-      (this.store.get(
-        ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES,
-      ) as boolean) || false
+      this.store.get(ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES) ||
+      false
     );
   }
 }
