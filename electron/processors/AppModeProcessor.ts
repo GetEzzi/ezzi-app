@@ -14,6 +14,7 @@ export interface ProcessingResult<T = any> {
 export interface ProcessingParams {
   images: string[];
   isMock: boolean;
+  readableVarNames: boolean;
   signal: AbortSignal;
   headers: Record<string, string>;
   conversationId?: string;

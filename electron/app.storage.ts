@@ -22,6 +22,10 @@ const store = new Store<AppStoreSchema>({
       type: ['string', 'null'],
       default: AppMode.LIVE_INTERVIEW,
     },
+    [ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES]: {
+      type: ['boolean', 'null'],
+      default: false,
+    },
   },
 }) as unknown as IAppStore;
 
@@ -48,8 +52,23 @@ export class AppStorage {
   getAppMode(): AppMode {
     const storedMode = this.store.get(
       ELECTRON_STORAGE_KEYS.APP_SETTINGS.APP_MODE,
-    );
+    ) as AppMode | null;
 
     return storedMode || AppMode.LIVE_INTERVIEW;
+  }
+
+  setReadableVarNames(value: boolean): void {
+    this.store.set(
+      ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES,
+      value,
+    );
+  }
+
+  getReadableVarNames(): boolean {
+    return (
+      (this.store.get(
+        ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES,
+      ) as boolean) || false
+    );
   }
 }
