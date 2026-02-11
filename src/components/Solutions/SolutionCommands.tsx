@@ -33,31 +33,29 @@ const SolutionCommands: React.FC<SolutionCommandsProps> = ({
   }, []);
 
   return (
-    <div>
-      <div className="pt-2 w-fit">
-        <div className="text-xs text-gray-100 bg-[#1E2530]/80 rounded-lg py-2 px-4 flex items-center justify-center gap-4">
-          <CommandButton label="Show/Hide" shortcut="B" />
+    <div className="pt-2 w-fit">
+      <div className="text-xs text-gray-100 bg-[#1E2530]/80 rounded-lg py-2 px-4 flex items-center justify-center gap-4">
+        <CommandButton label="Show/Hide" shortcut="B" />
 
-          {!isProcessing &&
-            !(user && user.subscription.level === SubscriptionLevel.FREE) && (
-              <>
-                <CommandButton
-                  label={
-                    screenshots.length === 0
-                      ? 'Screenshot your code'
-                      : 'Screenshot'
-                  }
-                  shortcut="H"
-                />
+        {!isProcessing &&
+          !(user && user.subscription.level === SubscriptionLevel.FREE) && (
+            <>
+              <CommandButton
+                label={
+                  screenshots.length === 0
+                    ? 'Screenshot your code'
+                    : 'Screenshot'
+                }
+                shortcut="H"
+              />
 
-                {screenshots.length > 0 && (
-                  <CommandButton label="Debug" shortcut="↵" />
-                )}
-              </>
-            )}
+              {screenshots.length > 0 && (
+                <CommandButton label="Debug" shortcut="↵" />
+              )}
+            </>
+          )}
 
-          <CommandButton label="Start Over" shortcut="G" />
-        </div>
+        <CommandButton label="Start Over" shortcut="G" />
       </div>
     </div>
   );

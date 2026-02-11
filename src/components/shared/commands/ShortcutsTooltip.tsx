@@ -106,7 +106,7 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
               </button>
               <button
                 onClick={() => sendToElectron(IPC_EVENTS.TOOLTIP.CLOSE_CLICK)}
-                className="flex items-center gap-2 text-[11px] font-medium text-red-400 hover:text-red-300 transition-colors"
+                className="flex items-center gap-2 text-[11px] font-medium text-gray-400 hover:text-gray-300 transition-colors"
               >
                 <div className="w-4 h-4 flex items-center justify-center">
                   <svg
