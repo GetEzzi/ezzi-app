@@ -124,7 +124,7 @@
   ],
   "author": "dkhorev",
   "license": "MIT",
-  "description": "Invisible overlay UI for DSA interviews. Ezzi (\"easy\") is inspired by Interview Coder, we want to develop and extend this project on it's foundation.",
+  "description": "Invisible overlay UI for DSA interviews.",
   "homepage": "https://github.com/GetEzzi/ezzi-app",
   "repository": {
     "type": "git",

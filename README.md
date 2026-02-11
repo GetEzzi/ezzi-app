@@ -4,7 +4,7 @@
 <a href="https://github.com/GetEzzi/ezzi-app/actions/workflows/build-pr.yml"><img src="https://github.com/GetEzzi/ezzi-app/actions/workflows/build-pr.yml/badge.svg?branch=main" alt="build status"></a>
 <a href="https://github.com/GetEzzi/ezzi-app/actions/workflows/test-pr.yml"><img src="https://github.com/GetEzzi/ezzi-app/actions/workflows/test-pr.yml/badge.svg?branch=main" alt="test status"></a>
 
-Ezzi ("easy") is inspired by Interview Coder, designed to help developers succeed in technical interviews and beyond. This desktop application provides undetectable assistance for coding interviews, technical practice, and learning. Visit [https://getezzi.com/](https://getezzi.com/)
+Ezzi ("easy") is designed to help developers succeed in technical interviews and beyond. This desktop application provides undetectable assistance for coding interviews, technical practice, and learning. Visit [https://getezzi.com/](https://getezzi.com/)
 
 ## Demo
 
