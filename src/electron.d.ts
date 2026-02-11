@@ -77,6 +77,14 @@ export interface ElectronAPI {
     appMode?: AppMode;
     error?: string;
   }>;
+  getReadableVarNames: () => Promise<{
+    success: boolean;
+    readableVarNames?: boolean;
+    error?: string;
+  }>;
+  setReadableVarNames: (
+    value: boolean,
+  ) => Promise<{ success: boolean; error?: string }>;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
   copyAndRefreshWindow: (
     text: string,

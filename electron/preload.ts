@@ -273,6 +273,9 @@ const electronAPI = {
   setAppMode: (appMode: AppMode) =>
     ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
   getAppMode: () => ipcRenderer.invoke('get-app-mode'),
+  getReadableVarNames: () => ipcRenderer.invoke('get-readable-var-names'),
+  setReadableVarNames: (value: boolean) =>
+    ipcRenderer.invoke('set-readable-var-names', value),
   writeText: (text: string) => ipcRenderer.invoke('write-text', text),
   copyAndRefreshWindow: (text: string, waitDuration?: number) =>
     ipcRenderer.invoke('copy-and-refresh-window', text, waitDuration),

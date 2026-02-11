@@ -18,7 +18,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
     params: ProcessingParams,
   ): Promise<ProcessingResult<LeetCodeSolveResponse>> {
     try {
-      const { images, isMock, signal, headers } = params;
+      const { images, isMock, readableVarNames, signal, headers } = params;
 
       const extractResponse = await axios.post<
         LeetCodeSolveRequest,
@@ -28,6 +28,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
         {
           images,
           isMock,
+          readableVarNames,
         },
         {
           signal,
@@ -84,7 +85,14 @@ export class LeetCodeProcessor implements AppModeProcessor {
     params: ProcessingParams,
   ): Promise<ProcessingResult<LeetCodeDebugResponse>> {
     try {
-      const { images, isMock, signal, headers, conversationId } = params;
+      const {
+        images,
+        isMock,
+        readableVarNames,
+        signal,
+        headers,
+        conversationId,
+      } = params;
 
       if (!conversationId) {
         return {
@@ -99,7 +107,7 @@ export class LeetCodeProcessor implements AppModeProcessor {
         AxiosResponse<LeetCodeDebugResponse>
       >(
         `${API_BASE_URL}${API_ENDPOINTS.LEETCODE.DEBUG}`,
-        { images, conversationId, isMock },
+        { images, conversationId, isMock, readableVarNames },
         {
           signal,
           timeout: 300000,

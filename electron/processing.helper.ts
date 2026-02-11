@@ -12,6 +12,7 @@ import {
 } from '../shared/api';
 import { AppModeProcessorFactory } from './processors/AppModeProcessorFactory';
 import { ProcessingParams } from './processors/AppModeProcessor';
+import { AppStorage } from './app.storage';
 import { isSelfHosted } from '../shared/constants';
 
 export class ProcessingHelper {
@@ -259,9 +260,11 @@ export class ProcessingHelper {
         headers.Authorization = `Bearer ${token}`;
       }
 
+      const readableVarNames = AppStorage.getInstance().getReadableVarNames();
       const processingParams: ProcessingParams = {
         images,
         isMock,
+        readableVarNames,
         signal,
         headers,
       };
@@ -336,9 +339,11 @@ export class ProcessingHelper {
       const currentAppMode = this.deps.getAppMode();
       const processor = this.processorFactory.getProcessor(currentAppMode);
 
+      const readableVarNames = AppStorage.getInstance().getReadableVarNames();
       const processingParams: ProcessingParams = {
         images,
         isMock,
+        readableVarNames,
         signal,
         headers,
         conversationId: this.deps.getConversationId() || undefined,
