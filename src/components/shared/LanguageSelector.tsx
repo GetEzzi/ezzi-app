@@ -79,15 +79,19 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
           ))}
         </select>
       </div>
-      <label className="flex items-center gap-2 text-[13px] font-medium text-white/90 cursor-pointer">
+      <label className="flex items-center justify-between text-[13px] font-medium text-white/90 cursor-pointer">
+        <span>Readable var names</span>
         <input
           type="checkbox"
           checked={readableVarNames}
           onChange={(e) => handleReadableVarNamesChange(e.target.checked)}
           className="accent-blue-500"
         />
-        <span>Readable var names</span>
       </label>
+      <p className="text-[10px] leading-relaxed text-gray-400">
+        e.g. leftIndex instead of l, currentSum instead of s. Simple loop
+        iterators like i stay short.
+      </p>
     </div>
   );
 };
