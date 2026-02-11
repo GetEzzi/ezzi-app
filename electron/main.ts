@@ -30,6 +30,7 @@ const state = {
   hasDebugged: false,
   appMode: AppMode.LIVE_INTERVIEW as AppMode,
   conversationId: null as string | null,
+  codeDesiredWidth: 0,
 
   PROCESSING_EVENTS: {
     UNAUTHORIZED: 'processing-unauthorized',
@@ -540,30 +541,110 @@ function isWindowCompletelyOffScreen(
 function setWindowDimensions(
   width: number,
   height: number,
-  _source: string,
+  source: string,
 ): void {
+  console.log(
+    '[setWindowDimensions] Called - width:',
+    width,
+    'height:',
+    height,
+    'source:',
+    source,
+  );
+
   if (state.mainWindow && !state.mainWindow.isDestroyed()) {
     const [currentX, currentY] = state.mainWindow.getPosition();
+    const currentBounds = state.mainWindow.getBounds();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workAreaSize;
-    const maxWidth = Math.floor(workArea.width * 0.4);
 
-    // let extra = 0;
-    // // TODO: prevents infinite resize loops (bug with hooks and updateContentDimensions())
-    // if (source !== 'SubscribedApp') {
-    //   extra = 32;
-    // }
-    const newWidth = Math.min(width + 32, maxWidth);
+    const baseWidth = 500;
+    const maxWidth = Math.floor(baseWidth * 1.5);
+
+    console.log(
+      '[setWindowDimensions] currentBounds:',
+      currentBounds.width,
+      'x',
+      currentBounds.height,
+      '| baseWidth:',
+      baseWidth,
+      '| maxWidth:',
+      maxWidth,
+    );
+    console.log(
+      '[setWindowDimensions] codeDesiredWidth BEFORE:',
+      state.codeDesiredWidth,
+    );
+
+    if (source === 'CodeBlock') {
+      state.codeDesiredWidth = width;
+      console.log(
+        '[setWindowDimensions] Source is CodeBlock -> codeDesiredWidth set to:',
+        width,
+      );
+    } else if (source !== 'useSolutions' && source !== 'SubscribedApp') {
+      state.codeDesiredWidth = 0;
+      console.log(
+        '[setWindowDimensions] Source is',
+        source,
+        '-> codeDesiredWidth RESET to 0',
+      );
+    } else {
+      console.log(
+        '[setWindowDimensions] Source is',
+        source,
+        '-> codeDesiredWidth unchanged:',
+        state.codeDesiredWidth,
+      );
+    }
+
+    const effectiveContentWidth = Math.max(
+      baseWidth - 32,
+      state.codeDesiredWidth,
+    );
+    const newWidth = Math.min(effectiveContentWidth + 32, maxWidth);
     const newHeight = Math.ceil(height);
+
+    console.log(
+      '[setWindowDimensions] effectiveContentWidth:',
+      effectiveContentWidth,
+      '(max of',
+      baseWidth - 32,
+      'and codeDesiredWidth',
+      state.codeDesiredWidth,
+      ')',
+    );
+    console.log(
+      '[setWindowDimensions] newWidth:',
+      newWidth,
+      '(min of',
+      effectiveContentWidth + 32,
+      'and maxWidth',
+      maxWidth,
+      ')',
+    );
+    console.log('[setWindowDimensions] newHeight:', newHeight);
 
     // Only adjust position if window would be completely off-screen
     let adjustedX = currentX;
     let adjustedY = currentY;
     if (isWindowCompletelyOffScreen(currentX, currentY, newWidth, newHeight)) {
-      // Only in extreme cases, center the window
       adjustedX = Math.max(0, (workArea.width - newWidth) / 2);
       adjustedY = Math.max(0, (workArea.height - newHeight) / 2);
+      console.log(
+        '[setWindowDimensions] Window off-screen, adjusted to:',
+        adjustedX,
+        adjustedY,
+      );
     }
+
+    console.log(
+      '[setWindowDimensions] setBounds:',
+      adjustedX,
+      adjustedY,
+      newWidth,
+      newHeight,
+    );
 
     state.mainWindow.setBounds({
       x: adjustedX,
@@ -572,11 +653,14 @@ function setWindowDimensions(
       height: newHeight,
     });
 
-    // Update internal state to match actual position
     state.currentX = adjustedX;
     state.currentY = adjustedY;
     state.windowPosition = { x: adjustedX, y: adjustedY };
     state.windowSize = { width: newWidth, height: newHeight };
+  } else {
+    console.log(
+      '[setWindowDimensions] SKIPPED - mainWindow is null or destroyed',
+    );
   }
 }
 

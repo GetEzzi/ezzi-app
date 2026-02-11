@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from 'lucide-react';
@@ -16,6 +16,73 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   showCopyButton = false,
 }) => {
   const [copied, setCopied] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      if (!wrapperRef.current) {
+        console.log('[CodeBlock] wrapperRef is null, skipping');
+
+        return;
+      }
+      const pre = wrapperRef.current.querySelector('pre');
+      if (!pre) {
+        console.log('[CodeBlock] pre element not found, skipping');
+
+        return;
+      }
+
+      const containerPadding = 64;
+
+      console.log(
+        '[CodeBlock] pre.scrollWidth:',
+        pre.scrollWidth,
+        'pre.clientWidth:',
+        pre.clientWidth,
+        'overflow:',
+        pre.scrollWidth - pre.clientWidth,
+      );
+      console.log('[CodeBlock] containerPadding:', containerPadding);
+
+      if (pre.scrollWidth > pre.clientWidth) {
+        const neededWidth = pre.scrollWidth + containerPadding;
+        console.log(
+          '[CodeBlock] Code OVERFLOWS. Requesting expansion. neededWidth:',
+          neededWidth,
+        );
+        window.electronAPI
+          .updateContentDimensions({
+            width: neededWidth,
+            height: document.documentElement.scrollHeight,
+            source: 'CodeBlock',
+          })
+          .then(() => {
+            console.log('[CodeBlock] expansion request succeeded');
+          })
+          .catch((err: unknown) => {
+            console.error('[CodeBlock] expansion request FAILED:', err);
+          });
+      } else {
+        console.log(
+          '[CodeBlock] Code FITS. Sending width: 0 to shrink to base.',
+        );
+        window.electronAPI
+          .updateContentDimensions({
+            width: 0,
+            height: document.documentElement.scrollHeight,
+            source: 'CodeBlock',
+          })
+          .then(() => {
+            console.log('[CodeBlock] shrink request succeeded');
+          })
+          .catch((err: unknown) => {
+            console.error('[CodeBlock] shrink request FAILED:', err);
+          });
+      }
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [code]);
 
   const handleCopy = async () => {
     try {
@@ -34,29 +101,21 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div ref={wrapperRef} className="relative">
       <SyntaxHighlighter
         showLineNumbers
         language={language === ProgrammingLanguage.Go ? 'go' : language}
         style={a11yDark}
         customStyle={{
-          maxWidth: '100%',
           margin: 0,
           padding: '1rem',
           paddingRight: showCopyButton ? '3rem' : '1rem',
-          overflowX: 'hidden',
+          overflowX: 'auto',
           backgroundColor: 'rgba(22, 27, 34, 0.8)',
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: '13px',
           lineHeight: '1.5',
         }}
-        codeTagProps={{
-          style: {
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-all',
-          },
-        }}
-        wrapLongLines={true}
       >
         {code}
       </SyntaxHighlighter>
