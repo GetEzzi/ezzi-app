@@ -90,6 +90,7 @@ export interface AuthenticatedUser {
 export interface SolveRequest {
   images: string[]; // Array of base64-encoded images
   isMock?: boolean; // Optional flag for mock responses
+  readableVarNames?: boolean;
 }
 
 export interface SolveResponse {
@@ -98,11 +99,13 @@ export interface SolveResponse {
   time_complexity: string; // Big O time complexity
   space_complexity: string; // Big O space complexity
   problem_statement: string; // Extracted problem statement
+  conversationId: string;
 }
 
 export interface DebugRequest {
   images: string[]; // Array of base64-encoded images
   isMock?: boolean; // Optional flag for mock responses
+  readableVarNames?: boolean;
 }
 
 export interface DebugResponse {
@@ -110,6 +113,7 @@ export interface DebugResponse {
   thoughts: string[]; // Array of debugging thoughts
   time_complexity: string; // Big O time complexity
   space_complexity: string; // Big O space complexity
+  conversationId: string;
 }
 
 // =============================================================================
@@ -119,6 +123,7 @@ export interface DebugResponse {
 export interface LeetCodeSolveRequest {
   images: string[]; // Array of base64-encoded images
   isMock?: boolean; // Optional flag for mock responses
+  readableVarNames?: boolean;
 }
 
 export interface LeetCodeSolveResponse {
@@ -130,10 +135,12 @@ export interface LeetCodeDebugRequest {
   images: string[]; // Array of base64-encoded images
   conversationId: string; // Required conversation ID from previous solve request
   isMock?: boolean; // Optional flag for mock responses
+  readableVarNames?: boolean;
 }
 
 export interface LeetCodeDebugResponse {
   code: string; // Debugged/improved code
+  conversationId: string;
 }
 
 // =============================================================================
