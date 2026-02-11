@@ -22,6 +22,7 @@ export const settingsService: ISettingsService = {
     const response = await axios.get<SettingsResponse>(
       `${API_BASE_URL}${API_ENDPOINTS.SETTINGS.GET}`,
       {
+        timeout: 15000,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -41,6 +42,7 @@ export const settingsService: ISettingsService = {
       `${API_BASE_URL}${API_ENDPOINTS.SETTINGS.UPDATE}`,
       settings,
       {
+        timeout: 15000,
         headers: {
           Authorization: `Bearer ${token}`,
         },

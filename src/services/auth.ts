@@ -7,6 +7,7 @@ export const authService = {
     const response = await axios.post<AuthResponse>(
       `${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`,
       { email, password },
+      { timeout: 15000 },
     );
 
     return response.data;
@@ -22,6 +23,7 @@ export const authService = {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       },
+      { timeout: 15000 },
     );
 
     return {
@@ -40,6 +42,7 @@ export const authService = {
       const response = await axios.get<AuthenticatedUser>(
         `${API_BASE_URL}${API_ENDPOINTS.AUTH.USER}`,
         {
+          timeout: 15000,
           headers: {
             Authorization: `Bearer ${token}`,
           },
