@@ -65,9 +65,8 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
         source,
       }: { width: number; height: number; source: string },
     ) => {
-      // TODO: issue - chain called while window is idle at start
       console.log(
-        'Received content dimensions - width:',
+        '[IPC update-content-dimensions] Received - width:',
         width,
         'height:',
         height,
@@ -76,7 +75,18 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       );
 
       if (width && height) {
+        console.log(
+          '[IPC update-content-dimensions] Calling setWindowDimensions for source:',
+          source,
+        );
         deps.setWindowDimensions(width, height, source);
+      } else {
+        console.log(
+          '[IPC update-content-dimensions] SKIPPED - width or height is falsy. width:',
+          width,
+          'height:',
+          height,
+        );
       }
     },
   );
