@@ -15,13 +15,7 @@ export const LiveInterviewLayout: React.FC<LiveInterviewLayoutProps> = ({
 }) => {
   return (
     <div className={`relative space-y-3 px-4 py-3 ${className}`}>
-      {screenshotSection && (
-        <div className="bg-transparent w-fit">
-          <div className="pb-3">
-            <div className="space-y-3 w-fit">{screenshotSection}</div>
-          </div>
-        </div>
-      )}
+      {screenshotSection && <div className="w-fit">{screenshotSection}</div>}
 
       {commandSection && <div className="w-full">{commandSection}</div>}
 

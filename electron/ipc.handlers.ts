@@ -388,6 +388,30 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     }
   });
 
+  ipcMain.handle('get-readable-var-names', () => {
+    try {
+      const readableVarNames = appStorage.getReadableVarNames();
+
+      return { success: true, readableVarNames };
+    } catch (error) {
+      console.error('Error getting readableVarNames:', error);
+
+      return { success: false, error: 'Failed to get readableVarNames' };
+    }
+  });
+
+  ipcMain.handle('set-readable-var-names', (_event, value: boolean) => {
+    try {
+      appStorage.setReadableVarNames(value);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting readableVarNames:', error);
+
+      return { success: false, error: 'Failed to set readableVarNames' };
+    }
+  });
+
   // Clipboard handlers
   ipcMain.handle('write-text', async (_event, text: string) => {
     try {

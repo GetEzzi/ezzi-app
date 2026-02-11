@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProgrammingLanguage } from '@shared/api.ts';
 import { useSettings } from '../../contexts/SettingsContext';
 
@@ -23,12 +23,33 @@ interface LanguageSelectorProps {}
 export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
   const { solutionLanguage, updateSolutionLanguage, loading, error } =
     useSettings();
+  const [readableVarNames, setReadableVarNames] = useState(false);
+
+  useEffect(() => {
+    if (window.electronAPI?.getReadableVarNames) {
+      window.electronAPI
+        .getReadableVarNames()
+        .then((result) => {
+          if (result.success && result.readableVarNames !== undefined) {
+            setReadableVarNames(result.readableVarNames);
+          }
+        })
+        .catch(console.error);
+    }
+  }, []);
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value as ProgrammingLanguage;
     updateSolutionLanguage(newLanguage).catch((error) => {
       console.error('Error updating language:', error);
     });
+  };
+
+  const handleReadableVarNamesChange = (value: boolean) => {
+    setReadableVarNames(value);
+    if (window.electronAPI?.setReadableVarNames) {
+      window.electronAPI.setReadableVarNames(value).catch(console.error);
+    }
   };
 
   if (error) {
@@ -58,6 +79,19 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
           ))}
         </select>
       </div>
+      <label className="flex items-center justify-between text-[13px] font-medium text-white/90 cursor-pointer">
+        <span>Readable var names</span>
+        <input
+          type="checkbox"
+          checked={readableVarNames}
+          onChange={(e) => handleReadableVarNamesChange(e.target.checked)}
+          className="accent-blue-500"
+        />
+      </label>
+      <p className="text-[10px] leading-relaxed text-gray-400">
+        e.g. leftIndex instead of l, currentSum instead of s. Simple loop
+        iterators like i stay short.
+      </p>
     </div>
   );
 };

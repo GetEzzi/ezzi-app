@@ -7,11 +7,8 @@ import {
 } from '../shared/storage';
 
 export interface IAppStore {
-  set(
-    key: keyof AppStoreSchema,
-    value: AppStoreSchema[keyof AppStoreSchema],
-  ): void;
-  get(key: keyof AppStoreSchema): AppStoreSchema[keyof AppStoreSchema];
+  set<K extends keyof AppStoreSchema>(key: K, value: AppStoreSchema[K]): void;
+  get<K extends keyof AppStoreSchema>(key: K): AppStoreSchema[K];
   delete(key: keyof AppStoreSchema): void;
 }
 
@@ -21,6 +18,10 @@ const store = new Store<AppStoreSchema>({
     [ELECTRON_STORAGE_KEYS.APP_SETTINGS.APP_MODE]: {
       type: ['string', 'null'],
       default: AppMode.LIVE_INTERVIEW,
+    },
+    [ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES]: {
+      type: ['boolean', 'null'],
+      default: false,
     },
   },
 }) as unknown as IAppStore;
@@ -51,5 +52,19 @@ export class AppStorage {
     );
 
     return storedMode || AppMode.LIVE_INTERVIEW;
+  }
+
+  setReadableVarNames(value: boolean): void {
+    this.store.set(
+      ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES,
+      value,
+    );
+  }
+
+  getReadableVarNames(): boolean {
+    return (
+      this.store.get(ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES) ||
+      false
+    );
   }
 }

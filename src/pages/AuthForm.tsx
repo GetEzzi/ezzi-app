@@ -236,8 +236,8 @@ export function AuthForm({ setUser }: AuthFormProps) {
     formState.email && formState.password && !formState.passwordError;
 
   return (
-    <div className="min-h-[420px] bg-black/90 rounded-xl">
-      <div className="flex flex-col items-center justify-center min-h-[320px] px-3 pb-1">
+    <div className="min-h-[420px] bg-black/90 rounded-xl flex flex-col">
+      <div className="flex flex-col items-center justify-center flex-1 px-3 pb-1">
         <div className="w-full max-w-[320px] space-y-5 p-3">
           <div className="flex flex-col items-center justify-center space-y-4">
             <h2 className="text-lg font-semibold text-gray-100">
@@ -306,25 +306,23 @@ export function AuthForm({ setUser }: AuthFormProps) {
 
               <button
                 onClick={toggleMode}
-                className="block w-full border-0 rounded-lg p-2.5 bg-linear-to-r from-fuchsia-600 to-cyan-600 hover:from-fuchsia-700 hover:to-cyan-700 text-white transition-colors"
+                className="block w-full p-2.5 text-center text-sm text-gray-400 hover:text-gray-300 transition-colors"
               >
-                <p className="text-center text-sm text-gray-400">
-                  {formState.isSignUp
-                    ? 'Already have an account? Sign in →'
-                    : "Don't have an account? Sign up →"}
-                </p>
+                {formState.isSignUp
+                  ? 'Already have an account? Sign in →'
+                  : "Don't have an account? Sign up →"}
               </button>
             </div>
           </div>
         </div>
       </div>
-      <div className="left-0 right-0 flex justify-center -mt-8">
+      <div className="flex justify-center mt-4">
         <div className="text-xs text-gray-400 bg-[#1E2530]/80 rounded-lg py-2 px-4 flex items-center justify-center gap-4">
           <CommandButton label="Show/Hide" shortcut="B" />
           <CommandButton label="Move" shortcut="← ↑ → ↓" />
         </div>
       </div>
-      <div className="flex items-center justify-center w-full mt-auto pt-6">
+      <div className="flex items-center justify-center w-full pt-3 pb-3">
         <button
           onClick={() => sendToElectron(IPC_EVENTS.TOOLTIP.CLOSE_CLICK)}
           className="flex items-center gap-1 text-[11px] text-red-400/80 hover:text-red-400 transition-colors"

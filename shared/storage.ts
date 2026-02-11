@@ -19,6 +19,7 @@ export const ELECTRON_STORAGE_KEYS = {
   },
   APP_SETTINGS: {
     APP_MODE: 'appMode',
+    READABLE_VAR_NAMES: 'readableVarNames',
   },
 } as const;
 
@@ -36,4 +37,5 @@ export interface AuthStoreSchema {
 
 export interface AppStoreSchema {
   appMode: AppMode | null;
+  readableVarNames: boolean | null;
 }
