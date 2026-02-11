@@ -54,8 +54,11 @@ export default function SubscribePage({ user }: SubscribePageProps) {
   };
 
   return (
-    <div ref={containerRef} className="min-h-[520px] bg-black/90 rounded-xl">
-      <div className="flex flex-col items-center justify-center min-h-[440px] px-3 pb-1">
+    <div
+      ref={containerRef}
+      className="min-h-[520px] bg-black/90 rounded-xl flex flex-col"
+    >
+      <div className="flex flex-col items-center justify-center flex-1 px-3 pb-1">
         <div className="w-full max-w-[440px] space-y-5 p-3 mt-8">
           <div className="flex flex-col items-center justify-center space-y-4">
             <img src={logoSrc} alt="Logo" className="w-16 h-16 mb-2" />
@@ -103,63 +106,61 @@ export default function SubscribePage({ user }: SubscribePageProps) {
                 <p className="text-xs text-red-400">{error}</p>
               </div>
             )}
-
-            <div className="left-0 right-0 flex justify-center">
-              <div className="text-xs text-gray-400 bg-[#1E2530]/80 rounded-lg py-2 px-4 flex items-center justify-center gap-4">
-                <CommandButton label="Show/Hide" shortcut="B" />
-                <CommandButton label="Move" shortcut="← ↑ → ↓" />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between w-full mt-auto pt-6">
-              <button
-                onClick={() => {
-                  handleSignOut().catch(console.error);
-                }}
-                className="flex items-center gap-1.5 text-[11px] text-red-400/80 hover:text-red-400 transition-colors group"
-              >
-                <div className="w-3.5 h-3.5 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="w-full h-full"
-                  >
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                </div>
-                Log Out
-              </button>
-              <button
-                onClick={() => sendToElectron(IPC_EVENTS.TOOLTIP.CLOSE_CLICK)}
-                className="flex items-center gap-1 text-[11px] text-red-400/80 hover:text-red-400 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-3 h-3 text-white/60"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-                <span className="text-[10px] leading-none text-white/60">
-                  Close
-                </span>
-              </button>
-            </div>
           </div>
         </div>
+      </div>
+
+      <div className="flex justify-center mt-4">
+        <div className="text-xs text-gray-400 bg-[#1E2530]/80 rounded-lg py-2 px-4 flex items-center justify-center gap-4">
+          <CommandButton label="Show/Hide" shortcut="B" />
+          <CommandButton label="Move" shortcut="← ↑ → ↓" />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between w-full px-6 pt-3 pb-3">
+        <button
+          onClick={() => {
+            handleSignOut().catch(console.error);
+          }}
+          className="flex items-center gap-1.5 text-[11px] text-red-400/80 hover:text-red-400 transition-colors group"
+        >
+          <div className="w-3.5 h-3.5 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-full h-full"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </div>
+          Log Out
+        </button>
+        <button
+          onClick={() => sendToElectron(IPC_EVENTS.TOOLTIP.CLOSE_CLICK)}
+          className="flex items-center gap-1 text-[11px] text-gray-400/80 hover:text-gray-400 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-3 h-3 text-white/60"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          <span className="text-[10px] leading-none text-white/60">Close</span>
+        </button>
       </div>
     </div>
   );

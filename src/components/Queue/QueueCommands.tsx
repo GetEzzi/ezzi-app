@@ -23,42 +23,39 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
   };
 
   return (
-    <div>
-      <div className="pt-2 w-fit">
-        <div className="text-xs text-gray-100 bg-[#1E2530]/80 rounded-lg py-2 px-4">
-          {/* Top section - Full width AppModeIndicator */}
-          <div className="w-full mb-2">
-            <AppModeIndicator />
-          </div>
+    <div className="pt-2 w-fit">
+      <div className="text-xs text-gray-100 bg-[#1E2530]/80 rounded-lg py-2 px-4">
+        {/* Top section - Full width AppModeIndicator */}
+        <div className="w-full mb-2">
+          <AppModeIndicator />
+        </div>
 
-          {/* Bottom section - All buttons in horizontal layout */}
-          <div className="flex items-center justify-center gap-4">
-            {/* Screenshot */}
-            <CommandButton
-              label={
-                screenshotCount === 0
-                  ? 'Take first screenshot'
-                  : screenshotCount === 1
-                    ? 'Take next screenshot'
-                    : 'Reset first screenshot'
-              }
-              shortcut="H"
-            />
+        {/* Bottom section - All buttons in horizontal layout */}
+        <div className="flex items-center justify-center gap-4">
+          {/* Screenshot */}
+          <CommandButton
+            label={
+              screenshotCount === 0
+                ? 'Take first screenshot'
+                : screenshotCount === 1
+                  ? 'Take next screenshot'
+                  : 'Reset first screenshot'
+            }
+            shortcut="H"
+          />
 
-            {/* Solve Command */}
-            {screenshotCount > 0 && (
-              <CommandButton label="Solve" shortcut="↵" />
-            )}
+          {/* Solve Command */}
+          {screenshotCount > 0 && <CommandButton label="Solve" shortcut="↵" />}
 
-            {/* Start Over - Always visible */}
-            {screenshotCount > 0 && (
-              <CommandButton label="Start Over" shortcut="G" />
-            )}
+          {/* Start Over - Always visible */}
+          {screenshotCount > 0 && (
+            <CommandButton label="Start Over" shortcut="G" />
+          )}
 
-            <CommandSeparator />
-
-            {/* Settings with Tooltip - Only show when no screenshots */}
-            {screenshotCount === 0 && (
+          {/* Settings with Tooltip - Only show when no screenshots */}
+          {screenshotCount === 0 && (
+            <>
+              <CommandSeparator />
               <SettingsTooltip
                 shortcuts={[
                   {
@@ -93,8 +90,8 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
                 onSignOut={handleSignOut}
                 onTooltipVisibilityChange={onTooltipVisibilityChange}
               />
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

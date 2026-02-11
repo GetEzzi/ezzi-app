@@ -16,12 +16,12 @@ const CommandButton: React.FC<CommandButtonProps> = ({
     <div className="flex items-center gap-2 cursor-default rounded-sm px-2 py-1.5 transition-colors">
       <span className="leading-none truncate">{label}</span>
       <div className="flex gap-1">
-        <button className="bg-white/10 cursor-default rounded-md px-1.5 py-1 leading-none text-white/100">
+        <kbd className="bg-white/10 cursor-default rounded-md px-1.5 py-1 leading-none text-white/100">
           {COMMAND_KEY}
-        </button>
-        <button className="bg-white/10 cursor-default rounded-md px-1.5 py-1 leading-none text-white/100">
+        </kbd>
+        <kbd className="bg-white/10 cursor-default rounded-md px-1.5 py-1 leading-none text-white/100">
           {shortcut}
-        </button>
+        </kbd>
       </div>
       {description && (
         <p className="text-[10px] leading-relaxed text-white/70 truncate mt-1">
