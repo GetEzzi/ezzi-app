@@ -44,12 +44,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           margin: 0,
           padding: '1rem',
           paddingRight: showCopyButton ? '3rem' : '1rem',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-all',
+          overflowX: 'hidden',
           backgroundColor: 'rgba(22, 27, 34, 0.8)',
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: '13px',
           lineHeight: '1.5',
+        }}
+        codeTagProps={{
+          style: {
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all',
+          },
         }}
         wrapLongLines={true}
       >
