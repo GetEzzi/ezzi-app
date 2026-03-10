@@ -73,7 +73,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
           className="bg-white/10 rounded-sm px-2 py-1 text-sm outline-hidden border border-white/10 focus:border-white/20 disabled:opacity-50"
         >
           {Object.entries(LANGUAGE_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
+            <option key={value} value={value} className="text-black">
               {label}
             </option>
           ))}
