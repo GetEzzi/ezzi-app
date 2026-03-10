@@ -14,26 +14,25 @@ export interface IAuthStore {
   delete(key: keyof AuthStoreSchema): void;
 }
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 const store = new Store<AuthStoreSchema>({
   name: ELECTRON_STORES.AUTH,
   schema: {
     [ELECTRON_STORAGE_KEYS.AUTH.TOKEN]: {
-      type: 'string',
-      nullable: true,
+      type: ['string', 'null'] as any,
       default: null,
     },
     [ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY]: {
-      type: 'number',
-      nullable: true,
+      type: ['number', 'null'] as any,
       default: null,
     },
     [ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL]: {
-      type: 'string',
-      nullable: true,
+      type: ['string', 'null'] as any,
       default: null,
     },
   },
 }) as unknown as IAuthStore;
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export class AuthStorage {
   private static instance: AuthStorage;
