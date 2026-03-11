@@ -17,7 +17,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "allowImportingTsExtensions": true,
-    "types": ["vite/client", "jest"],
+    "types": ["vite/client", "jest", "@testing-library/jest-dom"],
     "paths": {
       "@shared/*": ["./shared/*"]
     }

@@ -402,16 +402,17 @@ function preserveWindowConfiguration(): void {
 }
 
 function hideMainWindow(): void {
-  if (!state.mainWindow?.isDestroyed()) {
+  const win = state.mainWindow;
+  if (win && !win.isDestroyed()) {
     console.log('Hiding main window...');
 
-    const bounds = state.mainWindow.getBounds();
+    const bounds = win.getBounds();
     state.windowPosition = { x: bounds.x, y: bounds.y };
     state.windowSize = { width: bounds.width, height: bounds.height };
 
     const configFactory = WindowConfigFactory.getInstance();
-    configFactory.applyHideBehavior(state.mainWindow, state.appMode);
-    state.mainWindow.hide();
+    configFactory.applyHideBehavior(win, state.appMode);
+    win.hide();
 
     state.isWindowVisible = false;
 
@@ -421,11 +422,12 @@ function hideMainWindow(): void {
 }
 
 function showMainWindow(): void {
-  if (!state.mainWindow?.isDestroyed()) {
+  const win = state.mainWindow;
+  if (win && !win.isDestroyed()) {
     console.log('Showing main window...');
 
     if (state.windowPosition && state.windowSize) {
-      state.mainWindow.setBounds({
+      win.setBounds({
         ...state.windowPosition,
         ...state.windowSize,
       });
@@ -434,8 +436,8 @@ function showMainWindow(): void {
     const configFactory = WindowConfigFactory.getInstance();
     const view = getView();
 
-    state.mainWindow.setOpacity(0);
-    state.mainWindow.showInactive();
+    win.setOpacity(0);
+    win.showInactive();
 
     // Apply appropriate behavior based on current view
     if (view === 'queue') {
@@ -444,13 +446,9 @@ function showMainWindow(): void {
       console.log(
         `showMainWindow: in Queue mode with ${screenshots.length} screenshots`,
       );
-      configFactory.applyQueueBehavior(
-        state.mainWindow,
-        state.appMode,
-        hasScreenshots,
-      );
+      configFactory.applyQueueBehavior(win, state.appMode, hasScreenshots);
     } else {
-      configFactory.applyShowBehavior(state.mainWindow, state.appMode);
+      configFactory.applyShowBehavior(win, state.appMode);
     }
 
     state.isWindowVisible = true;
@@ -892,17 +890,14 @@ function preserveWindowPosition<T>(operation: () => T): T {
 }
 
 function applyQueueWindowBehavior(): void {
-  if (state.mainWindow && !state.mainWindow.isDestroyed()) {
+  const win = state.mainWindow;
+  if (win && !win.isDestroyed()) {
     preserveWindowPosition(() => {
       const configFactory = WindowConfigFactory.getInstance();
       const screenshots = getScreenshotQueue();
       const hasScreenshots = screenshots.length > 0;
 
-      configFactory.applyQueueBehavior(
-        state.mainWindow,
-        state.appMode,
-        hasScreenshots,
-      );
+      configFactory.applyQueueBehavior(win, state.appMode, hasScreenshots);
     });
   }
 }

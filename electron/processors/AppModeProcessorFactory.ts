@@ -23,13 +23,15 @@ export class AppModeProcessorFactory {
 
   public getProcessor(appMode: AppMode): AppModeProcessor {
     const processor = this.processors.get(appMode);
+    const fallback = this.processors.get(AppMode.LIVE_INTERVIEW);
 
     if (!processor) {
       console.warn(
         `No processor found for app mode: ${appMode}, falling back to LIVE_INTERVIEW`,
       );
 
-      return this.processors.get(AppMode.LIVE_INTERVIEW);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      return fallback!;
     }
 
     return processor;

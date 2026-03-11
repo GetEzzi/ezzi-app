@@ -27,7 +27,7 @@ export class ProcessingHelper {
 
   constructor(deps: IProcessingHelperDeps) {
     this.deps = deps;
-    this.screenshotHelper = deps.getScreenshotHelper();
+    this.screenshotHelper = deps.getScreenshotHelper()!;
     this.authStorage = AuthStorage.getInstance();
     this.processorFactory = AppModeProcessorFactory.getInstance();
   }

@@ -5,7 +5,7 @@ import { AppModeHintBox } from './AppModeHintBox';
 
 const APP_MODE_LABELS: Record<AppMode, string> = {
   [AppMode.LIVE_INTERVIEW]: 'Live Interview',
-  [AppMode.LEETCODE_SOLVER]: 'Leetcode Solver (beta)',
+  [AppMode.LEETCODE_SOLVER]: 'Leetcode Solver',
 };
 
 interface AppModeSelectorProps {
@@ -42,7 +42,7 @@ export const AppModeSelector: React.FC<AppModeSelectorProps> = ({
             className="bg-white/10 rounded-sm px-2 py-1 text-sm outline-hidden border border-white/10 focus:border-white/20"
           >
             {Object.entries(APP_MODE_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
+              <option key={value} value={value} className="text-black">
                 {label}
               </option>
             ))}

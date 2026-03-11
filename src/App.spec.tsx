@@ -57,7 +57,7 @@ jest.mock('./pages/SubscribedApp', () => {
 jest.mock('./pages/SubscribePage', () => {
   return function MockSubscribePage({ user }: any) {
     return (
-      <div data-testid="subscribe-page">Subscribe Page - {user.email}</div>
+      <div data-testid="subscribe-page">Subscribe Page - {user.user.email}</div>
     );
   };
 });
@@ -83,11 +83,18 @@ function createMockUser(
   };
 
   return {
-    id: 'test-user-id',
-    email: 'test@example.com',
+    user: {
+      email: 'test@example.com',
+      ...overrides.user,
+    },
     subscription: {
       ...defaultSubscription,
       ...overrides.subscription,
+    },
+    settings: {
+      solutionLanguage: ProgrammingLanguage.Python,
+      userLanguage: UserLanguage.EN_US,
+      ...overrides.settings,
     },
     ...overrides,
   };
@@ -214,7 +221,11 @@ describe('App', () => {
   describe('Subscription states', () => {
     test('WHEN user has PRO subscription THEN it shows subscribed app', async () => {
       const proUser = createMockUser({
-        subscription: { level: SubscriptionLevel.PRO },
+        subscription: {
+          active_from: '2024-01-01T00:00:00.000Z',
+          active_to: null,
+          level: SubscriptionLevel.PRO,
+        },
       });
       mockAuthProvider.getCurrentUser.mockResolvedValue(proUser);
       mockAuthProvider.getAuthToken.mockResolvedValue('valid-token');
@@ -234,7 +245,11 @@ describe('App', () => {
 
     test('WHEN user has no subscription THEN it shows subscribe page', async () => {
       const freeUser = createMockUser({
-        subscription: { level: SubscriptionLevel.FREE },
+        subscription: {
+          active_from: null,
+          active_to: null,
+          level: SubscriptionLevel.FREE,
+        },
       });
       mockAuthProvider.getCurrentUser.mockResolvedValue(freeUser);
       mockAuthProvider.getAuthToken.mockResolvedValue('valid-token');
@@ -264,7 +279,11 @@ describe('App', () => {
 
     test('WHEN user is not subscribed THEN it polls for subscription updates', async () => {
       const freeUser = createMockUser({
-        subscription: { level: SubscriptionLevel.FREE },
+        subscription: {
+          active_from: null,
+          active_to: null,
+          level: SubscriptionLevel.FREE,
+        },
       });
       mockAuthProvider.getCurrentUser.mockResolvedValue(freeUser);
       mockAuthProvider.getAuthToken.mockResolvedValue('valid-token');
@@ -289,10 +308,18 @@ describe('App', () => {
 
     test('WHEN subscription status changes during polling THEN it updates UI', async () => {
       const freeUser = createMockUser({
-        subscription: { level: SubscriptionLevel.FREE },
+        subscription: {
+          active_from: null,
+          active_to: null,
+          level: SubscriptionLevel.FREE,
+        },
       });
       const proUser = createMockUser({
-        subscription: { level: SubscriptionLevel.PRO },
+        subscription: {
+          active_from: '2024-01-01T00:00:00.000Z',
+          active_to: null,
+          level: SubscriptionLevel.PRO,
+        },
       });
 
       mockAuthProvider.getCurrentUser.mockResolvedValue(freeUser);

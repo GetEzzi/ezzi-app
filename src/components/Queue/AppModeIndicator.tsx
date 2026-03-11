@@ -15,7 +15,7 @@ export const AppModeIndicator: React.FC = () => {
       case AppMode.LEETCODE_SOLVER:
         return {
           dotColor: 'bg-red-500',
-          text: 'Leetcode Solver - visible (beta)',
+          text: 'Leetcode Solver - visible',
         };
       default:
         return {
