@@ -1,11 +1,11 @@
 import React from 'react';
-import { AppMode } from '../../../shared/api';
+import { AppMode } from '@shared/api.ts';
 
 const APP_MODE_HINTS: Record<AppMode, string> = {
   [AppMode.LIVE_INTERVIEW]:
     'A helpful tool that shows your problem, thoughts, and code all in one view. It works as an invisible layer during coding interviews.',
   [AppMode.LEETCODE_SOLVER]:
-    'Helps you solve one coding problem at a time with a focus on finding the best solution. Keeps explanations simple and direct to save time.',
+    'Helps you solve one coding problem at a time with a focus on finding the best solution. Keeps explanations simple and direct to save time. The window is visible and allows copying the solution via the copy button.',
 };
 
 interface AppModeHintBoxProps {
