@@ -37,7 +37,7 @@ Ezzi ("easy") is designed to help developers succeed in technical interviews and
 - 🐛 **Debug mode** for solution improvement
 - 👻 **Always-on-top transparent window**
 - ⌨️ **Global keyboard shortcuts** for seamless operation
-- 🌐 **Cross-platform support** (Windows, macOS, Linux* - development only, production use not recommended)
+- 🌐 **Cross-platform support** (Windows, macOS). Linux is not supported — it has issues with window invisibility settings unlike macOS/Windows.
 - 🏠 **Self-hosted deployment option**
 
 ## Roadmap

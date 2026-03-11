@@ -71,7 +71,7 @@ $env:PRODUCT_NAME="Code Editor Pro"; npm run build
 
 - **macOS:** Full support including code signing with custom identities
 - **Windows:** Complete executable and installer customization
-- **Linux:** AppImage with custom naming and icons
+- **Linux:** Not supported. Linux has issues with window invisibility settings, making the app visible during screen sharing.
 
 ## Security Considerations
 
