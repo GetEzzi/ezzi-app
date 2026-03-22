@@ -80,6 +80,15 @@ layer(base);
 }
 
 @layer base {
+  html,
+  body {
+    scrollbar-width: none;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
   html {
     font-family: 'Inter', system-ui, sans-serif;
   }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Screenshot } from '../../../shared/api';
+import { Screenshot } from '@shared/api.ts';
 import CommandButton from '../shared/commands/CommandButton';
 import { useIsFreeUser } from '../../contexts/SubscriptionContext';
 
@@ -23,9 +23,7 @@ const SolutionCommands: React.FC<SolutionCommandsProps> = ({
           <>
             <CommandButton
               label={
-                screenshots.length === 0
-                  ? 'Screenshot your code'
-                  : 'Screenshot'
+                screenshots.length === 0 ? 'Screenshot your code' : 'Screenshot'
               }
               shortcut="H"
             />

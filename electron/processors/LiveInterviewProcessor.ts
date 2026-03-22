@@ -67,7 +67,8 @@ export class LiveInterviewProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error: 'You need an active subscription to continue. Please upgrade.',
+          error:
+            'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
         };
       }
 
@@ -130,7 +131,8 @@ export class LiveInterviewProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error: 'You need an active subscription to continue. Please upgrade.',
+          error:
+            'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
         };
       }
 

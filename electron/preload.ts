@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_EVENTS } from '../shared/constants';
-import { AppMode } from '../shared/api';
+import { AppMode, SubscriptionLevel } from '../shared/api';
 import { shell } from 'electron';
 
 // Types for the exposed Electron API
@@ -61,6 +61,9 @@ interface ElectronAPI {
     token?: string | null;
     error?: string;
   }>;
+  setSubscriptionLevel: (
+    level: SubscriptionLevel,
+  ) => Promise<{ success: boolean; error?: string }>;
   authClearToken: () => Promise<{ success: boolean; error?: string }>;
   authIsAuthenticated: () => Promise<{
     success: boolean;
@@ -262,6 +265,8 @@ const electronAPI = {
       screenshotCount,
     ),
   // Auth token operations
+  setSubscriptionLevel: (level: SubscriptionLevel) =>
+    ipcRenderer.invoke('auth-set-subscription-level', level),
   authSetToken: (token: string, expiryTimestamp?: number) =>
     ipcRenderer.invoke('auth-set-token', token, expiryTimestamp),
   authGetToken: () => ipcRenderer.invoke('auth-get-token'),

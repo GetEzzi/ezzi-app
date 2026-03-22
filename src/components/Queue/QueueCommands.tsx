@@ -47,7 +47,9 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
           />
 
           {/* Solve Command */}
-          {screenshotCount > 0 && <CommandButton label="Solve" shortcut="↵" />}
+          {screenshotCount > 0 && !isFree && (
+            <CommandButton label="Solve" shortcut="↵" />
+          )}
 
           {/* Start Over - Always visible */}
           {screenshotCount > 0 && (
@@ -59,6 +61,8 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
             <>
               <CommandSeparator />
               <SettingsTooltip
+                isFree={isFree}
+                userEmail={user.user.email}
                 shortcuts={[
                   {
                     label: 'Toggle Window',
@@ -92,28 +96,6 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
                 onSignOut={handleSignOut}
                 onTooltipVisibilityChange={onTooltipVisibilityChange}
               />
-            </>
-          )}
-
-          {/* Plan status for FREE users */}
-          {isFree && (
-            <>
-              <CommandSeparator />
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-medium text-yellow-400/80 bg-yellow-400/10 border border-yellow-400/20 rounded px-1.5 py-0.5">
-                  FREE
-                </span>
-                <button
-                  onClick={() => {
-                    window.electronAPI
-                      .openSubscriptionPortal({ email: user.user.email })
-                      .catch(console.error);
-                  }}
-                  className="text-[10px] text-cyan-400/80 hover:text-cyan-400 transition-colors"
-                >
-                  Upgrade
-                </button>
-              </div>
             </>
           )}
         </div>

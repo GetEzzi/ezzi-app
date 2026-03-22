@@ -1,12 +1,14 @@
 import { createContext, useContext } from 'react';
-import { AuthenticatedUser, SubscriptionLevel } from '../../shared/api';
+import { AuthenticatedUser } from '@shared/api.ts';
 
 interface SubscriptionContextValue {
   user: AuthenticatedUser;
   isFree: boolean;
 }
 
-const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
+const SubscriptionContext = createContext<SubscriptionContextValue | null>(
+  null,
+);
 
 export const SubscriptionProvider = SubscriptionContext.Provider;
 
@@ -17,10 +19,12 @@ export function useSubscription(): SubscriptionContextValue {
       'useSubscription must be used within a SubscriptionProvider',
     );
   }
+
   return context;
 }
 
 export function useIsFreeUser(): boolean {
   const { isFree } = useSubscription();
+
   return isFree;
 }

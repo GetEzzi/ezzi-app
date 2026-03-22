@@ -1,5 +1,5 @@
 import SubscribedApp from './pages/SubscribedApp';
-import { AuthForm } from './pages/AuthForm.tsx';
+import { AuthForm } from './pages';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Toast,
@@ -51,11 +51,28 @@ function AppContent({ isInitialized, user }: AppContentProps) {
     const intervalId = setInterval(() => {
       authService
         .getCurrentUser()
-        .then((updatedUser) => {
+        .then(async (updatedUser) => {
           if (
             updatedUser &&
             updatedUser.subscription.level !== SubscriptionLevel.FREE
           ) {
+            window.electronAPI
+              ?.setSubscriptionLevel(updatedUser.subscription.level)
+              .catch(console.error);
+
+            try {
+              const currentSettings = await getStorageProvider().getSettings();
+              const newProvider = getStorageProvider(
+                updatedUser.subscription.level,
+              );
+              await newProvider.updateSettings({
+                solutionLanguage: currentSettings.solutionLanguage,
+                userLanguage: currentSettings.userLanguage,
+              });
+            } catch (err) {
+              console.error('Failed to migrate settings on upgrade:', err);
+            }
+
             setCurrentUser(updatedUser);
           }
         })
@@ -166,6 +183,9 @@ function useAppInitialization() {
       }
 
       setAppState((prev) => ({ ...prev, user }));
+      window.electronAPI
+        ?.setSubscriptionLevel(user.subscription.level)
+        .catch(console.error);
 
       const token = await authProvider.getAuthToken();
       if (!token) {
@@ -221,7 +241,7 @@ function useAppInitialization() {
         if (isSelfHosted()) {
           // In self-hosted mode, initialize settings directly
           try {
-            await getStorageProvider().getSettings();
+            await getStorageProvider(SubscriptionLevel.FREE).getSettings();
             markInitialized();
           } catch (settingsError) {
             console.error(

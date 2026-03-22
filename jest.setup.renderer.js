@@ -5,6 +5,7 @@ window.electronAPI = {
   on: jest.fn(),
   removeAllListeners: jest.fn(),
   platform: 'linux',
+  setSubscriptionLevel: jest.fn().mockResolvedValue({ success: true }),
 };
 
 Object.defineProperty(window, 'matchMedia', {

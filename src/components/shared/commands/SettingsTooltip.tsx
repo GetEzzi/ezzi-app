@@ -11,6 +11,8 @@ interface SettingsTooltipProps {
   onSignOut: () => void;
   onTooltipVisibilityChange: (visible: boolean, height: number) => void;
   setAppMode: (appMode: AppMode) => void;
+  isFree?: boolean;
+  userEmail?: string;
 }
 
 const SettingsTooltip: React.FC<SettingsTooltipProps> = ({
@@ -19,6 +21,8 @@ const SettingsTooltip: React.FC<SettingsTooltipProps> = ({
   onSignOut,
   onTooltipVisibilityChange,
   setAppMode,
+  isFree,
+  userEmail,
 }) => {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -55,6 +59,8 @@ const SettingsTooltip: React.FC<SettingsTooltipProps> = ({
           currentAppMode={currentAppMode}
           setAppMode={setAppMode}
           onSignOut={onSignOut}
+          isFree={isFree}
+          userEmail={userEmail}
         />
       )}
     </div>

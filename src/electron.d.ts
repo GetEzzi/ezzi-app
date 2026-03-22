@@ -1,4 +1,4 @@
-import { AppMode } from '../shared/api';
+import { AppMode, SubscriptionLevel } from '../shared/api';
 
 export interface ElectronAPI {
   openSubscriptionPortal: (authData: {
@@ -46,6 +46,9 @@ export interface ElectronAPI {
   handleCloseClick: (...args: any[]) => Promise<any>;
   handleQueueLoadedNoScreenshots: () => void;
   handleQueueLoadedWithScreenshots: (screenshotCount: number) => void;
+  setSubscriptionLevel: (
+    level: SubscriptionLevel,
+  ) => Promise<{ success: boolean; error?: string }>;
   authSetToken: (
     token: string,
     expiryTimestamp?: number,

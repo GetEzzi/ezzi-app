@@ -13,8 +13,7 @@ export const getStorageProvider = (
   subscriptionLevel?: SubscriptionLevel,
 ): IStorageProvider => {
   const level = subscriptionLevel ?? currentSubscriptionLevel;
-  const useLocal =
-    isSelfHosted() || level === SubscriptionLevel.FREE;
+  const useLocal = isSelfHosted() || level === SubscriptionLevel.FREE;
 
   // If subscription level changed, reset provider
   if (level && level !== currentSubscriptionLevel) {

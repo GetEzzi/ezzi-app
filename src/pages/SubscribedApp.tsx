@@ -8,7 +8,7 @@ import {
   useSolutionContext,
 } from '../contexts/SolutionContext';
 import { ScreenshotProvider } from '../contexts/ScreenshotContext';
-import { AuthenticatedUser, SubscriptionLevel } from '../../shared/api';
+import { AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
 import { SubscriptionProvider } from '../contexts/SubscriptionContext';
 
 interface SubscribedAppProps {
@@ -96,11 +96,12 @@ const SubscribedAppContent: React.FC = () => {
 };
 
 const SubscribedApp: React.FC<SubscribedAppProps> = ({ user }) => {
-  const isFree = user.subscription.level === SubscriptionLevel.FREE;
-
   const subscriptionValue = useMemo(
-    () => ({ user, isFree }),
-    [user, isFree],
+    () => ({
+      user,
+      isFree: user.subscription.level === SubscriptionLevel.FREE,
+    }),
+    [user],
   );
 
   return (

@@ -4,6 +4,7 @@ import {
   ELECTRON_STORAGE_KEYS,
   AuthStoreSchema,
 } from '../shared/storage';
+import { SubscriptionLevel } from '../shared/api';
 
 export interface IAuthStore {
   set(
@@ -27,6 +28,10 @@ const store = new Store<AuthStoreSchema>({
       default: null,
     },
     [ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL]: {
+      type: ['string', 'null'] as any,
+      default: null,
+    },
+    [ELECTRON_STORAGE_KEYS.AUTH.SUBSCRIPTION_LEVEL]: {
       type: ['string', 'null'] as any,
       default: null,
     },
@@ -78,6 +83,7 @@ export class AuthStorage {
   clearAuthToken(): void {
     this.store.delete(ELECTRON_STORAGE_KEYS.AUTH.TOKEN);
     this.store.delete(ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY);
+    this.store.delete(ELECTRON_STORAGE_KEYS.AUTH.SUBSCRIPTION_LEVEL);
   }
 
   isAuthenticated(): boolean {
@@ -92,5 +98,15 @@ export class AuthStorage {
     return this.store.get(ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL) as
       | string
       | null;
+  }
+
+  setSubscriptionLevel(level: SubscriptionLevel): void {
+    this.store.set(ELECTRON_STORAGE_KEYS.AUTH.SUBSCRIPTION_LEVEL, level);
+  }
+
+  getSubscriptionLevel(): SubscriptionLevel | null {
+    return this.store.get(
+      ELECTRON_STORAGE_KEYS.AUTH.SUBSCRIPTION_LEVEL,
+    ) as SubscriptionLevel | null;
   }
 }
