@@ -6,6 +6,7 @@ import { AppModeIndicator } from './AppModeIndicator';
 import CommandButton from '../shared/commands/CommandButton';
 import CommandSeparator from '../shared/commands/CommandSeparator';
 import SettingsTooltip from '../shared/commands/SettingsTooltip';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 
 interface QueueCommandsProps {
   onTooltipVisibilityChange: (visible: boolean, height: number) => void;
@@ -17,6 +18,7 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
   screenshotCount = 0,
 }) => {
   const { currentAppMode, setAppMode } = useAppMode();
+  const { isFree, user } = useSubscription();
 
   const handleSignOut = () => {
     authService.signOut().catch(console.error);
@@ -90,6 +92,28 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
                 onSignOut={handleSignOut}
                 onTooltipVisibilityChange={onTooltipVisibilityChange}
               />
+            </>
+          )}
+
+          {/* Plan status for FREE users */}
+          {isFree && (
+            <>
+              <CommandSeparator />
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-medium text-yellow-400/80 bg-yellow-400/10 border border-yellow-400/20 rounded px-1.5 py-0.5">
+                  FREE
+                </span>
+                <button
+                  onClick={() => {
+                    window.electronAPI
+                      .openSubscriptionPortal({ email: user.user.email })
+                      .catch(console.error);
+                  }}
+                  className="text-[10px] text-cyan-400/80 hover:text-cyan-400 transition-colors"
+                >
+                  Upgrade
+                </button>
+              </div>
             </>
           )}
         </div>

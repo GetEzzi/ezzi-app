@@ -10,13 +10,12 @@ import {
 import { ScreenshotProvider } from '../contexts/ScreenshotContext';
 import { AuthenticatedUser, SubscriptionLevel } from '../../shared/api';
 import { SubscriptionProvider } from '../contexts/SubscriptionContext';
-import { PlanStatusBadge } from '../components/shared/PlanStatusBadge';
 
 interface SubscribedAppProps {
   user: AuthenticatedUser;
 }
 
-const SubscribedAppContent: React.FC<{ isFree: boolean }> = ({ isFree }) => {
+const SubscribedAppContent: React.FC = () => {
   const { clearAll } = useSolutionContext();
   const [view, setView] = useState<'queue' | 'solutions' | 'debug'>('queue');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,7 +85,6 @@ const SubscribedAppContent: React.FC<{ isFree: boolean }> = ({ isFree }) => {
   return (
     <AppModeLayoutProvider>
       <div ref={containerRef} className="min-h-0">
-        {isFree && view === 'queue' && <PlanStatusBadge />}
         {view === 'queue' ? (
           <QueuePage setView={setView} />
         ) : view === 'solutions' ? (
@@ -110,7 +108,7 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({ user }) => {
       <SettingsProvider>
         <SolutionProvider>
           <ScreenshotProvider>
-            <SubscribedAppContent isFree={isFree} />
+            <SubscribedAppContent />
           </ScreenshotProvider>
         </SolutionProvider>
       </SettingsProvider>
