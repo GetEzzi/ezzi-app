@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
@@ -8,11 +8,15 @@ import {
   useSolutionContext,
 } from '../contexts/SolutionContext';
 import { ScreenshotProvider } from '../contexts/ScreenshotContext';
+import { AuthenticatedUser, SubscriptionLevel } from '../../shared/api';
+import { SubscriptionProvider } from '../contexts/SubscriptionContext';
+import { PlanStatusBadge } from '../components/shared/PlanStatusBadge';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface SubscribedAppProps {}
+interface SubscribedAppProps {
+  user: AuthenticatedUser;
+}
 
-const SubscribedAppContent: React.FC = () => {
+const SubscribedAppContent: React.FC<{ isFree: boolean }> = ({ isFree }) => {
   const { clearAll } = useSolutionContext();
   const [view, setView] = useState<'queue' | 'solutions' | 'debug'>('queue');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -82,6 +86,7 @@ const SubscribedAppContent: React.FC = () => {
   return (
     <AppModeLayoutProvider>
       <div ref={containerRef} className="min-h-0">
+        {isFree && view === 'queue' && <PlanStatusBadge />}
         {view === 'queue' ? (
           <QueuePage setView={setView} />
         ) : view === 'solutions' ? (
@@ -92,15 +97,24 @@ const SubscribedAppContent: React.FC = () => {
   );
 };
 
-const SubscribedApp: React.FC<SubscribedAppProps> = () => {
+const SubscribedApp: React.FC<SubscribedAppProps> = ({ user }) => {
+  const isFree = user.subscription.level === SubscriptionLevel.FREE;
+
+  const subscriptionValue = useMemo(
+    () => ({ user, isFree }),
+    [user, isFree],
+  );
+
   return (
-    <SettingsProvider>
-      <SolutionProvider>
-        <ScreenshotProvider>
-          <SubscribedAppContent />
-        </ScreenshotProvider>
-      </SolutionProvider>
-    </SettingsProvider>
+    <SubscriptionProvider value={subscriptionValue}>
+      <SettingsProvider>
+        <SolutionProvider>
+          <ScreenshotProvider>
+            <SubscribedAppContent isFree={isFree} />
+          </ScreenshotProvider>
+        </SolutionProvider>
+      </SettingsProvider>
+    </SubscriptionProvider>
   );
 };
 
