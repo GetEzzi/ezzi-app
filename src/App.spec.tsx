@@ -61,7 +61,7 @@ jest.mock('./pages/SubscribePage', () => {
     );
   };
 });
-jest.mock('./pages/AuthForm.tsx', () => {
+jest.mock('./pages/AuthForm', () => {
   return {
     AuthForm: function MockAuthForm({ setUser }: any) {
       return (

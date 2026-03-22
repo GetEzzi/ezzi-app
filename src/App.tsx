@@ -1,5 +1,5 @@
 import SubscribedApp from './pages/SubscribedApp';
-import { AuthForm } from './pages';
+import { AuthForm } from './pages/AuthForm';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Toast,
