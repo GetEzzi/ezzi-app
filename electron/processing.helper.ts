@@ -123,10 +123,6 @@ export class ProcessingHelper {
         );
         this.deps.setView('solutions');
       } catch (error: any) {
-        mainWindow.webContents.send(
-          this.deps.PROCESSING_EVENTS.INITIAL_SOLUTION_ERROR,
-          error,
-        );
         console.error('Processing error:', error);
         if (axios.isCancel(error)) {
           mainWindow.webContents.send(

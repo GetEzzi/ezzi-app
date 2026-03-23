@@ -147,12 +147,8 @@ export function useSolutions() {
         setDebugProcessing(false);
         void clearAllScreenshots();
       }),
-      window.electronAPI.onDebugError(() => {
-        showToast(
-          'Processing Failed',
-          'There was an error debugging your code.',
-          'error',
-        );
+      window.electronAPI.onDebugError((error: string) => {
+        showToast('Processing Failed', error, 'error');
         setDebugProcessing(false);
       }),
       window.electronAPI.onProcessingNoScreenshots(() => {
