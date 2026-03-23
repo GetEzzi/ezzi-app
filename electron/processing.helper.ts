@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { ScreenshotHelper } from './screenshot.helper';
 import { IProcessingHelperDeps } from './main';
 import axios from 'axios';
@@ -21,7 +22,6 @@ export class ProcessingHelper {
   private authStorage: AuthStorage;
   private processorFactory: AppModeProcessorFactory;
 
-  // AbortControllers for API requests
   private currentProcessingAbortController: AbortController | null = null;
   private currentExtraProcessingAbortController: AbortController | null = null;
 
@@ -30,6 +30,15 @@ export class ProcessingHelper {
     this.screenshotHelper = deps.getScreenshotHelper()!;
     this.authStorage = AuthStorage.getInstance();
     this.processorFactory = AppModeProcessorFactory.getInstance();
+  }
+
+  private readImageAsDataUri(filePath: string): string {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeType =
+      ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
+    const base64 = fs.readFileSync(filePath).toString('base64');
+
+    return `data:${mimeType};base64,${base64}`;
   }
 
   private getAuthToken(): string | null {
@@ -94,7 +103,7 @@ export class ProcessingHelper {
           screenshotQueue.map(async (path) => ({
             path,
             preview: await this.screenshotHelper.getImagePreview(path),
-            data: fs.readFileSync(path).toString('base64'),
+            data: this.readImageAsDataUri(path),
           })),
         );
 
@@ -161,7 +170,7 @@ export class ProcessingHelper {
           screenshotQueue.map(async (path) => ({
             path,
             preview: await this.screenshotHelper.getImagePreview(path),
-            data: fs.readFileSync(path).toString('base64'),
+            data: this.readImageAsDataUri(path),
           })),
         );
         console.log(
