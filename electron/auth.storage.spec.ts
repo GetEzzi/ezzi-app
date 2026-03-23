@@ -130,7 +130,7 @@ describe('AuthStorage', () => {
   });
 
   describe('clearAuthToken', () => {
-    test('WHEN clearAuthToken is called THEN it deletes both token and expiry', () => {
+    test('WHEN clearAuthToken is called THEN it deletes token, expiry, and subscription level', () => {
       const { mockStore, authStorage } = createMockAuthStorage();
 
       // Act
@@ -139,7 +139,8 @@ describe('AuthStorage', () => {
       // Assert
       expect(mockStore.delete).toHaveBeenCalledWith('authToken');
       expect(mockStore.delete).toHaveBeenCalledWith('tokenExpiry');
-      expect(mockStore.delete).toHaveBeenCalledTimes(2);
+      expect(mockStore.delete).toHaveBeenCalledWith('subscriptionLevel');
+      expect(mockStore.delete).toHaveBeenCalledTimes(3);
     });
   });
 

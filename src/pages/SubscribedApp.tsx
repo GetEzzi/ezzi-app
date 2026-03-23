@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { QueuePage, SolutionsPage } from '.';
 import { AppModeLayoutProvider } from '../layouts';
 import { useToast } from '../contexts/toast';
@@ -8,9 +8,12 @@ import {
   useSolutionContext,
 } from '../contexts/SolutionContext';
 import { ScreenshotProvider } from '../contexts/ScreenshotContext';
+import { AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
+import { SubscriptionProvider } from '../contexts/SubscriptionContext';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface SubscribedAppProps {}
+interface SubscribedAppProps {
+  user: AuthenticatedUser;
+}
 
 const SubscribedAppContent: React.FC = () => {
   const { clearAll } = useSolutionContext();
@@ -92,15 +95,25 @@ const SubscribedAppContent: React.FC = () => {
   );
 };
 
-const SubscribedApp: React.FC<SubscribedAppProps> = () => {
+const SubscribedApp: React.FC<SubscribedAppProps> = ({ user }) => {
+  const subscriptionValue = useMemo(
+    () => ({
+      user,
+      isFree: user.subscription.level === SubscriptionLevel.FREE,
+    }),
+    [user],
+  );
+
   return (
-    <SettingsProvider>
-      <SolutionProvider>
-        <ScreenshotProvider>
-          <SubscribedAppContent />
-        </ScreenshotProvider>
-      </SolutionProvider>
-    </SettingsProvider>
+    <SubscriptionProvider value={subscriptionValue}>
+      <SettingsProvider>
+        <SolutionProvider>
+          <ScreenshotProvider>
+            <SubscribedAppContent />
+          </ScreenshotProvider>
+        </SolutionProvider>
+      </SettingsProvider>
+    </SubscriptionProvider>
   );
 };
 

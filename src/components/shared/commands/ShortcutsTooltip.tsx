@@ -20,6 +20,8 @@ interface ShortcutsTooltipProps {
   onSignOut: () => void;
   className?: string;
   setAppMode: (appMode: AppMode) => void;
+  isFree?: boolean;
+  userEmail?: string;
 }
 
 const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
@@ -29,6 +31,8 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
   onSignOut,
   className = '',
   setAppMode,
+  isFree,
+  userEmail,
 }) => {
   return (
     <div
@@ -71,7 +75,25 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
             )}
           </div>
 
-          <div className="pt-3 mt-3 border-t border-gray-700">
+          <div className="pt-3 mt-3 border-t border-gray-700 space-y-1">
+            {isFree && (
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="text-[10px] font-medium text-yellow-400/80 bg-yellow-400/10 border border-yellow-400/20 rounded px-1.5 py-0.5">
+                  FREE
+                </span>
+                <button
+                  onClick={() => {
+                    window.electronAPI
+                      .openSubscriptionPortal({ email: userEmail ?? '' })
+                      .catch(console.error);
+                  }}
+                  className="text-[10px] text-cyan-400/80 hover:text-cyan-400 transition-colors"
+                >
+                  Upgrade
+                </button>
+              </div>
+            )}
+
             <AppModeSelector
               currentAppMode={currentAppMode}
               setAppMode={setAppMode}

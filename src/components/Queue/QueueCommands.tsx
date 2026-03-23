@@ -6,6 +6,7 @@ import { AppModeIndicator } from './AppModeIndicator';
 import CommandButton from '../shared/commands/CommandButton';
 import CommandSeparator from '../shared/commands/CommandSeparator';
 import SettingsTooltip from '../shared/commands/SettingsTooltip';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 
 interface QueueCommandsProps {
   onTooltipVisibilityChange: (visible: boolean, height: number) => void;
@@ -17,6 +18,7 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
   screenshotCount = 0,
 }) => {
   const { currentAppMode, setAppMode } = useAppMode();
+  const { isFree, user } = useSubscription();
 
   const handleSignOut = () => {
     authService.signOut().catch(console.error);
@@ -45,7 +47,9 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
           />
 
           {/* Solve Command */}
-          {screenshotCount > 0 && <CommandButton label="Solve" shortcut="↵" />}
+          {screenshotCount > 0 && !isFree && (
+            <CommandButton label="Solve" shortcut="↵" />
+          )}
 
           {/* Start Over - Always visible */}
           {screenshotCount > 0 && (
@@ -57,6 +61,8 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
             <>
               <CommandSeparator />
               <SettingsTooltip
+                isFree={isFree}
+                userEmail={user.user.email}
                 shortcuts={[
                   {
                     label: 'Toggle Window',

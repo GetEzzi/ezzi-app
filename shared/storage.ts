@@ -1,4 +1,4 @@
-import { AppMode, ProgrammingLanguage, UserLanguage } from './api';
+import { AppMode, SubscriptionLevel } from './api';
 
 /**
  * Centralized storage keys and configuration for both Electron and React
@@ -16,6 +16,7 @@ export const ELECTRON_STORAGE_KEYS = {
     TOKEN: 'authToken',
     TOKEN_EXPIRY: 'tokenExpiry',
     LAST_USED_EMAIL: 'lastUsedEmail',
+    SUBSCRIPTION_LEVEL: 'subscriptionLevel',
   },
   APP_SETTINGS: {
     APP_MODE: 'appMode',
@@ -33,6 +34,7 @@ export interface AuthStoreSchema {
   authToken: string | null;
   tokenExpiry: number | null;
   lastUsedEmail: string | null;
+  subscriptionLevel: SubscriptionLevel | null;
 }
 
 export interface AppStoreSchema {

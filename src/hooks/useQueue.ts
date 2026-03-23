@@ -57,12 +57,7 @@ export function useQueue() {
 
     const cleanupFunctions = [
       window.electronAPI.onSolutionError((error: string) => {
-        showToast(
-          'Processing Failed',
-          'There was an error processing your screenshots.',
-          'error',
-        );
-        console.error('Processing error:', error);
+        showToast('Processing Failed', error, 'error');
       }),
       window.electronAPI.onProcessingNoScreenshots(() => {
         showToast(

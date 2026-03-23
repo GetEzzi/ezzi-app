@@ -61,7 +61,7 @@ jest.mock('./pages/SubscribePage', () => {
     );
   };
 });
-jest.mock('./pages/AuthForm.tsx', () => {
+jest.mock('./pages/AuthForm', () => {
   return {
     AuthForm: function MockAuthForm({ setUser }: any) {
       return (
@@ -243,7 +243,7 @@ describe('App', () => {
       expect(screen.getByTestId('locale')).toHaveTextContent('es-ES');
     });
 
-    test('WHEN user has no subscription THEN it shows subscribe page', async () => {
+    test('WHEN user has no subscription THEN it shows subscribed app (FREE users can take screenshots)', async () => {
       const freeUser = createMockUser({
         subscription: {
           active_from: null,
@@ -256,15 +256,10 @@ describe('App', () => {
 
       render(<App />);
 
-      // Act
-      await waitFor(() => {
-        expect(screen.getByTestId('subscribe-page')).toBeInTheDocument();
-      });
-
       // Assert
-      expect(
-        screen.getByText(/Subscribe Page - test@example.com/),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('subscribed-app')).toBeInTheDocument();
+      });
     });
   });
 
@@ -292,7 +287,7 @@ describe('App', () => {
       render(<App />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('subscribe-page')).toBeInTheDocument();
+        expect(screen.getByTestId('subscribed-app')).toBeInTheDocument();
       });
 
       // Act
@@ -306,7 +301,7 @@ describe('App', () => {
       });
     });
 
-    test('WHEN subscription status changes during polling THEN it updates UI', async () => {
+    test('WHEN subscription status changes during polling THEN it syncs subscription level', async () => {
       const freeUser = createMockUser({
         subscription: {
           active_from: null,
@@ -329,7 +324,7 @@ describe('App', () => {
       render(<App />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('subscribe-page')).toBeInTheDocument();
+        expect(screen.getByTestId('subscribed-app')).toBeInTheDocument();
       });
 
       // Act
@@ -339,7 +334,9 @@ describe('App', () => {
 
       // Assert
       await waitFor(() => {
-        expect(screen.getByTestId('subscribed-app')).toBeInTheDocument();
+        expect(window.electronAPI.setSubscriptionLevel).toHaveBeenCalledWith(
+          SubscriptionLevel.PRO,
+        );
       });
     });
   });

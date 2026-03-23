@@ -1,6 +1,5 @@
 import SubscribedApp from './pages/SubscribedApp';
-import SubscribePage from './pages/SubscribePage';
-import { AuthForm } from './pages/AuthForm.tsx';
+import { AuthForm } from './pages/AuthForm';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Toast,
@@ -36,41 +35,45 @@ interface AppContentProps {
 }
 
 function AppContent({ isInitialized, user }: AppContentProps) {
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState(user);
 
-  const checkSubscription = () => {
-    try {
-      setSubscriptionLoading(true);
-      setIsSubscribed(user.subscription.level !== SubscriptionLevel.FREE);
-    } catch (_err) {
-      setError('Failed to check subscription status');
-    } finally {
-      setSubscriptionLoading(false);
-    }
-  };
-
-  // Initial subscription check when component mounts or user.subscription changes
+  // Update currentUser when prop changes
   useEffect(() => {
-    checkSubscription();
-  }, [user.subscription]);
+    setCurrentUser(user);
+  }, [user]);
 
-  // Periodic subscription check every 15 seconds
+  // Periodic subscription check every 15 seconds for FREE users
   useEffect(() => {
-    if (isSubscribed) {
+    if (currentUser.subscription.level !== SubscriptionLevel.FREE) {
       return;
     }
 
     const intervalId = setInterval(() => {
       authService
         .getCurrentUser()
-        .then((updatedUser) => {
+        .then(async (updatedUser) => {
           if (
             updatedUser &&
             updatedUser.subscription.level !== SubscriptionLevel.FREE
           ) {
-            setIsSubscribed(true);
+            window.electronAPI
+              ?.setSubscriptionLevel(updatedUser.subscription.level)
+              .catch(console.error);
+
+            try {
+              const currentSettings = await getStorageProvider().getSettings();
+              const newProvider = getStorageProvider(
+                updatedUser.subscription.level,
+              );
+              await newProvider.updateSettings({
+                solutionLanguage: currentSettings.solutionLanguage,
+                userLanguage: currentSettings.userLanguage,
+              });
+            } catch (err) {
+              console.error('Failed to migrate settings on upgrade:', err);
+            }
+
+            setCurrentUser(updatedUser);
           }
         })
         .catch((err) => {
@@ -79,44 +82,23 @@ function AppContent({ isInitialized, user }: AppContentProps) {
     }, 15000);
 
     return () => clearInterval(intervalId);
-  }, [isSubscribed]);
+  }, [currentUser.subscription.level]);
 
-  if (subscriptionLoading || !isInitialized) {
+  if (!isInitialized) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-6 h-6 border-2 border-white/20 border-t-white/80 rounded-full animate-spin"></div>
           <p className="text-white/60 text-sm">
-            {!isInitialized
-              ? 'Initializing...If you see this screen for more than 10 seconds, please quit and restart the app.'
-              : 'Checking subscription...'}
+            Initializing...If you see this screen for more than 10 seconds,
+            please quit and restart the app.
           </p>
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <p className="text-red-500 text-sm">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-white/10 rounded-lg text-white hover:bg-white/20 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isSubscribed) {
-    return <SubscribePage user={user} />;
-  }
-
-  return <SubscribedApp />;
+  return <SubscribedApp user={currentUser} />;
 }
 
 function useAppInitialization() {
@@ -201,6 +183,9 @@ function useAppInitialization() {
       }
 
       setAppState((prev) => ({ ...prev, user }));
+      window.electronAPI
+        ?.setSubscriptionLevel(user.subscription.level)
+        .catch(console.error);
 
       const token = await authProvider.getAuthToken();
       if (!token) {
@@ -210,7 +195,7 @@ function useAppInitialization() {
       }
 
       try {
-        await getStorageProvider().getSettings();
+        await getStorageProvider(user.subscription.level).getSettings();
 
         if (!mountedRef.current) {
           return;
@@ -256,7 +241,7 @@ function useAppInitialization() {
         if (isSelfHosted()) {
           // In self-hosted mode, initialize settings directly
           try {
-            await getStorageProvider().getSettings();
+            await getStorageProvider(SubscriptionLevel.FREE).getSettings();
             markInitialized();
           } catch (settingsError) {
             console.error(

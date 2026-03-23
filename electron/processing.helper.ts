@@ -1,14 +1,15 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { ScreenshotHelper } from './screenshot.helper';
 import { IProcessingHelperDeps } from './main';
 import axios from 'axios';
-import { BrowserWindow } from 'electron';
 import { AuthStorage } from './auth.storage';
 import {
   DebugResponse,
   LeetCodeDebugResponse,
   LeetCodeSolveResponse,
   SolveResponse,
+  SubscriptionLevel,
 } from '../shared/api';
 import { AppModeProcessorFactory } from './processors/AppModeProcessorFactory';
 import { ProcessingParams } from './processors/AppModeProcessor';
@@ -21,7 +22,6 @@ export class ProcessingHelper {
   private authStorage: AuthStorage;
   private processorFactory: AppModeProcessorFactory;
 
-  // AbortControllers for API requests
   private currentProcessingAbortController: AbortController | null = null;
   private currentExtraProcessingAbortController: AbortController | null = null;
 
@@ -32,25 +32,13 @@ export class ProcessingHelper {
     this.processorFactory = AppModeProcessorFactory.getInstance();
   }
 
-  private async waitForInitialization(
-    mainWindow: BrowserWindow,
-  ): Promise<void> {
-    let attempts = 0;
-    const maxAttempts = 50; // 5 seconds total
+  private readImageAsDataUri(filePath: string): string {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeType =
+      ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
+    const base64 = fs.readFileSync(filePath).toString('base64');
 
-    while (attempts < maxAttempts) {
-      const isInitialized = (await mainWindow.webContents.executeJavaScript(
-        'window.__IS_INITIALIZED__',
-      )) as boolean;
-      if (isInitialized) {
-        return;
-      }
-      // !!! Required because window lags sometimes
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      attempts++;
-    }
-
-    throw new Error('App failed to initialize after 5 seconds');
+    return `data:${mimeType};base64,${base64}`;
   }
 
   private getAuthToken(): string | null {
@@ -81,6 +69,18 @@ export class ProcessingHelper {
       return;
     }
 
+    if (!isSelfHosted()) {
+      const subscriptionLevel = this.authStorage.getSubscriptionLevel();
+      if (subscriptionLevel !== SubscriptionLevel.PRO) {
+        mainWindow.webContents.send(
+          this.deps.PROCESSING_EVENTS.INITIAL_SOLUTION_ERROR,
+          'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
+        );
+
+        return;
+      }
+    }
+
     const view = this.deps.getView();
     console.log('Processing screenshots in view:', view);
 
@@ -103,7 +103,7 @@ export class ProcessingHelper {
           screenshotQueue.map(async (path) => ({
             path,
             preview: await this.screenshotHelper.getImagePreview(path),
-            data: fs.readFileSync(path).toString('base64'),
+            data: this.readImageAsDataUri(path),
           })),
         );
 
@@ -132,10 +132,6 @@ export class ProcessingHelper {
         );
         this.deps.setView('solutions');
       } catch (error: any) {
-        mainWindow.webContents.send(
-          this.deps.PROCESSING_EVENTS.INITIAL_SOLUTION_ERROR,
-          error,
-        );
         console.error('Processing error:', error);
         if (axios.isCancel(error)) {
           mainWindow.webContents.send(
@@ -174,7 +170,7 @@ export class ProcessingHelper {
           screenshotQueue.map(async (path) => ({
             path,
             preview: await this.screenshotHelper.getImagePreview(path),
-            data: fs.readFileSync(path).toString('base64'),
+            data: this.readImageAsDataUri(path),
           })),
         );
         console.log(
@@ -311,6 +307,16 @@ export class ProcessingHelper {
     data?: DebugResponse | LeetCodeDebugResponse;
     error?: string;
   }> {
+    if (!isSelfHosted()) {
+      const subscriptionLevel = this.authStorage.getSubscriptionLevel();
+      if (subscriptionLevel !== SubscriptionLevel.PRO) {
+        return {
+          success: false,
+          error: 'Upgrade to Pro to use debug.',
+        };
+      }
+    }
+
     try {
       const images = screenshots.map((screenshot) => screenshot.data);
       const token = this.getAuthToken();

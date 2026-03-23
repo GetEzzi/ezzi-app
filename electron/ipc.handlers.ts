@@ -1,7 +1,7 @@
 import { app, ipcMain, shell } from 'electron';
 import { IIpcHandlerDeps } from './main';
 import { IPC_EVENTS } from '../shared/constants';
-import { AppMode } from '../shared/api';
+import { AppMode, SubscriptionLevel } from '../shared/api';
 import { AuthStorage } from './auth.storage';
 import { AppStorage } from './app.storage';
 
@@ -355,6 +355,21 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       return { error: 'Failed to get last used email' };
     }
   });
+
+  ipcMain.handle(
+    'auth-set-subscription-level',
+    (_event, level: SubscriptionLevel) => {
+      try {
+        authStorage.setSubscriptionLevel(level);
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error setting subscription level:', error);
+
+        return { error: 'Failed to set subscription level' };
+      }
+    },
+  );
 
   ipcMain.handle(IPC_EVENTS.APP_MODE.CHANGE, (_event, appMode: string) => {
     try {
