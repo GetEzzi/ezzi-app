@@ -40,8 +40,8 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
               screenshotCount === 0
                 ? 'Take first screenshot'
                 : screenshotCount === 1
-                  ? 'Take next screenshot'
-                  : 'Reset first screenshot'
+                  ? 'Next screenshot'
+                  : 'Reset screenshot'
             }
             shortcut="H"
           />
