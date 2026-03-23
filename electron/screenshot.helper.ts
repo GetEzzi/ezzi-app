@@ -1,6 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs';
-import { app } from 'electron';
+import { app, nativeImage } from 'electron';
 import { v4 as uuidv4 } from 'uuid';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
@@ -11,6 +11,8 @@ export class ScreenshotHelper {
   private screenshotQueue: string[] = [];
   private readonly MAX_SCREENSHOTS = 3;
   private clearingInProgress = false;
+  private static readonly MAX_IMAGE_SIZE = 3932160;
+  private static readonly QUALITY_STEPS = [90, 85, 80, 70];
 
   private readonly screenshotDir: string;
 
@@ -128,6 +130,36 @@ export class ScreenshotHelper {
     return buffer;
   }
 
+  private toMb(bytes: number): string {
+    return (bytes / (1024 * 1024)).toFixed(2) + 'mb';
+  }
+
+  private convertToJpeg(buffer: Buffer): Buffer {
+    const originalSize = this.toMb(buffer.length);
+    const image = nativeImage.createFromBuffer(buffer);
+    for (const quality of ScreenshotHelper.QUALITY_STEPS) {
+      const jpegBuffer = image.toJPEG(quality);
+      if (jpegBuffer.length <= ScreenshotHelper.MAX_IMAGE_SIZE) {
+        console.log(
+          `Screenshot: ${originalSize} → ${this.toMb(jpegBuffer.length)} (JPEG q${quality})`,
+        );
+
+        return jpegBuffer;
+      }
+      console.warn(
+        `JPEG q${quality}: ${this.toMb(jpegBuffer.length)}, trying lower quality`,
+      );
+    }
+    const lastQuality =
+      ScreenshotHelper.QUALITY_STEPS[ScreenshotHelper.QUALITY_STEPS.length - 1];
+    const finalBuffer = image.toJPEG(lastQuality);
+    console.warn(
+      `Screenshot: ${originalSize} → ${this.toMb(finalBuffer.length)} (JPEG q${lastQuality}, still over limit)`,
+    );
+
+    return finalBuffer;
+  }
+
   public async takeScreenshot(
     hideMainWindow: () => void,
     showMainWindow: () => void,
@@ -153,9 +185,9 @@ export class ScreenshotHelper {
       }
       console.log('Screenshot captured, saving to file...');
 
-      // Save and manage screenshot in single queue
-      screenshotPath = path.join(this.screenshotDir, `${uuidv4()}.png`);
-      await fs.promises.writeFile(screenshotPath, screenshotBuffer);
+      const jpegBuffer = this.convertToJpeg(screenshotBuffer);
+      screenshotPath = path.join(this.screenshotDir, `${uuidv4()}.jpg`);
+      await fs.promises.writeFile(screenshotPath, jpegBuffer);
       console.log('Adding screenshot to queue:', screenshotPath);
       this.screenshotQueue.push(screenshotPath);
       if (this.screenshotQueue.length > this.MAX_SCREENSHOTS) {
@@ -186,7 +218,7 @@ export class ScreenshotHelper {
     try {
       const data = await fs.promises.readFile(filepath);
 
-      return `data:image/png;base64,${data.toString('base64')}`;
+      return `data:image/jpeg;base64,${data.toString('base64')}`;
     } catch (error) {
       console.error('Error reading image:', error);
 
