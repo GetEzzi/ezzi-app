@@ -15,22 +15,15 @@ interface ElectronAPI {
   openSubscriptionPortal: (authData: {
     email: string;
   }) => Promise<{ success: boolean; error?: string }>;
-  updateContentDimensions: (dimensions: {
-    width: number;
-    height: number;
-  }) => Promise<void>;
+  updateContentDimensions: (dimensions: { width: number; height: number }) => Promise<void>;
   clearStore: () => Promise<{ success: boolean; error?: string }>;
   getScreenshots: () => Promise<{
     success: boolean;
     previews?: Array<{ path: string; preview: string }> | null;
     error?: string;
   }>;
-  deleteScreenshot: (
-    path: string,
-  ) => Promise<{ success: boolean; error?: string }>;
-  onScreenshotTaken: (
-    callback: (data: { path: string; preview: string }) => void,
-  ) => () => void;
+  deleteScreenshot: (path: string) => Promise<{ success: boolean; error?: string }>;
+  onScreenshotTaken: (callback: (data: { path: string; preview: string }) => void) => () => void;
   onResetView: (callback: () => void) => () => void;
   onSolutionStart: (callback: () => void) => () => void;
   onDebugStart: (callback: () => void) => () => void;

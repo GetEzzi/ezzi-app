@@ -1,15 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { QueuePage, SolutionsPage } from '.';
-import { AppModeLayoutProvider } from '../layouts';
-import { useToast } from '../contexts/toast';
-import { SettingsProvider } from '../contexts/SettingsContext';
-import {
-  SolutionProvider,
-  useSolutionContext,
-} from '../contexts/SolutionContext';
+import { type AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScreenshotProvider } from '../contexts/ScreenshotContext';
-import { AuthenticatedUser, SubscriptionLevel } from '@shared/api.ts';
+import { SettingsProvider } from '../contexts/SettingsContext';
+import { SolutionProvider, useSolutionContext } from '../contexts/SolutionContext';
 import { SubscriptionProvider } from '../contexts/SubscriptionContext';
+import { useToast } from '../contexts/toast';
+import { AppModeLayoutProvider } from '../layouts';
+import { QueuePage, SolutionsPage } from '.';
 
 interface SubscribedAppProps {
   user: AuthenticatedUser;
@@ -79,7 +77,11 @@ const SubscribedAppContent: React.FC = () => {
       }),
     ];
 
-    return () => cleanupFunctions.forEach((fn) => fn());
+    return () => {
+      cleanupFunctions.forEach((fn) => {
+        fn();
+      });
+    };
   }, [clearAll, showToast]);
 
   return (

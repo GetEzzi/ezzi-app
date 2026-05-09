@@ -1,7 +1,7 @@
-import React from 'react';
+import type React from 'react';
+import type { Screenshot } from '../../../shared/api';
 import QueueCommands from '../Queue/QueueCommands';
 import SolutionCommands from '../Solutions/SolutionCommands';
-import { Screenshot } from '../../../shared/api';
 
 type CommandSectionMode = 'queue' | 'solutions' | 'debug';
 
@@ -44,10 +44,7 @@ export const CommandSection: React.FC<CommandSectionProps> = ({
   if (mode === 'solutions' || mode === 'debug') {
     return (
       <div className={className}>
-        <SolutionCommands
-          isProcessing={isProcessing}
-          screenshots={screenshots}
-        />
+        <SolutionCommands isProcessing={isProcessing} screenshots={screenshots} />
       </div>
     );
   }

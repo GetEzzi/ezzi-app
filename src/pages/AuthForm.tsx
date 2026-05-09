@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { AuthenticatedUser } from '@shared/api.ts';
-import { getAuthProvider } from '../services/auth/index';
-import CommandButton from '../components/shared/commands/CommandButton.tsx';
-import { sendToElectron } from '../utils/electron.ts';
+import type { AuthenticatedUser } from '@shared/api.ts';
 import { IPC_EVENTS, isSelfHosted } from '@shared/constants.ts';
+import React, { useState } from 'react';
+import CommandButton from '../components/shared/commands/CommandButton.tsx';
+import { getAuthProvider } from '../services/auth/index';
+import { sendToElectron } from '../utils/electron.ts';
 
 interface AuthFormProps {
   setUser: (user: AuthenticatedUser | null) => void;
@@ -136,10 +136,7 @@ export function AuthForm({ setUser }: AuthFormProps) {
   };
 
   const handleSignIn = async (): Promise<void> => {
-    const response = await authProvider.login(
-      formState.email,
-      formState.password,
-    );
+    const response = await authProvider.login(formState.email, formState.password);
 
     const error = response.error;
     if (error && 'code' in error) {
@@ -148,10 +145,7 @@ export function AuthForm({ setUser }: AuthFormProps) {
         error: 'Authentication failed',
       }));
       setFormState((prev) => ({ ...prev, shake: true }));
-      setTimeout(
-        () => setFormState((prev) => ({ ...prev, shake: false })),
-        500,
-      );
+      setTimeout(() => setFormState((prev) => ({ ...prev, shake: false })), 500);
 
       return;
     }
@@ -175,10 +169,7 @@ export function AuthForm({ setUser }: AuthFormProps) {
         error: 'Invalid response from server',
       }));
       setFormState((prev) => ({ ...prev, shake: true }));
-      setTimeout(
-        () => setFormState((prev) => ({ ...prev, shake: false })),
-        500,
-      );
+      setTimeout(() => setFormState((prev) => ({ ...prev, shake: false })), 500);
     }
   };
 
@@ -186,10 +177,7 @@ export function AuthForm({ setUser }: AuthFormProps) {
     e.preventDefault();
     if (formState.isSignUp && !validatePassword(formState.password)) {
       setFormState((prev) => ({ ...prev, shake: true }));
-      setTimeout(
-        () => setFormState((prev) => ({ ...prev, shake: false })),
-        500,
-      );
+      setTimeout(() => setFormState((prev) => ({ ...prev, shake: false })), 500);
 
       return;
     }
@@ -203,19 +191,13 @@ export function AuthForm({ setUser }: AuthFormProps) {
         await handleSignIn();
       }
     } catch (error: any) {
-      console.error(
-        `Error ${formState.isSignUp ? 'signing up' : 'signing in'}:`,
-        error,
-      );
+      console.error(`Error ${formState.isSignUp ? 'signing up' : 'signing in'}:`, error);
       setFormState((prev) => ({
         ...prev,
         error: 'Something went wrong, try again later',
       }));
       setFormState((prev) => ({ ...prev, shake: true }));
-      setTimeout(
-        () => setFormState((prev) => ({ ...prev, shake: false })),
-        500,
-      );
+      setTimeout(() => setFormState((prev) => ({ ...prev, shake: false })), 500);
     } finally {
       setFormState((prev) => ({ ...prev, isLoading: false }));
     }
@@ -232,8 +214,7 @@ export function AuthForm({ setUser }: AuthFormProps) {
     }));
   };
 
-  const isFormValid =
-    formState.email && formState.password && !formState.passwordError;
+  const isFormValid = formState.email && formState.password && !formState.passwordError;
 
   return (
     <div className="min-h-[420px] bg-black/90 rounded-xl flex flex-col">
@@ -265,9 +246,7 @@ export function AuthForm({ setUser }: AuthFormProps) {
                     required
                   />
                   {formState.error && (
-                    <p className="text-sm text-red-400 px-1">
-                      {formState.error}
-                    </p>
+                    <p className="text-sm text-red-400 px-1">{formState.error}</p>
                   )}
                 </div>
                 <div className="space-y-1">
@@ -284,9 +263,7 @@ export function AuthForm({ setUser }: AuthFormProps) {
                     required
                   />
                   {formState.passwordError && (
-                    <p className="text-sm text-red-400 px-1">
-                      {formState.passwordError}
-                    </p>
+                    <p className="text-sm text-red-400 px-1">{formState.passwordError}</p>
                   )}
                 </div>
                 <button

@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { authService } from '../services/auth.ts';
-import { AuthenticatedUser } from '@shared/api.ts';
-import { sendToElectron } from '../utils/electron';
+import type { AuthenticatedUser } from '@shared/api.ts';
 import { IPC_EVENTS } from '@shared/constants.ts';
-import CommandButton from '../components/shared/commands/CommandButton';
+import { useEffect, useRef, useState } from 'react';
 import logoSrc from '../assets/images/logo.svg';
+import CommandButton from '../components/shared/commands/CommandButton';
+import { authService } from '../services/auth.ts';
+import { sendToElectron } from '../utils/electron';
 
 interface SubscribePageProps {
   user: AuthenticatedUser;
@@ -54,20 +54,14 @@ export default function SubscribePage({ user }: SubscribePageProps) {
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="min-h-[520px] bg-black/90 rounded-xl flex flex-col"
-    >
+    <div ref={containerRef} className="min-h-[520px] bg-black/90 rounded-xl flex flex-col">
       <div className="flex flex-col items-center justify-center flex-1 px-3 pb-1">
         <div className="w-full max-w-[440px] space-y-5 p-3 mt-8">
           <div className="flex flex-col items-center justify-center space-y-4">
             <img src={logoSrc} alt="Logo" className="w-16 h-16 mb-2" />
-            <h2 className="text-lg font-semibold text-gray-100">
-              Welcome to Ezzi
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-100">Welcome to Ezzi</h2>
             <p className="text-gray-400 text-sm text-center">
-              To start cracking code interviews, you'll need to upgrade your
-              plan.
+              To start cracking code interviews, you'll need to upgrade your plan.
             </p>
 
             <button

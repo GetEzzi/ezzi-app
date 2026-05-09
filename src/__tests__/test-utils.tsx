@@ -1,14 +1,11 @@
-import { render, RenderOptions } from '@testing-library/react';
-import { ReactElement } from 'react';
+import { type RenderOptions, render } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { ToastProvider } from '../components/ui/toast';
 import { ToastContext } from '../contexts/toast';
 
 type CustomRenderOptions = Omit<RenderOptions, 'wrapper'>;
 
-export function renderWithProviders(
-  ui: ReactElement,
-  options: CustomRenderOptions = {},
-) {
+export function renderWithProviders(ui: ReactElement, options: CustomRenderOptions = {}) {
   const mockToastContext = {
     showToast: jest.fn(),
   };

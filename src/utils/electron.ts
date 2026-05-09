@@ -1,4 +1,4 @@
-import { AllIpcEvents, IPC_EVENTS } from '@shared/constants.ts';
+import { type AllIpcEvents, IPC_EVENTS } from '@shared/constants.ts';
 
 export const sendToElectron = (channel: AllIpcEvents, ...args: any[]) => {
   if (!window.electron) {

@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import {
-  SolveResponse,
-  LeetCodeSolveResponse,
+import type {
   DebugResponse,
   LeetCodeDebugResponse,
+  LeetCodeSolveResponse,
+  SolveResponse,
 } from '@shared/api.ts';
+import React, { createContext, type ReactNode, useContext, useReducer } from 'react';
 
 interface SolutionState {
   solution: SolveResponse | LeetCodeSolveResponse | null;
@@ -23,10 +23,7 @@ const initialState: SolutionState = {
   newSolution: null,
 };
 
-function solutionReducer(
-  state: SolutionState,
-  action: SolutionAction,
-): SolutionState {
+function solutionReducer(state: SolutionState, action: SolutionAction): SolutionState {
   switch (action.type) {
     case 'SET_SOLUTION':
       return { ...state, solution: action.payload };
@@ -52,9 +49,7 @@ interface SolutionContextType {
   clearAll: () => void;
 }
 
-const SolutionContext = createContext<SolutionContextType | undefined>(
-  undefined,
-);
+const SolutionContext = createContext<SolutionContextType | undefined>(undefined);
 
 export function SolutionProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(solutionReducer, initialState);
@@ -98,9 +93,7 @@ export function SolutionProvider({ children }: { children: ReactNode }) {
 export function useSolutionContext() {
   const context = useContext(SolutionContext);
   if (!context) {
-    throw new Error(
-      'useSolutionContext must be used within a SolutionProvider',
-    );
+    throw new Error('useSolutionContext must be used within a SolutionProvider');
   }
 
   return context;

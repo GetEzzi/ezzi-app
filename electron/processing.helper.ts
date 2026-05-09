@@ -1,20 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { ScreenshotHelper } from './screenshot.helper';
-import { IProcessingHelperDeps } from './main';
 import axios from 'axios';
-import { AuthStorage } from './auth.storage';
 import {
-  DebugResponse,
-  LeetCodeDebugResponse,
-  LeetCodeSolveResponse,
-  SolveResponse,
+  type DebugResponse,
+  type LeetCodeDebugResponse,
+  type LeetCodeSolveResponse,
+  type SolveResponse,
   SubscriptionLevel,
 } from '../shared/api';
-import { AppModeProcessorFactory } from './processors/AppModeProcessorFactory';
-import { ProcessingParams } from './processors/AppModeProcessor';
-import { AppStorage } from './app.storage';
 import { isSelfHosted } from '../shared/constants';
+import { AppStorage } from './app.storage';
+import { AuthStorage } from './auth.storage';
+import type { IProcessingHelperDeps } from './main';
+import type { ProcessingParams } from './processors/AppModeProcessor';
+import { AppModeProcessorFactory } from './processors/AppModeProcessorFactory';
+import type { ScreenshotHelper } from './screenshot.helper';
 
 export class ProcessingHelper {
   private deps: IProcessingHelperDeps;
@@ -34,8 +34,7 @@ export class ProcessingHelper {
 
   private readImageAsDataUri(filePath: string): string {
     const ext = path.extname(filePath).toLowerCase();
-    const mimeType =
-      ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
+    const mimeType = ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
     const base64 = fs.readFileSync(filePath).toString('base64');
 
     return `data:${mimeType};base64,${base64}`;
@@ -107,10 +106,7 @@ export class ProcessingHelper {
           })),
         );
 
-        const result = await this.processScreenshotsHelperSolve(
-          screenshots,
-          signal,
-        );
+        const result = await this.processScreenshotsHelperSolve(screenshots, signal);
 
         if (!result.success) {
           console.log('Processing failed:', result.error);
@@ -126,10 +122,7 @@ export class ProcessingHelper {
 
         // Only set view to solutions if processing succeeded
         console.log('Setting view to solutions after successful processing');
-        mainWindow.webContents.send(
-          this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
-          result.data,
-        );
+        mainWindow.webContents.send(this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS, result.data);
         this.deps.setView('solutions');
       } catch (error: any) {
         console.error('Processing error:', error);
@@ -178,22 +171,13 @@ export class ProcessingHelper {
           screenshots.map((s) => s.path),
         );
 
-        const result = await this.processExtraScreenshotsHelper(
-          screenshots,
-          signal,
-        );
+        const result = await this.processExtraScreenshotsHelper(screenshots, signal);
 
         if (result.success) {
           this.deps.setHasDebugged(true);
-          mainWindow.webContents.send(
-            this.deps.PROCESSING_EVENTS.DEBUG_SUCCESS,
-            result.data,
-          );
+          mainWindow.webContents.send(this.deps.PROCESSING_EVENTS.DEBUG_SUCCESS, result.data);
         } else {
-          mainWindow.webContents.send(
-            this.deps.PROCESSING_EVENTS.DEBUG_ERROR,
-            result.error,
-          );
+          mainWindow.webContents.send(this.deps.PROCESSING_EVENTS.DEBUG_ERROR, result.error);
         }
       } catch (error: any) {
         console.error('Debug processing error:', error);
@@ -278,10 +262,7 @@ export class ProcessingHelper {
         console.log('Stored conversationId:', solutionData.conversationId);
       }
 
-      mainWindow.webContents.send(
-        this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
-        solutionData,
-      );
+      mainWindow.webContents.send(this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS, solutionData);
 
       console.log('Solution retrieved and sent to app');
 
@@ -291,10 +272,7 @@ export class ProcessingHelper {
 
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       };
     }
   }
@@ -328,8 +306,7 @@ export class ProcessingHelper {
       if (!isSelfHosted() && !token) {
         return {
           success: false,
-          error:
-            'Your session or subscription has expired. Please sign in again.',
+          error: 'Your session or subscription has expired. Please sign in again.',
         };
       }
 
@@ -361,10 +338,7 @@ export class ProcessingHelper {
 
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       };
     }
   }

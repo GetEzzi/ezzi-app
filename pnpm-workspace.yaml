@@ -1,0 +1,7 @@
+allowBuilds:
+  electron: true
+  electron-builder: true
+  esbuild: true
+  '@swc/core': true
+  electron-winstaller: true
+  unrs-resolver: true

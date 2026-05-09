@@ -1,12 +1,12 @@
-import React from 'react';
-import { COMMAND_KEY } from '../../utils/platform';
-import { authService } from '../../services/auth.ts';
+import type React from 'react';
 import { useAppMode } from '../../contexts/appMode';
-import { AppModeIndicator } from './AppModeIndicator';
+import { useSubscription } from '../../contexts/SubscriptionContext';
+import { authService } from '../../services/auth.ts';
+import { COMMAND_KEY } from '../../utils/platform';
 import CommandButton from '../shared/commands/CommandButton';
 import CommandSeparator from '../shared/commands/CommandSeparator';
 import SettingsTooltip from '../shared/commands/SettingsTooltip';
-import { useSubscription } from '../../contexts/SubscriptionContext';
+import { AppModeIndicator } from './AppModeIndicator';
 
 interface QueueCommandsProps {
   onTooltipVisibilityChange: (visible: boolean, height: number) => void;
@@ -47,14 +47,10 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
           />
 
           {/* Solve Command */}
-          {screenshotCount > 0 && !isFree && (
-            <CommandButton label="Solve" shortcut="↵" />
-          )}
+          {screenshotCount > 0 && !isFree && <CommandButton label="Solve" shortcut="↵" />}
 
           {/* Start Over - Always visible */}
-          {screenshotCount > 0 && (
-            <CommandButton label="Start Over" shortcut="G" />
-          )}
+          {screenshotCount > 0 && <CommandButton label="Start Over" shortcut="G" />}
 
           {/* Settings with Tooltip - Only show when no screenshots */}
           {screenshotCount === 0 && (
@@ -72,8 +68,7 @@ const QueueCommands: React.FC<QueueCommandsProps> = ({
                   {
                     label: 'Take Screenshot',
                     shortcut: [COMMAND_KEY, 'H'],
-                    description:
-                      'Take a screenshot of the problem description.',
+                    description: 'Take a screenshot of the problem description.',
                   },
                   {
                     label: 'Solve',

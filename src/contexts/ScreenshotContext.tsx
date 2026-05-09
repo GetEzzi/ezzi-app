@@ -1,11 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  ReactNode,
-  useCallback,
-} from 'react';
-import { Screenshot } from '@shared/api.ts';
+import type { Screenshot } from '@shared/api.ts';
+import React, { createContext, type ReactNode, useCallback, useContext, useReducer } from 'react';
 
 interface ScreenshotState {
   screenshots: Screenshot[];
@@ -24,10 +18,7 @@ const initialState: ScreenshotState = {
   loading: false,
 };
 
-function screenshotReducer(
-  state: ScreenshotState,
-  action: ScreenshotAction,
-): ScreenshotState {
+function screenshotReducer(state: ScreenshotState, action: ScreenshotAction): ScreenshotState {
   switch (action.type) {
     case 'SET_SCREENSHOTS':
       return { ...state, screenshots: action.payload };
@@ -38,9 +29,7 @@ function screenshotReducer(
     case 'DELETE_SCREENSHOT':
       return {
         ...state,
-        screenshots: state.screenshots.filter(
-          (_, index) => index !== action.payload,
-        ),
+        screenshots: state.screenshots.filter((_, index) => index !== action.payload),
       };
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
@@ -58,9 +47,7 @@ interface ScreenshotContextType {
   setLoading: (loading: boolean) => void;
 }
 
-const ScreenshotContext = createContext<ScreenshotContextType | undefined>(
-  undefined,
-);
+const ScreenshotContext = createContext<ScreenshotContextType | undefined>(undefined);
 
 export function ScreenshotProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(screenshotReducer, initialState);
@@ -113,9 +100,7 @@ export function ScreenshotProvider({ children }: { children: ReactNode }) {
 export function useScreenshotContext() {
   const context = useContext(ScreenshotContext);
   if (!context) {
-    throw new Error(
-      'useScreenshotContext must be used within a ScreenshotProvider',
-    );
+    throw new Error('useScreenshotContext must be used within a ScreenshotProvider');
   }
 
   return context;

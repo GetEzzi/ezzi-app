@@ -1,17 +1,9 @@
-import React from 'react';
-import { useSolutions } from '../hooks';
-import {
-  useAppModeLayout,
-  LiveInterviewLayout,
-  LeetcodeSolverLayout,
-} from '../layouts';
-import {
-  ScreenshotSection,
-  SolutionSection,
-  CommandSection,
-} from '../components/sections';
-import DebugPage from './DebugPage';
+import type React from 'react';
+import { CommandSection, ScreenshotSection, SolutionSection } from '../components/sections';
 import { useSolutionContext } from '../contexts/SolutionContext';
+import { useSolutions } from '../hooks';
+import { LeetcodeSolverLayout, LiveInterviewLayout, useAppModeLayout } from '../layouts';
+import DebugPage from './DebugPage';
 
 interface SolutionsPageProps {
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
@@ -35,12 +27,7 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
 
   // Check if we should show debug view
   if (!isResetting && solutionState.newSolution) {
-    return (
-      <DebugPage
-        isProcessing={debugProcessing}
-        setIsProcessing={setDebugProcessing}
-      />
-    );
+    return <DebugPage isProcessing={debugProcessing} setIsProcessing={setDebugProcessing} />;
   }
 
   const screenshotSection =
@@ -53,11 +40,7 @@ const SolutionsPage: React.FC<SolutionsPageProps> = ({ setView: _setView }) => {
     ) : null;
 
   const commandSection = (
-    <CommandSection
-      mode="solutions"
-      isProcessing={!solutionData}
-      screenshots={screenshots}
-    />
+    <CommandSection mode="solutions" isProcessing={!solutionData} screenshots={screenshots} />
   );
 
   const solutionSection = (

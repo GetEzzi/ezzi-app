@@ -2,15 +2,17 @@ module.exports = {
   displayName: 'React Renderer Process',
   testEnvironment: 'jsdom',
   testMatch: ['<rootDir>/src/**/*.spec.{ts,tsx}'],
-  preset: 'ts-jest',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   transform: {
     '^.+\\.(ts|tsx)$': [
-      'ts-jest',
+      '@swc/jest',
       {
-        tsconfig: {
-          types: ['jest', 'jsdom'],
+        jsc: {
+          target: 'es2024',
+          parser: { syntax: 'typescript', tsx: true },
+          transform: { react: { runtime: 'automatic' } },
         },
+        module: { type: 'commonjs' },
       },
     ],
   },

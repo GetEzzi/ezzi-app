@@ -1,4 +1,5 @@
-import React, { ReactNode } from 'react';
+import type React from 'react';
+import type { ReactNode } from 'react';
 
 interface LeetcodeSolverLayoutProps {
   screenshotSection?: ReactNode;
@@ -19,9 +20,7 @@ export const LeetcodeSolverLayout: React.FC<LeetcodeSolverLayoutProps> = ({
 
       {commandSection && <div className="w-full">{commandSection}</div>}
 
-      {solutionSection && (
-        <div className="w-full space-y-3">{solutionSection}</div>
-      )}
+      {solutionSection && <div className="w-full space-y-3">{solutionSection}</div>}
     </div>
   );
 };

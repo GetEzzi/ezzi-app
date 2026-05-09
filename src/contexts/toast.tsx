@@ -3,16 +3,10 @@ import { createContext, useContext } from 'react';
 type ToastVariant = 'neutral' | 'success' | 'error';
 
 interface ToastContextType {
-  showToast: (
-    title: string,
-    description: string,
-    variant: ToastVariant,
-  ) => void;
+  showToast: (title: string, description: string, variant: ToastVariant) => void;
 }
 
-export const ToastContext = createContext<ToastContextType | undefined>(
-  undefined,
-);
+export const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function useToast() {
   const context = useContext(ToastContext);

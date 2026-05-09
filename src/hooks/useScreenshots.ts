@@ -1,22 +1,15 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useScreenshotContext } from '../contexts/ScreenshotContext';
 
 export function useScreenshots() {
-  const {
-    state,
-    setScreenshots,
-    clearScreenshots,
-    clearAllScreenshots,
-    setLoading,
-  } = useScreenshotContext();
+  const { state, setScreenshots, clearScreenshots, clearAllScreenshots, setLoading } =
+    useScreenshotContext();
 
   const fetchScreenshots = useCallback(async () => {
     try {
       setLoading(true);
       const existing = await window.electronAPI.getScreenshots();
-      const formattedScreenshots = (
-        Array.isArray(existing) ? existing : []
-      ).map((p) => ({
+      const formattedScreenshots = (Array.isArray(existing) ? existing : []).map((p) => ({
         id: p.path,
         path: p.path,
         preview: p.preview,
@@ -35,9 +28,7 @@ export function useScreenshots() {
     const screenshotToDelete = state.screenshots[index];
 
     try {
-      const response = await window.electronAPI.deleteScreenshot(
-        screenshotToDelete.path,
-      );
+      const response = await window.electronAPI.deleteScreenshot(screenshotToDelete.path);
 
       if (response.success) {
         await fetchScreenshots();

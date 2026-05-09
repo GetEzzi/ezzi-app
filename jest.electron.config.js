@@ -2,15 +2,16 @@ module.exports = {
   displayName: 'Electron Main Process',
   testEnvironment: 'node',
   testMatch: ['<rootDir>/electron/**/*.spec.ts'],
-  preset: 'ts-jest',
   moduleFileExtensions: ['ts', 'js'],
   transform: {
     '^.+\\.ts$': [
-      'ts-jest',
+      '@swc/jest',
       {
-        tsconfig: {
-          types: ['jest', 'node'],
+        jsc: {
+          target: 'es2024',
+          parser: { syntax: 'typescript' },
         },
+        module: { type: 'commonjs' },
       },
     ],
   },

@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { ProgrammingLanguage } from '@shared/api.ts';
+import { Check, Copy } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check } from 'lucide-react';
-import { ProgrammingLanguage } from '@shared/api.ts';
 
 interface CodeBlockProps {
   code: string;
@@ -10,11 +11,7 @@ interface CodeBlockProps {
   showCopyButton?: boolean;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({
-  code,
-  language,
-  showCopyButton = false,
-}) => {
+const CodeBlock: React.FC<CodeBlockProps> = ({ code, language, showCopyButton = false }) => {
   const [copied, setCopied] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -46,10 +43,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
       if (pre.scrollWidth > pre.clientWidth) {
         const neededWidth = pre.scrollWidth + containerPadding;
-        console.log(
-          '[CodeBlock] Code OVERFLOWS. Requesting expansion. neededWidth:',
-          neededWidth,
-        );
+        console.log('[CodeBlock] Code OVERFLOWS. Requesting expansion. neededWidth:', neededWidth);
         window.electronAPI
           .updateContentDimensions({
             width: neededWidth,
@@ -63,9 +57,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             console.error('[CodeBlock] expansion request FAILED:', err);
           });
       } else {
-        console.log(
-          '[CodeBlock] Code FITS. Sending width: 0 to shrink to base.',
-        );
+        console.log('[CodeBlock] Code FITS. Sending width: 0 to shrink to base.');
         window.electronAPI
           .updateContentDimensions({
             width: 0,

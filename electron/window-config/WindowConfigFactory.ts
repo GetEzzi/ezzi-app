@@ -1,12 +1,8 @@
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 import { AppMode } from '../../shared/api';
-import {
-  WindowConfig,
-  WindowConfigProvider,
-  WindowVisibilityConfig,
-} from './WindowConfig';
-import { LiveInterviewConfig } from './configs/LiveInterviewConfig';
 import { LeetCodeSolverConfig } from './configs/LeetCodeSolverConfig';
+import { LiveInterviewConfig } from './configs/LiveInterviewConfig';
+import type { WindowConfig, WindowConfigProvider, WindowVisibilityConfig } from './WindowConfig';
 
 export class WindowConfigFactory implements WindowConfigProvider {
   private static instance: WindowConfigFactory;
@@ -32,10 +28,7 @@ export class WindowConfigFactory implements WindowConfigProvider {
     }
   }
 
-  private applyVisibilityConfig(
-    window: BrowserWindow,
-    config: WindowVisibilityConfig,
-  ): void {
+  private applyVisibilityConfig(window: BrowserWindow, config: WindowVisibilityConfig): void {
     const currentBounds = window.getBounds();
 
     if (config.ignoreMouseEvents) {
@@ -55,21 +48,14 @@ export class WindowConfigFactory implements WindowConfigProvider {
     window.setBounds(currentBounds);
   }
 
-  private applyPlatformSpecificConfig(
-    window: BrowserWindow,
-    appMode: AppMode,
-  ): void {
+  private applyPlatformSpecificConfig(window: BrowserWindow, appMode: AppMode): void {
     const config = this.getConfig(appMode);
     const platformConfig = config.behavior.platformSpecific;
 
     // Apply macOS-specific configurations
     if (process.platform === 'darwin' && platformConfig.darwin) {
-      window.setHiddenInMissionControl(
-        platformConfig.darwin.hiddenInMissionControl,
-      );
-      window.setWindowButtonVisibility(
-        platformConfig.darwin.windowButtonVisibility,
-      );
+      window.setHiddenInMissionControl(platformConfig.darwin.hiddenInMissionControl);
+      window.setWindowButtonVisibility(platformConfig.darwin.windowButtonVisibility);
       window.setBackgroundColor(platformConfig.darwin.backgroundColor);
       window.setHasShadow(platformConfig.darwin.hasShadow);
     }

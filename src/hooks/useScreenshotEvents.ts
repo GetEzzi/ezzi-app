@@ -31,7 +31,9 @@ export function useScreenshotEvents(options: UseScreenshotEventsOptions = {}) {
     }
 
     return () => {
-      cleanupFunctions.forEach((cleanup) => cleanup());
+      cleanupFunctions.forEach((cleanup) => {
+        cleanup();
+      });
     };
   }, [options.onScreenshotTaken, options.onResetView, options.refetch]);
 }

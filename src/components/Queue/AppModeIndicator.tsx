@@ -1,6 +1,6 @@
-import React from 'react';
-import { useAppMode } from '../../contexts/appMode';
+import type React from 'react';
 import { AppMode } from '../../../shared/api';
+import { useAppMode } from '../../contexts/appMode';
 
 export const AppModeIndicator: React.FC = () => {
   const { currentAppMode } = useAppMode();

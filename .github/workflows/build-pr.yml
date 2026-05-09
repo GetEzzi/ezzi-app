@@ -34,12 +34,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 11.0.9
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '22'
-        cache: 'npm'
-        
+        node-version: '24.15.0'
+        cache: 'pnpm'
+
     - name: Cache Electron
       uses: actions/cache@v4
       with:
@@ -47,12 +52,12 @@ jobs:
           ~/.cache/electron
           ~/Library/Caches/electron
           %LOCALAPPDATA%\electron\Cache
-        key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-electron-cache-
-          
+
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Create .env
       run: |
@@ -62,7 +67,7 @@ jobs:
       
     - name: Build for Windows
       if: matrix.platform == 'win'
-      run: npm run build -- --publish=never
+      run: pnpm run build -- --publish=never
       env:
         CSC_IDENTITY_AUTO_DISCOVERY: false
         CSC_LINK: ""
@@ -71,13 +76,13 @@ jobs:
         
     - name: Build for Linux
       if: matrix.platform == 'linux'
-      run: npm run build -- --publish=never
+      run: pnpm run build -- --publish=never
       env:
         CSC_IDENTITY_AUTO_DISCOVERY: false
         
     - name: Build for macOS
       if: matrix.platform == 'mac'
-      run: npm run build -- --publish=never -c.mac.identity=null
+      run: pnpm run build -- --publish=never -c.mac.identity=null
 
       env:
         CSC_IDENTITY_AUTO_DISCOVERY: false

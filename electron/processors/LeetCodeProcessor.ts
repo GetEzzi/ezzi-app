@@ -1,22 +1,16 @@
-import axios, { AxiosResponse } from 'axios';
-import { API_BASE_URL } from '../../shared/constants';
+import axios, { type AxiosResponse } from 'axios';
 import {
   API_ENDPOINTS,
-  LeetCodeDebugRequest,
-  LeetCodeDebugResponse,
-  LeetCodeSolveRequest,
-  LeetCodeSolveResponse,
+  type LeetCodeDebugRequest,
+  type LeetCodeDebugResponse,
+  type LeetCodeSolveRequest,
+  type LeetCodeSolveResponse,
 } from '../../shared/api';
-import {
-  AppModeProcessor,
-  ProcessingParams,
-  ProcessingResult,
-} from './AppModeProcessor';
+import { API_BASE_URL } from '../../shared/constants';
+import type { AppModeProcessor, ProcessingParams, ProcessingResult } from './AppModeProcessor';
 
 export class LeetCodeProcessor implements AppModeProcessor {
-  async processSolve(
-    params: ProcessingParams,
-  ): Promise<ProcessingResult<LeetCodeSolveResponse>> {
+  async processSolve(params: ProcessingParams): Promise<ProcessingResult<LeetCodeSolveResponse>> {
     try {
       const { images, isMock, readableVarNames, signal, headers } = params;
 
@@ -59,54 +53,36 @@ export class LeetCodeProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 401) {
         return {
           success: false,
-          error:
-            'Your session or subscription has expired. Please sign in again.',
+          error: 'Your session or subscription has expired. Please sign in again.',
         };
       }
 
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error:
-            'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
+          error: 'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
         };
       }
 
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       };
     }
   }
 
-  async processDebug(
-    params: ProcessingParams,
-  ): Promise<ProcessingResult<LeetCodeDebugResponse>> {
+  async processDebug(params: ProcessingParams): Promise<ProcessingResult<LeetCodeDebugResponse>> {
     try {
-      const {
-        images,
-        isMock,
-        readableVarNames,
-        signal,
-        headers,
-        conversationId,
-      } = params;
+      const { images, isMock, readableVarNames, signal, headers, conversationId } = params;
 
       if (!conversationId) {
         return {
           success: false,
-          error:
-            'Conversation ID is required for debug requests. Please solve a problem first.',
+          error: 'Conversation ID is required for debug requests. Please solve a problem first.',
         };
       }
 
-      const response = await axios.post<
-        LeetCodeDebugRequest,
-        AxiosResponse<LeetCodeDebugResponse>
-      >(
+      const response = await axios.post<LeetCodeDebugRequest, AxiosResponse<LeetCodeDebugResponse>>(
         `${API_BASE_URL}${API_ENDPOINTS.LEETCODE.DEBUG}`,
         { images, conversationId, isMock, readableVarNames },
         {
@@ -138,25 +114,20 @@ export class LeetCodeProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 401) {
         return {
           success: false,
-          error:
-            'Your session or subscription has expired. Please sign in again.',
+          error: 'Your session or subscription has expired. Please sign in again.',
         };
       }
 
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error:
-            'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
+          error: 'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
         };
       }
 
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       };
     }
   }

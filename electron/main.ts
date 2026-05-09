@@ -1,13 +1,13 @@
-import { app, BrowserWindow, screen, clipboard } from 'electron';
+import * as dotenv from 'dotenv';
+import { app, BrowserWindow, clipboard, screen } from 'electron';
 import path from 'path';
+import { AppMode } from '../shared/api';
+import { AppStorage } from './app.storage';
 import { initializeIpcHandlers } from './ipc.handlers';
 import { ProcessingHelper } from './processing.helper';
 import { ScreenshotHelper } from './screenshot.helper';
 import { ShortcutsHelper } from './shortcuts';
-import { AppMode } from '../shared/api';
 import { WindowConfigFactory } from './window-config/WindowConfigFactory';
-import { AppStorage } from './app.storage';
-import * as dotenv from 'dotenv';
 
 const isDev = !app.isPackaged;
 
@@ -54,9 +54,7 @@ export interface IProcessingHelperDeps {
   clearQueues: () => void;
   takeScreenshot: () => Promise<string>;
   getImagePreview: (filepath: string) => Promise<string>;
-  deleteScreenshot: (
-    path: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  deleteScreenshot: (path: string) => Promise<{ success: boolean; error?: string }>;
   setHasDebugged: (value: boolean) => void;
   getHasDebugged: () => boolean;
   getAppMode: () => AppMode;
@@ -84,9 +82,7 @@ export interface IIpcHandlerDeps {
   getMainWindow: () => BrowserWindow | null;
   setWindowDimensions: (width: number, height: number, source: string) => void;
   getScreenshotQueue: () => string[];
-  deleteScreenshot: (
-    path: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  deleteScreenshot: (path: string) => Promise<{ success: boolean; error?: string }>;
   clearAllScreenshots: () => Promise<{ success: boolean; error?: string }>;
   getImagePreview: (filepath: string) => Promise<string>;
   processingHelper: ProcessingHelper | null;
@@ -139,15 +135,10 @@ function initializeHelpers() {
     isVisible: () => state.isWindowVisible,
     toggleMainWindow,
     moveWindowLeft: () =>
-      moveWindowHorizontal((x) =>
-        Math.max(-(state.windowSize?.width || 0) / 2, x - state.step),
-      ),
+      moveWindowHorizontal((x) => Math.max(-(state.windowSize?.width || 0) / 2, x - state.step)),
     moveWindowRight: () =>
       moveWindowHorizontal((x) =>
-        Math.min(
-          state.screenWidth - (state.windowSize?.width || 0) / 2,
-          x + state.step,
-        ),
+        Math.min(state.screenWidth - (state.windowSize?.width || 0) / 2, x + state.step),
       ),
     moveWindowUp: () => moveWindowVertical((y) => y - state.step),
     moveWindowDown: () => moveWindowVertical((y) => y + state.step),
@@ -157,15 +148,11 @@ function initializeHelpers() {
 if (process.platform === 'darwin') {
   app.setAsDefaultProtocolClient('ezzi');
 } else {
-  app.setAsDefaultProtocolClient('ezzi', process.execPath, [
-    path.resolve(process.argv[1] || ''),
-  ]);
+  app.setAsDefaultProtocolClient('ezzi', process.execPath, [path.resolve(process.argv[1] || '')]);
 }
 
 if (process.defaultApp && process.argv.length >= 2) {
-  app.setAsDefaultProtocolClient('ezzi', process.execPath, [
-    path.resolve(process.argv[1]),
-  ]);
+  app.setAsDefaultProtocolClient('ezzi', process.execPath, [path.resolve(process.argv[1])]);
 }
 
 // Force Single Instance Lock
@@ -233,21 +220,18 @@ async function createWindow(): Promise<void> {
     console.log('Window finished loading');
   });
 
-  state.mainWindow.webContents.on(
-    'did-fail-load',
-    (_event, errorCode, errorDescription) => {
-      console.error('Window failed to load:', errorCode, errorDescription);
-      if (isDev) {
-        // In development, retry loading after a short delay
-        console.log('Retrying to load development server...');
-        setTimeout(() => {
-          state.mainWindow?.loadURL('http://localhost:54321').catch((error) => {
-            console.error('Failed to load dev server on retry:', error);
-          });
-        }, 1000);
-      }
-    },
-  );
+  state.mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
+    console.error('Window failed to load:', errorCode, errorDescription);
+    if (isDev) {
+      // In development, retry loading after a short delay
+      console.log('Retrying to load development server...');
+      setTimeout(() => {
+        state.mainWindow?.loadURL('http://localhost:54321').catch((error) => {
+          console.error('Failed to load dev server on retry:', error);
+        });
+      }, 1000);
+    }
+  });
 
   if (isDev) {
     setTimeout(() => {
@@ -256,10 +240,7 @@ async function createWindow(): Promise<void> {
       });
     }, 200);
   } else {
-    console.log(
-      'Loading production build:',
-      path.join(__dirname, '../dist/index.html'),
-    );
+    console.log('Loading production build:', path.join(__dirname, '../dist/index.html'));
     await state.mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
@@ -282,12 +263,8 @@ async function createWindow(): Promise<void> {
   // Apply platform-specific configurations
   const platformConfig = windowConfig.behavior.platformSpecific;
   if (process.platform === 'darwin' && platformConfig.darwin) {
-    state.mainWindow.setHiddenInMissionControl(
-      platformConfig.darwin.hiddenInMissionControl,
-    );
-    state.mainWindow.setWindowButtonVisibility(
-      platformConfig.darwin.windowButtonVisibility,
-    );
+    state.mainWindow.setHiddenInMissionControl(platformConfig.darwin.hiddenInMissionControl);
+    state.mainWindow.setWindowButtonVisibility(platformConfig.darwin.windowButtonVisibility);
     state.mainWindow.setBackgroundColor(platformConfig.darwin.backgroundColor);
     state.mainWindow.setHasShadow(platformConfig.darwin.hasShadow);
   }
@@ -355,24 +332,16 @@ function preserveWindowConfiguration(): void {
   }
 
   try {
-    const windowConfig = WindowConfigFactory.getInstance().getConfig(
-      state.appMode,
-    );
+    const windowConfig = WindowConfigFactory.getInstance().getConfig(state.appMode);
 
     // Re-apply platform-specific configurations to prevent OS overrides
     const platformConfig = windowConfig.behavior.platformSpecific;
 
     // macOS-specific settings
     if (process.platform === 'darwin' && platformConfig.darwin) {
-      state.mainWindow.setWindowButtonVisibility(
-        platformConfig.darwin.windowButtonVisibility,
-      );
-      state.mainWindow.setHiddenInMissionControl(
-        platformConfig.darwin.hiddenInMissionControl,
-      );
-      state.mainWindow.setBackgroundColor(
-        platformConfig.darwin.backgroundColor,
-      );
+      state.mainWindow.setWindowButtonVisibility(platformConfig.darwin.windowButtonVisibility);
+      state.mainWindow.setHiddenInMissionControl(platformConfig.darwin.hiddenInMissionControl);
+      state.mainWindow.setBackgroundColor(platformConfig.darwin.backgroundColor);
       state.mainWindow.setHasShadow(platformConfig.darwin.hasShadow);
     }
 
@@ -392,10 +361,7 @@ function preserveWindowConfiguration(): void {
     // Note: The frame and titleBarStyle are set at window creation and cannot be changed dynamically
     // But we can re-apply other settings that might get overridden by the OS
 
-    console.log(
-      'Window configuration preserved for platform:',
-      process.platform,
-    );
+    console.log('Window configuration preserved for platform:', process.platform);
   } catch (error) {
     console.error('Error preserving window configuration:', error);
   }
@@ -443,9 +409,7 @@ function showMainWindow(): void {
     if (view === 'queue') {
       const screenshots = getScreenshotQueue();
       const hasScreenshots = screenshots.length > 0;
-      console.log(
-        `showMainWindow: in Queue mode with ${screenshots.length} screenshots`,
-      );
+      console.log(`showMainWindow: in Queue mode with ${screenshots.length} screenshots`);
       configFactory.applyQueueBehavior(win, state.appMode, hasScreenshots);
     } else {
       configFactory.applyShowBehavior(win, state.appMode);
@@ -482,17 +446,10 @@ function moveWindowHorizontal(updateFn: (x: number) => number): void {
   if (!state.mainWindow) {
     return;
   }
-  console.log(
-    `moveWindowHorizontal: OLD x: ${state.currentX}  y: ${state.currentY}`,
-  );
+  console.log(`moveWindowHorizontal: OLD x: ${state.currentX}  y: ${state.currentY}`);
   state.currentX = updateFn(state.currentX);
-  state.mainWindow.setPosition(
-    Math.round(state.currentX),
-    Math.round(state.currentY),
-  );
-  console.log(
-    `moveWindowHorizontal: NEW x: ${state.currentX}  y: ${state.currentY}`,
-  );
+  state.mainWindow.setPosition(Math.round(state.currentX), Math.round(state.currentY));
+  console.log(`moveWindowHorizontal: NEW x: ${state.currentX}  y: ${state.currentY}`);
 }
 
 function moveWindowVertical(updateFn: (y: number) => number): void {
@@ -503,8 +460,7 @@ function moveWindowVertical(updateFn: (y: number) => number): void {
   const newY = updateFn(state.currentY);
   // Allow window to go 2/3 off screen in either direction
   const maxUpLimit = (-(state.windowSize.height || 0) * 2) / 3;
-  const maxDownLimit =
-    state.screenHeight + ((state.windowSize.height || 0) * 2) / 3;
+  const maxDownLimit = state.screenHeight + ((state.windowSize.height || 0) * 2) / 3;
   console.log(
     `height: ${state.windowSize.height} | maxUpLimit: ${maxUpLimit} | maxDownLimit: ${maxDownLimit}`,
   );
@@ -512,19 +468,11 @@ function moveWindowVertical(updateFn: (y: number) => number): void {
   // Only update if within bounds
   if (newY >= maxUpLimit && newY <= maxDownLimit) {
     state.currentY = newY;
-    state.mainWindow.setPosition(
-      Math.round(state.currentX),
-      Math.round(state.currentY),
-    );
+    state.mainWindow.setPosition(Math.round(state.currentX), Math.round(state.currentY));
   }
 }
 
-function isWindowCompletelyOffScreen(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-): boolean {
+function isWindowCompletelyOffScreen(x: number, y: number, width: number, height: number): boolean {
   const primaryDisplay = screen.getPrimaryDisplay();
   const workArea = primaryDisplay.workAreaSize;
 
@@ -536,19 +484,8 @@ function isWindowCompletelyOffScreen(
   );
 }
 
-function setWindowDimensions(
-  width: number,
-  height: number,
-  source: string,
-): void {
-  console.log(
-    '[setWindowDimensions] Called - width:',
-    width,
-    'height:',
-    height,
-    'source:',
-    source,
-  );
+function setWindowDimensions(width: number, height: number, source: string): void {
+  console.log('[setWindowDimensions] Called - width:', width, 'height:', height, 'source:', source);
 
   if (state.mainWindow && !state.mainWindow.isDestroyed()) {
     const [currentX, currentY] = state.mainWindow.getPosition();
@@ -569,24 +506,14 @@ function setWindowDimensions(
       '| maxWidth:',
       maxWidth,
     );
-    console.log(
-      '[setWindowDimensions] codeDesiredWidth BEFORE:',
-      state.codeDesiredWidth,
-    );
+    console.log('[setWindowDimensions] codeDesiredWidth BEFORE:', state.codeDesiredWidth);
 
     if (source === 'CodeBlock') {
       state.codeDesiredWidth = width;
-      console.log(
-        '[setWindowDimensions] Source is CodeBlock -> codeDesiredWidth set to:',
-        width,
-      );
+      console.log('[setWindowDimensions] Source is CodeBlock -> codeDesiredWidth set to:', width);
     } else if (source !== 'useSolutions' && source !== 'SubscribedApp') {
       state.codeDesiredWidth = 0;
-      console.log(
-        '[setWindowDimensions] Source is',
-        source,
-        '-> codeDesiredWidth RESET to 0',
-      );
+      console.log('[setWindowDimensions] Source is', source, '-> codeDesiredWidth RESET to 0');
     } else {
       console.log(
         '[setWindowDimensions] Source is',
@@ -596,10 +523,7 @@ function setWindowDimensions(
       );
     }
 
-    const effectiveContentWidth = Math.max(
-      baseWidth - 32,
-      state.codeDesiredWidth,
-    );
+    const effectiveContentWidth = Math.max(baseWidth - 32, state.codeDesiredWidth);
     const newWidth = Math.min(effectiveContentWidth + 32, maxWidth);
     const newHeight = Math.ceil(height);
 
@@ -629,20 +553,10 @@ function setWindowDimensions(
     if (isWindowCompletelyOffScreen(currentX, currentY, newWidth, newHeight)) {
       adjustedX = Math.max(0, (workArea.width - newWidth) / 2);
       adjustedY = Math.max(0, (workArea.height - newHeight) / 2);
-      console.log(
-        '[setWindowDimensions] Window off-screen, adjusted to:',
-        adjustedX,
-        adjustedY,
-      );
+      console.log('[setWindowDimensions] Window off-screen, adjusted to:', adjustedX, adjustedY);
     }
 
-    console.log(
-      '[setWindowDimensions] setBounds:',
-      adjustedX,
-      adjustedY,
-      newWidth,
-      newHeight,
-    );
+    console.log('[setWindowDimensions] setBounds:', adjustedX, adjustedY, newWidth, newHeight);
 
     state.mainWindow.setBounds({
       x: adjustedX,
@@ -656,9 +570,7 @@ function setWindowDimensions(
     state.windowPosition = { x: adjustedX, y: adjustedY };
     state.windowSize = { width: newWidth, height: newHeight };
   } else {
-    console.log(
-      '[setWindowDimensions] SKIPPED - mainWindow is null or destroyed',
-    );
+    console.log('[setWindowDimensions] SKIPPED - mainWindow is null or destroyed');
   }
 }
 
@@ -671,10 +583,7 @@ function loadEnvVariables(): void {
     const result = dotenv.config({ path: envPath });
 
     if (result.error) {
-      console.error(
-        'Error loading environment variables:',
-        result.error.message,
-      );
+      console.error('Error loading environment variables:', result.error.message);
     } else {
       console.debug('Environment variables loaded successfully');
     }
@@ -710,15 +619,10 @@ async function initializeApp() {
       clearQueues,
       setView,
       moveWindowLeft: () =>
-        moveWindowHorizontal((x) =>
-          Math.max(-(state.windowSize?.width || 0) / 2, x - state.step),
-        ),
+        moveWindowHorizontal((x) => Math.max(-(state.windowSize?.width || 0) / 2, x - state.step)),
       moveWindowRight: () =>
         moveWindowHorizontal((x) =>
-          Math.min(
-            state.screenWidth - (state.windowSize?.width || 0) / 2,
-            x + state.step,
-          ),
+          Math.min(state.screenWidth - (state.windowSize?.width || 0) / 2, x + state.step),
         ),
       moveWindowUp: () => moveWindowVertical((y) => y - state.step),
       moveWindowDown: () => moveWindowVertical((y) => y + state.step),
@@ -832,9 +736,7 @@ async function getImagePreview(filepath: string): Promise<string> {
   return (await state.screenshotHelper?.getImagePreview(filepath)) || '';
 }
 
-async function deleteScreenshot(
-  path: string,
-): Promise<{ success: boolean; error?: string }> {
+async function deleteScreenshot(path: string): Promise<{ success: boolean; error?: string }> {
   return (
     (await state.screenshotHelper?.deleteScreenshot(path)) || {
       success: false,
@@ -902,9 +804,7 @@ function applyQueueWindowBehavior(): void {
   }
 }
 
-async function writeText(
-  text: string,
-): Promise<{ success: boolean; error?: string }> {
+async function writeText(text: string): Promise<{ success: boolean; error?: string }> {
   try {
     clipboard.writeText(text);
 
@@ -955,31 +855,31 @@ async function copyAndRefreshWindow(
 }
 
 export {
-  state,
+  applyQueueWindowBehavior,
+  clearQueues,
   createWindow,
-  hideMainWindow,
-  showMainWindow,
-  toggleMainWindow,
-  setWindowDimensions,
-  moveWindowHorizontal,
-  moveWindowVertical,
-  getMainWindow,
-  getView,
-  setView,
+  deleteScreenshot,
   getAppMode,
-  setAppMode,
+  getConversationId,
+  getHasDebugged,
+  getImagePreview,
+  getMainWindow,
   getScreenshotHelper,
   getScreenshotQueue,
-  clearQueues,
-  takeScreenshot,
-  getImagePreview,
-  deleteScreenshot,
-  setHasDebugged,
-  getHasDebugged,
-  getConversationId,
-  setConversationId,
-  applyQueueWindowBehavior,
+  getView,
+  hideMainWindow,
+  moveWindowHorizontal,
+  moveWindowVertical,
   preserveWindowPosition,
+  setAppMode,
+  setConversationId,
+  setHasDebugged,
+  setView,
+  setWindowDimensions,
+  showMainWindow,
+  state,
+  takeScreenshot,
+  toggleMainWindow,
 };
 
 app.whenReady().then(initializeApp).catch(console.error);

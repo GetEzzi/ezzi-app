@@ -1,5 +1,5 @@
-import { BrowserWindowConstructorOptions } from 'electron';
-import { AppMode } from '../../shared/api';
+import type { BrowserWindowConstructorOptions } from 'electron';
+import type { AppMode } from '../../shared/api';
 
 export interface WindowVisibilityConfig {
   opacity: number;

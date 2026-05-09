@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { COMMAND_KEY } from '../../../utils/platform';
 
 interface CommandButtonProps {
@@ -7,11 +7,7 @@ interface CommandButtonProps {
   description?: string;
 }
 
-const CommandButton: React.FC<CommandButtonProps> = ({
-  label,
-  shortcut,
-  description,
-}) => {
+const CommandButton: React.FC<CommandButtonProps> = ({ label, shortcut, description }) => {
   return (
     <div className="flex items-center gap-2 cursor-default rounded-sm px-2 py-1.5 transition-colors">
       <span className="leading-none truncate">{label}</span>
@@ -24,9 +20,7 @@ const CommandButton: React.FC<CommandButtonProps> = ({
         </kbd>
       </div>
       {description && (
-        <p className="text-[10px] leading-relaxed text-white/70 truncate mt-1">
-          {description}
-        </p>
+        <p className="text-[10px] leading-relaxed text-white/70 truncate mt-1">{description}</p>
       )}
     </div>
   );

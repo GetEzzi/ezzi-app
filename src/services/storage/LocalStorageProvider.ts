@@ -1,6 +1,6 @@
-import { IStorageProvider, UserSettings } from './StorageProvider';
-import { ProgrammingLanguage, UserLanguage, AppMode } from '@shared/api.ts';
+import { AppMode, ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
 import { LOCAL_STORAGE_KEYS } from '@shared/storage';
+import type { IStorageProvider, UserSettings } from './StorageProvider';
 
 export class LocalStorageProvider implements IStorageProvider {
   private readonly STORAGE_KEY = LOCAL_STORAGE_KEYS.EZZI_SETTINGS;
@@ -16,8 +16,7 @@ export class LocalStorageProvider implements IStorageProvider {
         };
 
         return Promise.resolve({
-          solutionLanguage:
-            parsed.solutionLanguage || ProgrammingLanguage.Python,
+          solutionLanguage: parsed.solutionLanguage || ProgrammingLanguage.Python,
           userLanguage: parsed.userLanguage || UserLanguage.EN_US,
           appMode: parsed.appMode || AppMode.LIVE_INTERVIEW,
         });

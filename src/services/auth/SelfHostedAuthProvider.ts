@@ -1,10 +1,6 @@
-import { IAuthProvider } from './AuthProvider';
-import {
-  AuthenticatedUser,
-  AuthResponse,
-  SubscriptionLevel,
-} from '@shared/api.ts';
+import { type AuthenticatedUser, type AuthResponse, SubscriptionLevel } from '@shared/api.ts';
 import { getStorageProvider } from '../storage';
+import type { IAuthProvider } from './AuthProvider';
 
 export class SelfHostedAuthProvider implements IAuthProvider {
   private async createMockUser(): Promise<AuthenticatedUser> {
@@ -15,12 +11,8 @@ export class SelfHostedAuthProvider implements IAuthProvider {
         email: 'self-hosted@local',
       },
       subscription: {
-        active_from: new Date(
-          new Date().setMonth(new Date().getMonth() - 1),
-        ).toISOString(),
-        active_to: new Date(
-          new Date().setMonth(new Date().getMonth() + 1),
-        ).toISOString(),
+        active_from: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString(),
+        active_to: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
         level: SubscriptionLevel.PRO,
       },
       settings: {

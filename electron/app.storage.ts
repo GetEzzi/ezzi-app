@@ -1,10 +1,6 @@
 import Store from 'electron-store';
 import { AppMode } from '../shared/api';
-import {
-  ELECTRON_STORES,
-  ELECTRON_STORAGE_KEYS,
-  AppStoreSchema,
-} from '../shared/storage';
+import { type AppStoreSchema, ELECTRON_STORAGE_KEYS, ELECTRON_STORES } from '../shared/storage';
 
 export interface IAppStore {
   set<K extends keyof AppStoreSchema>(key: K, value: AppStoreSchema[K]): void;
@@ -47,24 +43,16 @@ export class AppStorage {
   }
 
   getAppMode(): AppMode {
-    const storedMode = this.store.get(
-      ELECTRON_STORAGE_KEYS.APP_SETTINGS.APP_MODE,
-    );
+    const storedMode = this.store.get(ELECTRON_STORAGE_KEYS.APP_SETTINGS.APP_MODE);
 
     return storedMode || AppMode.LIVE_INTERVIEW;
   }
 
   setReadableVarNames(value: boolean): void {
-    this.store.set(
-      ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES,
-      value,
-    );
+    this.store.set(ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES, value);
   }
 
   getReadableVarNames(): boolean {
-    return (
-      this.store.get(ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES) ||
-      false
-    );
+    return this.store.get(ELECTRON_STORAGE_KEYS.APP_SETTINGS.READABLE_VAR_NAMES) || false;
   }
 }
