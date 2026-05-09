@@ -15,13 +15,10 @@ function loadProvider(selfHosted: boolean): { provider: unknown; ctorName: strin
   let provider: unknown;
   let ctorName = '';
   jest.isolateModules(() => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const constants = require('../../../shared/constants') as { isSelfHosted: jest.Mock };
     constants.isSelfHosted.mockReturnValue(selfHosted);
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const moduleUnderTest = require('./index') as typeof import('./index');
     provider = moduleUnderTest.getAuthProvider();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
     ctorName = (provider as any).constructor.name as string;
   });
 
@@ -56,7 +53,6 @@ describe('auth/getAuthProvider', () => {
       let a: unknown;
       let b: unknown;
       jest.isolateModules(() => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const moduleUnderTest = require('./index') as typeof import('./index');
         a = moduleUnderTest.getAuthProvider();
         b = moduleUnderTest.getAuthProvider();

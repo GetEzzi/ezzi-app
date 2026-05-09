@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { API_ENDPOINTS, type AuthenticatedUser, SubscriptionLevel } from '../../shared/api';
 import { authService } from './auth';
 
@@ -8,7 +7,6 @@ jest.mock('../config', () => ({
 
 jest.mock('axios');
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const axios = require('axios') as jest.Mocked<typeof import('axios').default>;
 
 function createUser(): AuthenticatedUser {
@@ -34,7 +32,6 @@ describe('authService', () => {
       authSetToken: jest.fn().mockResolvedValue({ success: true }),
       authClearToken: jest.fn().mockResolvedValue({ success: true }),
       authGetToken: jest.fn().mockResolvedValue({ success: true, token: 'tok' }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   });
 

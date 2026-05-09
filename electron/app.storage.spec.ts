@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { AppMode } from '../shared/api';
 import { AppStorage, type IAppStore } from './app.storage';
 
@@ -11,11 +10,9 @@ jest.mock('electron-store', () => {
 });
 
 function createMockAppStorage() {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   (AppStorage as any).instance = null;
 
   const appStorage = AppStorage.getInstance();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const mockStore = (appStorage as any).store as jest.Mocked<IAppStore>;
 
   return { mockStore, appStorage };
@@ -24,7 +21,6 @@ function createMockAppStorage() {
 describe('AppStorage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (AppStorage as any).instance = null;
   });
 

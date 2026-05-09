@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { API_ENDPOINTS, ProgrammingLanguage, UserLanguage } from '../../shared/api';
 import { authService } from './auth';
 import { settingsService } from './settings';
@@ -16,7 +15,6 @@ jest.mock('./auth', () => ({
 
 jest.mock('axios');
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const axios = require('axios') as jest.Mocked<typeof import('axios').default>;
 
 describe('settingsService', () => {

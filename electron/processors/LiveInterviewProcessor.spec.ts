@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import axios from 'axios';
 import type { ProcessingParams } from './AppModeProcessor';
 import { LiveInterviewProcessor } from './LiveInterviewProcessor';
@@ -20,7 +19,6 @@ function createParams(overrides: Partial<ProcessingParams> = {}): ProcessingPara
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockedAxios = axios as unknown as jest.Mocked<any>;
 const mockedIsCancel = jest.fn();
 
@@ -31,7 +29,6 @@ describe('LiveInterviewProcessor', () => {
     jest.clearAllMocks();
     processor = new LiveInterviewProcessor();
     mockedIsCancel.mockReturnValue(false);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (axios as unknown as { isCancel: jest.Mock }).isCancel = mockedIsCancel;
   });
 

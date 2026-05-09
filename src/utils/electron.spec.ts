@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 jest.mock('../../shared/constants', () => ({
   isSelfHosted: jest.fn(() => false),
   API_BASE_URL: 'http://localhost:3000',
@@ -35,15 +34,12 @@ describe('sendToElectron', () => {
       handleCloseClick: jest.fn().mockResolvedValue(undefined),
       handleQueueLoadedNoScreenshots: jest.fn(),
       handleQueueLoadedWithScreenshots: jest.fn(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).electron = { ipcRenderer: {} };
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).electron;
   });
 
@@ -93,7 +89,6 @@ describe('sendToElectron', () => {
 
   describe('missing electron bridge', () => {
     test('WHEN window.electron is missing THEN it logs an error and skips IPC', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (window as any).electron;
 
       // Act

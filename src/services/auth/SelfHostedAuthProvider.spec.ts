@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { AppMode, ProgrammingLanguage, SubscriptionLevel, UserLanguage } from '../../../shared/api';
 import { getStorageProvider } from '../storage';
 import { SelfHostedAuthProvider } from './SelfHostedAuthProvider';

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { AppMode } from '../../shared/api';
 import { LeetCodeSolverConfig } from './configs/LeetCodeSolverConfig';
 import { LiveInterviewConfig } from './configs/LiveInterviewConfig';
@@ -6,7 +5,6 @@ import { WindowConfigFactory } from './WindowConfigFactory';
 
 describe('WindowConfigFactory', () => {
   beforeEach(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (WindowConfigFactory as any).instance = null;
   });
 

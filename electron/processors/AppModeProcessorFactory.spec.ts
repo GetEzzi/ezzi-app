@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { AppMode } from '../../shared/api';
 import type { AppModeProcessor } from './AppModeProcessor';
 import { AppModeProcessorFactory } from './AppModeProcessorFactory';
@@ -11,7 +10,6 @@ jest.mock('../../shared/constants', () => ({
 }));
 
 function createFactory(): AppModeProcessorFactory {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   (AppModeProcessorFactory as any).instance = null;
 
   return AppModeProcessorFactory.getInstance();
@@ -20,7 +18,6 @@ function createFactory(): AppModeProcessorFactory {
 describe('AppModeProcessorFactory', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (AppModeProcessorFactory as any).instance = null;
   });
 
