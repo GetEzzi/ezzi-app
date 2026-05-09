@@ -1,4 +1,4 @@
-import { ProgrammingLanguage, UserLanguage, AppMode } from '@shared/api.ts';
+import type { AppMode, ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
 
 export interface UserSettings {
   solutionLanguage: ProgrammingLanguage;

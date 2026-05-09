@@ -1,10 +1,10 @@
-import axios from 'axios';
-import { API_BASE_URL } from '@shared/constants.ts';
 import {
   API_ENDPOINTS,
-  SettingsResponse,
-  UserSettingsUpdateRequest,
+  type SettingsResponse,
+  type UserSettingsUpdateRequest,
 } from '@shared/api.ts';
+import { API_BASE_URL } from '@shared/constants.ts';
+import axios from 'axios';
 import { authService } from './auth';
 
 interface ISettingsService {
@@ -38,15 +38,11 @@ export const settingsService: ISettingsService = {
       throw new Error('No authentication token available');
     }
 
-    await axios.post(
-      `${API_BASE_URL}${API_ENDPOINTS.SETTINGS.UPDATE}`,
-      settings,
-      {
-        timeout: 15000,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    await axios.post(`${API_BASE_URL}${API_ENDPOINTS.SETTINGS.UPDATE}`, settings, {
+      timeout: 15000,
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
   },
 };

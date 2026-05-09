@@ -1,21 +1,13 @@
 import Store from 'electron-store';
-import {
-  ELECTRON_STORES,
-  ELECTRON_STORAGE_KEYS,
-  AuthStoreSchema,
-} from '../shared/storage';
-import { SubscriptionLevel } from '../shared/api';
+import type { SubscriptionLevel } from '../shared/api';
+import { type AuthStoreSchema, ELECTRON_STORAGE_KEYS, ELECTRON_STORES } from '../shared/storage';
 
 export interface IAuthStore {
-  set(
-    key: keyof AuthStoreSchema,
-    value: AuthStoreSchema[keyof AuthStoreSchema],
-  ): void;
+  set(key: keyof AuthStoreSchema, value: AuthStoreSchema[keyof AuthStoreSchema]): void;
   get(key: keyof AuthStoreSchema): AuthStoreSchema[keyof AuthStoreSchema];
   delete(key: keyof AuthStoreSchema): void;
 }
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 const store = new Store<AuthStoreSchema>({
   name: ELECTRON_STORES.AUTH,
   schema: {
@@ -37,7 +29,6 @@ const store = new Store<AuthStoreSchema>({
     },
   },
 }) as unknown as IAuthStore;
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export class AuthStorage {
   private static instance: AuthStorage;
@@ -63,12 +54,8 @@ export class AuthStorage {
   }
 
   getAuthToken(): string | null {
-    const token = this.store.get(ELECTRON_STORAGE_KEYS.AUTH.TOKEN) as
-      | string
-      | null;
-    const expiry = this.store.get(ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY) as
-      | number
-      | null;
+    const token = this.store.get(ELECTRON_STORAGE_KEYS.AUTH.TOKEN) as string | null;
+    const expiry = this.store.get(ELECTRON_STORAGE_KEYS.AUTH.TOKEN_EXPIRY) as number | null;
 
     // Check if token has expired
     if (expiry && Date.now() > expiry) {
@@ -95,9 +82,7 @@ export class AuthStorage {
   }
 
   getLastUsedEmail(): string | null {
-    return this.store.get(ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL) as
-      | string
-      | null;
+    return this.store.get(ELECTRON_STORAGE_KEYS.AUTH.LAST_USED_EMAIL) as string | null;
   }
 
   setSubscriptionLevel(level: SubscriptionLevel): void {

@@ -1,10 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from 'react';
+import type React from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import { AppMode } from '../../shared/api';
 import { getStorageProvider } from '../services/storage/index';
 
@@ -19,12 +14,8 @@ interface AppModeProviderProps {
   children: ReactNode;
 }
 
-export const AppModeProvider: React.FC<AppModeProviderProps> = ({
-  children,
-}) => {
-  const [currentAppMode, setCurrentAppMode] = useState<AppMode>(
-    AppMode.LIVE_INTERVIEW,
-  );
+export const AppModeProvider: React.FC<AppModeProviderProps> = ({ children }) => {
+  const [currentAppMode, setCurrentAppMode] = useState<AppMode>(AppMode.LIVE_INTERVIEW);
 
   useEffect(() => {
     const loadInitialAppMode = async () => {

@@ -1,10 +1,10 @@
-import React from 'react';
-import { LanguageSelector } from '../LanguageSelector';
-import { sendToElectron } from '../../../utils/electron';
+import type { AppMode } from '@shared/api.ts';
 import { IPC_EVENTS } from '@shared/constants.ts';
-import { LocaleSelector } from '../LocaleSelector.tsx';
+import type React from 'react';
+import { sendToElectron } from '../../../utils/electron';
 import { AppModeSelector } from '../AppModeSelector';
-import { AppMode } from '@shared/api.ts';
+import { LanguageSelector } from '../LanguageSelector';
+import { LocaleSelector } from '../LocaleSelector.tsx';
 
 export interface ShortcutItem {
   label: string;
@@ -53,9 +53,7 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
                     className="cursor-default rounded-sm px-2 py-1.5 transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="truncate font-medium">
-                        {shortcut.label}
-                      </span>
+                      <span className="truncate font-medium">{shortcut.label}</span>
                       <div className="flex gap-1 shrink-0">
                         {shortcut.shortcut.map((key, keyIndex) => (
                           <span
@@ -94,10 +92,7 @@ const ShortcutsTooltip: React.FC<ShortcutsTooltipProps> = ({
               </div>
             )}
 
-            <AppModeSelector
-              currentAppMode={currentAppMode}
-              setAppMode={setAppMode}
-            />
+            <AppModeSelector currentAppMode={currentAppMode} setAppMode={setAppMode} />
 
             <LanguageSelector />
 

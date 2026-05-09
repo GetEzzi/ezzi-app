@@ -1,12 +1,6 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  ReactNode,
-} from 'react';
 import { ProgrammingLanguage, UserLanguage } from '@shared/api.ts';
+import type React from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { getStorageProvider } from '../services/storage';
 
 interface SettingsContextType {
@@ -18,23 +12,17 @@ interface SettingsContextType {
   updateUserLanguage: (language: UserLanguage) => Promise<void>;
 }
 
-const SettingsContext = createContext<SettingsContextType | undefined>(
-  undefined,
-);
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 interface SettingsProviderProps {
   children: ReactNode;
 }
 
-export const SettingsProvider: React.FC<SettingsProviderProps> = ({
-  children,
-}) => {
+export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
   const [solutionLanguage, setSolutionLanguage] = useState<ProgrammingLanguage>(
     ProgrammingLanguage.Python,
   );
-  const [userLanguage, setUserLanguage] = useState<UserLanguage>(
-    UserLanguage.EN_US,
-  );
+  const [userLanguage, setUserLanguage] = useState<UserLanguage>(UserLanguage.EN_US);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,11 +51,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
         await storageProvider.setSolutionLanguage(language);
         setSolutionLanguage(language);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : 'Failed to update solution language',
-        );
+        setError(err instanceof Error ? err.message : 'Failed to update solution language');
         console.error('Error updating solution language:', err);
 
         throw err;
@@ -83,9 +67,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
         await storageProvider.setUserLanguage(language);
         setUserLanguage(language);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to update user language',
-        );
+        setError(err instanceof Error ? err.message : 'Failed to update user language');
         console.error('Error updating user language:', err);
 
         throw err;
@@ -107,11 +89,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
     updateUserLanguage,
   };
 
-  return (
-    <SettingsContext.Provider value={value}>
-      {children}
-    </SettingsContext.Provider>
-  );
+  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 };
 
 export const useSettings = (): SettingsContextType => {

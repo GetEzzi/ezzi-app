@@ -1,5 +1,5 @@
-import React from 'react';
 import { AppMode } from '@shared/api.ts';
+import type React from 'react';
 import { getStorageProvider } from '../../services/storage';
 import { AppModeHintBox } from './AppModeHintBox';
 
@@ -13,10 +13,7 @@ interface AppModeSelectorProps {
   setAppMode: (appMode: AppMode) => void;
 }
 
-export const AppModeSelector: React.FC<AppModeSelectorProps> = ({
-  currentAppMode,
-  setAppMode,
-}) => {
+export const AppModeSelector: React.FC<AppModeSelectorProps> = ({ currentAppMode, setAppMode }) => {
   const storageProvider = getStorageProvider();
 
   const handleAppModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

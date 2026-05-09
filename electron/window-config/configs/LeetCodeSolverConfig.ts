@@ -1,4 +1,4 @@
-import { WindowConfig } from '../WindowConfig';
+import type { WindowConfig } from '../WindowConfig';
 
 export const LeetCodeSolverConfig: WindowConfig = {
   baseSettings: {

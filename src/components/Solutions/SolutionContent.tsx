@@ -1,5 +1,5 @@
-import React from 'react';
-import { ProgrammingLanguage } from '../../../shared/api';
+import type React from 'react';
+import type { ProgrammingLanguage } from '../../../shared/api';
 
 interface SolutionContentProps {
   title: string;
@@ -19,9 +19,7 @@ const SolutionContent: React.FC<SolutionContentProps> = ({
     <div className="bg-[#1E2530]/80 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-2 h-2 rounded-full bg-red-500" />
-        <h2 className="text-[13px] font-semibold text-white tracking-wide">
-          {title}
-        </h2>
+        <h2 className="text-[13px] font-semibold text-white tracking-wide">{title}</h2>
       </div>
 
       {isLoading ? (
@@ -31,9 +29,7 @@ const SolutionContent: React.FC<SolutionContentProps> = ({
           </p>
         </div>
       ) : (
-        <div
-          className={`text-[13px] leading-[1.5] ${type === 'text' ? 'text-gray-100' : ''}`}
-        >
+        <div className={`text-[13px] leading-[1.5] ${type === 'text' ? 'text-gray-100' : ''}`}>
           {content}
         </div>
       )}

@@ -16,9 +16,7 @@ export interface ElectronAPI {
       preview: string;
     }[]
   >;
-  deleteScreenshot: (
-    path: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  deleteScreenshot: (path: string) => Promise<{ success: boolean; error?: string }>;
   clearAllScreenshots: () => Promise<{ success: boolean; error?: string }>;
   onScreenshotTaken: (callback: () => void) => () => Promise<void>;
   onResetView: (callback: () => void) => () => Promise<void>;
@@ -46,9 +44,7 @@ export interface ElectronAPI {
   handleCloseClick: (...args: any[]) => Promise<any>;
   handleQueueLoadedNoScreenshots: () => void;
   handleQueueLoadedWithScreenshots: (screenshotCount: number) => void;
-  setSubscriptionLevel: (
-    level: SubscriptionLevel,
-  ) => Promise<{ success: boolean; error?: string }>;
+  setSubscriptionLevel: (level: SubscriptionLevel) => Promise<{ success: boolean; error?: string }>;
   authSetToken: (
     token: string,
     expiryTimestamp?: number,
@@ -64,17 +60,13 @@ export interface ElectronAPI {
     isAuthenticated?: boolean;
     error?: string;
   }>;
-  authSetLastUsedEmail: (
-    email: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  authSetLastUsedEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
   authGetLastUsedEmail: () => Promise<{
     success: boolean;
     email?: string | null;
     error?: string;
   }>;
-  setAppMode: (
-    appMode: AppMode,
-  ) => Promise<{ success: boolean; error?: string }>;
+  setAppMode: (appMode: AppMode) => Promise<{ success: boolean; error?: string }>;
   getAppMode: () => Promise<{
     success: boolean;
     appMode?: AppMode;
@@ -85,9 +77,7 @@ export interface ElectronAPI {
     readableVarNames?: boolean;
     error?: string;
   }>;
-  setReadableVarNames: (
-    value: boolean,
-  ) => Promise<{ success: boolean; error?: string }>;
+  setReadableVarNames: (value: boolean) => Promise<{ success: boolean; error?: string }>;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
   copyAndRefreshWindow: (
     text: string,

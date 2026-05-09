@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { UserLanguage } from '../../../shared/api';
 import { useSettings } from '../../contexts/SettingsContext';
 
@@ -24,8 +24,7 @@ const LANGUAGE_LABELS: Record<UserLanguage, string> = {
   [UserLanguage.AR_EG]: 'العربية (EG)',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface LocaleSelectorProps {}
+type LocaleSelectorProps = {};
 
 export const LocaleSelector: React.FC<LocaleSelectorProps> = () => {
   const { userLanguage, updateUserLanguage, loading, error } = useSettings();
@@ -40,9 +39,7 @@ export const LocaleSelector: React.FC<LocaleSelectorProps> = () => {
   if (error) {
     return (
       <div className="mb-3 px-2 space-y-1">
-        <div className="text-[11px] text-red-400">
-          Error loading locale settings
-        </div>
+        <div className="text-[11px] text-red-400">Error loading locale settings</div>
       </div>
     );
   }

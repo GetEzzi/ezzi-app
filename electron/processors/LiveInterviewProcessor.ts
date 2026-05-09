@@ -1,29 +1,20 @@
-import axios, { AxiosResponse } from 'axios';
-import { API_BASE_URL } from '../../shared/constants';
+import axios, { type AxiosResponse } from 'axios';
 import {
   API_ENDPOINTS,
-  DebugRequest,
-  DebugResponse,
-  SolveRequest,
-  SolveResponse,
+  type DebugRequest,
+  type DebugResponse,
+  type SolveRequest,
+  type SolveResponse,
 } from '../../shared/api';
-import {
-  AppModeProcessor,
-  ProcessingParams,
-  ProcessingResult,
-} from './AppModeProcessor';
+import { API_BASE_URL } from '../../shared/constants';
+import type { AppModeProcessor, ProcessingParams, ProcessingResult } from './AppModeProcessor';
 
 export class LiveInterviewProcessor implements AppModeProcessor {
-  async processSolve(
-    params: ProcessingParams,
-  ): Promise<ProcessingResult<SolveResponse>> {
+  async processSolve(params: ProcessingParams): Promise<ProcessingResult<SolveResponse>> {
     try {
       const { images, isMock, readableVarNames, signal, headers } = params;
 
-      const extractResponse = await axios.post<
-        SolveRequest,
-        AxiosResponse<SolveResponse>
-      >(
+      const extractResponse = await axios.post<SolveRequest, AxiosResponse<SolveResponse>>(
         `${API_BASE_URL}${API_ENDPOINTS.SOLUTIONS.SOLVE}`,
         {
           images,
@@ -59,39 +50,29 @@ export class LiveInterviewProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 401) {
         return {
           success: false,
-          error:
-            'Your session or subscription has expired. Please sign in again.',
+          error: 'Your session or subscription has expired. Please sign in again.',
         };
       }
 
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error:
-            'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
+          error: 'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
         };
       }
 
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       };
     }
   }
 
-  async processDebug(
-    params: ProcessingParams,
-  ): Promise<ProcessingResult<DebugResponse>> {
+  async processDebug(params: ProcessingParams): Promise<ProcessingResult<DebugResponse>> {
     try {
       const { images, isMock, readableVarNames, signal, headers } = params;
 
-      const response = await axios.post<
-        DebugRequest,
-        AxiosResponse<DebugResponse>
-      >(
+      const response = await axios.post<DebugRequest, AxiosResponse<DebugResponse>>(
         `${API_BASE_URL}${API_ENDPOINTS.SOLUTIONS.DEBUG}`,
         { images, isMock, readableVarNames },
         {
@@ -123,25 +104,20 @@ export class LiveInterviewProcessor implements AppModeProcessor {
       if (axiosError.response?.status === 401) {
         return {
           success: false,
-          error:
-            'Your session or subscription has expired. Please sign in again.',
+          error: 'Your session or subscription has expired. Please sign in again.',
         };
       }
 
       if (axiosError.response?.status === 402) {
         return {
           success: false,
-          error:
-            'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
+          error: 'Upgrade to Pro to generate solutions. Visit getezzi.com to upgrade your plan.',
         };
       }
 
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
       };
     }
   }

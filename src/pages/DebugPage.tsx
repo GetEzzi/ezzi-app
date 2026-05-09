@@ -1,25 +1,14 @@
-import React from 'react';
+import type React from 'react';
+import { CommandSection, ScreenshotSection, SolutionSection } from '../components/sections';
 import { useDebug } from '../hooks';
-import {
-  useAppModeLayout,
-  LiveInterviewLayout,
-  LeetcodeSolverLayout,
-} from '../layouts';
-import {
-  ScreenshotSection,
-  SolutionSection,
-  CommandSection,
-} from '../components/sections';
+import { LeetcodeSolverLayout, LiveInterviewLayout, useAppModeLayout } from '../layouts';
 
 interface DebugPageProps {
   isProcessing: boolean;
   setIsProcessing: (isProcessing: boolean) => void;
 }
 
-const DebugPage: React.FC<DebugPageProps> = ({
-  isProcessing,
-  setIsProcessing,
-}) => {
+const DebugPage: React.FC<DebugPageProps> = ({ isProcessing, setIsProcessing }) => {
   const { isLiveInterview } = useAppModeLayout();
   const {
     screenshots,
@@ -41,11 +30,7 @@ const DebugPage: React.FC<DebugPageProps> = ({
     ) : null;
 
   const commandSection = (
-    <CommandSection
-      mode="debug"
-      isProcessing={isProcessing}
-      screenshots={screenshots}
-    />
+    <CommandSection mode="debug" isProcessing={isProcessing} screenshots={screenshots} />
   );
 
   const solutionSection = (

@@ -1,9 +1,9 @@
 import { app, ipcMain, shell } from 'electron';
-import { IIpcHandlerDeps } from './main';
+import { AppMode, type SubscriptionLevel } from '../shared/api';
 import { IPC_EVENTS } from '../shared/constants';
-import { AppMode, SubscriptionLevel } from '../shared/api';
-import { AuthStorage } from './auth.storage';
 import { AppStorage } from './app.storage';
+import { AuthStorage } from './auth.storage';
+import type { IIpcHandlerDeps } from './main';
 
 export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   console.log('Initializing IPC handlers');
@@ -29,13 +29,10 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     deps.applyQueueWindowBehavior();
   });
 
-  ipcMain.handle(
-    IPC_EVENTS.QUEUE.LOADED_WITH_SCREENSHOTS,
-    (_event, screenshotCount) => {
-      console.log('Queue page loaded with screenshots:', screenshotCount);
-      deps.applyQueueWindowBehavior();
-    },
-  );
+  ipcMain.handle(IPC_EVENTS.QUEUE.LOADED_WITH_SCREENSHOTS, (_event, screenshotCount) => {
+    console.log('Queue page loaded with screenshots:', screenshotCount);
+    deps.applyQueueWindowBehavior();
+  });
 
   // Screenshot queue handlers
   ipcMain.handle('get-screenshot-queue', () => {
@@ -57,14 +54,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   // Window dimension handlers
   ipcMain.handle(
     'update-content-dimensions',
-    (
-      _event,
-      {
-        width,
-        height,
-        source,
-      }: { width: number; height: number; source: string },
-    ) => {
+    (_event, { width, height, source }: { width: number; height: number; source: string }) => {
       console.log(
         '[IPC update-content-dimensions] Received - width:',
         width,
@@ -172,10 +162,7 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
 
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to open checkout page',
+        error: error instanceof Error ? error.message : 'Failed to open checkout page',
       };
     }
   });
@@ -281,20 +268,17 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   });
 
   // Auth token handlers
-  ipcMain.handle(
-    'auth-set-token',
-    (_event, token: string, expiryTimestamp?: number) => {
-      try {
-        authStorage.setAuthToken(token, expiryTimestamp);
+  ipcMain.handle('auth-set-token', (_event, token: string, expiryTimestamp?: number) => {
+    try {
+      authStorage.setAuthToken(token, expiryTimestamp);
 
-        return { success: true };
-      } catch (error) {
-        console.error('Error setting auth token:', error);
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting auth token:', error);
 
-        return { error: 'Failed to set auth token' };
-      }
-    },
-  );
+      return { error: 'Failed to set auth token' };
+    }
+  });
 
   ipcMain.handle('auth-get-token', () => {
     try {
@@ -356,20 +340,17 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
     }
   });
 
-  ipcMain.handle(
-    'auth-set-subscription-level',
-    (_event, level: SubscriptionLevel) => {
-      try {
-        authStorage.setSubscriptionLevel(level);
+  ipcMain.handle('auth-set-subscription-level', (_event, level: SubscriptionLevel) => {
+    try {
+      authStorage.setSubscriptionLevel(level);
 
-        return { success: true };
-      } catch (error) {
-        console.error('Error setting subscription level:', error);
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting subscription level:', error);
 
-        return { error: 'Failed to set subscription level' };
-      }
-    },
-  );
+      return { error: 'Failed to set subscription level' };
+    }
+  });
 
   ipcMain.handle(IPC_EVENTS.APP_MODE.CHANGE, (_event, appMode: string) => {
     try {
@@ -452,22 +433,16 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
   });
 
   // Copy and refresh window handlers
-  ipcMain.handle(
-    'copy-and-refresh-window',
-    async (_event, text: string, waitDuration?: number) => {
-      try {
-        return await deps.copyAndRefreshWindow(text, waitDuration);
-      } catch (error) {
-        console.error('Error in copy and refresh window:', error);
+  ipcMain.handle('copy-and-refresh-window', async (_event, text: string, waitDuration?: number) => {
+    try {
+      return await deps.copyAndRefreshWindow(text, waitDuration);
+    } catch (error) {
+      console.error('Error in copy and refresh window:', error);
 
-        return {
-          success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Failed to copy and refresh window',
-        };
-      }
-    },
-  );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to copy and refresh window',
+      };
+    }
+  });
 }

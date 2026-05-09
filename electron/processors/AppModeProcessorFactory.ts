@@ -1,7 +1,7 @@
 import { AppMode } from '../../shared/api';
-import { AppModeProcessor } from './AppModeProcessor';
-import { LiveInterviewProcessor } from './LiveInterviewProcessor';
+import type { AppModeProcessor } from './AppModeProcessor';
 import { LeetCodeProcessor } from './LeetCodeProcessor';
+import { LiveInterviewProcessor } from './LiveInterviewProcessor';
 
 export class AppModeProcessorFactory {
   private static instance: AppModeProcessorFactory;
@@ -26,11 +26,8 @@ export class AppModeProcessorFactory {
     const fallback = this.processors.get(AppMode.LIVE_INTERVIEW);
 
     if (!processor) {
-      console.warn(
-        `No processor found for app mode: ${appMode}, falling back to LIVE_INTERVIEW`,
-      );
+      console.warn(`No processor found for app mode: ${appMode}, falling back to LIVE_INTERVIEW`);
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       return fallback!;
     }
 
@@ -38,10 +35,7 @@ export class AppModeProcessorFactory {
   }
 
   // Method to register new processors dynamically (for future extensibility)
-  public registerProcessor(
-    appMode: AppMode,
-    processor: AppModeProcessor,
-  ): void {
+  public registerProcessor(appMode: AppMode, processor: AppModeProcessor): void {
     this.processors.set(appMode, processor);
   }
 }

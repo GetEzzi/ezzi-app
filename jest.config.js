@@ -1,8 +1,5 @@
 module.exports = {
-  projects: [
-    '<rootDir>/jest.electron.config.js',
-    '<rootDir>/jest.renderer.config.js',
-  ],
+  projects: ['<rootDir>/jest.electron.config.js', '<rootDir>/jest.renderer.config.js'],
   testTimeout: 10000,
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

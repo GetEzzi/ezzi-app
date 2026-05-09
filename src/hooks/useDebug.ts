@@ -1,31 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { useToast } from '../contexts/toast';
-import { useScreenshots } from './useScreenshots';
-import { useScreenshotEvents } from './useScreenshotEvents';
 import { useSolutionContext } from '../contexts/SolutionContext';
+import { useToast } from '../contexts/toast';
+import { useScreenshotEvents } from './useScreenshotEvents';
+import { useScreenshots } from './useScreenshots';
 
-export function useDebug(
-  isProcessing: boolean,
-  setIsProcessing: (processing: boolean) => void,
-) {
+export function useDebug(isProcessing: boolean, setIsProcessing: (processing: boolean) => void) {
   const { showToast } = useToast();
   const { state: solutionState } = useSolutionContext();
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const {
-    screenshots,
-    refetch,
-    handleDeleteScreenshot: deleteScreenshot,
-  } = useScreenshots();
+  const { screenshots, refetch, handleDeleteScreenshot: deleteScreenshot } = useScreenshots();
 
   const [newCode, setNewCode] = useState<string | null>(null);
   const [thoughtsData, setThoughtsData] = useState<string[] | null>(null);
-  const [timeComplexityData, setTimeComplexityData] = useState<string | null>(
-    null,
-  );
-  const [spaceComplexityData, setSpaceComplexityData] = useState<string | null>(
-    null,
-  );
+  const [timeComplexityData, setTimeComplexityData] = useState<string | null>(null);
+  const [spaceComplexityData, setSpaceComplexityData] = useState<string | null>(null);
 
   const handleDeleteScreenshot = async (index: number) => {
     await deleteScreenshot(index);
@@ -50,9 +39,7 @@ export function useDebug(
     if (solutionState.newSolution) {
       setNewCode(solutionState.newSolution.code || null);
       setThoughtsData(
-        'thoughts' in solutionState.newSolution
-          ? solutionState.newSolution.thoughts || null
-          : null,
+        'thoughts' in solutionState.newSolution ? solutionState.newSolution.thoughts || null : null,
       );
       setTimeComplexityData(
         'time_complexity' in solutionState.newSolution
@@ -71,11 +58,7 @@ export function useDebug(
       window.electronAPI.onDebugSuccess(() => setIsProcessing(false)),
       window.electronAPI.onDebugStart(() => setIsProcessing(true)),
       window.electronAPI.onDebugError((error: string) => {
-        showToast(
-          'Processing Failed',
-          'There was an error debugging your code.',
-          'error',
-        );
+        showToast('Processing Failed', 'There was an error debugging your code.', 'error');
         setIsProcessing(false);
         console.error('Processing error:', error);
       }),
@@ -89,7 +72,9 @@ export function useDebug(
 
     return () => {
       resizeObserver.disconnect();
-      cleanupFunctions.forEach((cleanup) => cleanup());
+      cleanupFunctions.forEach((cleanup) => {
+        cleanup();
+      });
     };
   }, [solutionState.newSolution, setIsProcessing, showToast]);
 

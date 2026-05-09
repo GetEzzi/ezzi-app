@@ -1,17 +1,14 @@
-import React from 'react';
-import { Screenshot } from '@shared/api.ts';
-import CommandButton from '../shared/commands/CommandButton';
+import type { Screenshot } from '@shared/api.ts';
+import type React from 'react';
 import { useIsFreeUser } from '../../contexts/SubscriptionContext';
+import CommandButton from '../shared/commands/CommandButton';
 
 export interface SolutionCommandsProps {
   isProcessing: boolean;
   screenshots?: Screenshot[];
 }
 
-const SolutionCommands: React.FC<SolutionCommandsProps> = ({
-  isProcessing,
-  screenshots = [],
-}) => {
+const SolutionCommands: React.FC<SolutionCommandsProps> = ({ isProcessing, screenshots = [] }) => {
   const isFree = useIsFreeUser();
 
   return (
@@ -22,15 +19,11 @@ const SolutionCommands: React.FC<SolutionCommandsProps> = ({
         {!isProcessing && (
           <>
             <CommandButton
-              label={
-                screenshots.length === 0 ? 'Screenshot your code' : 'Screenshot'
-              }
+              label={screenshots.length === 0 ? 'Screenshot your code' : 'Screenshot'}
               shortcut="H"
             />
 
-            {screenshots.length > 0 && !isFree && (
-              <CommandButton label="Debug" shortcut="↵" />
-            )}
+            {screenshots.length > 0 && !isFree && <CommandButton label="Debug" shortcut="↵" />}
           </>
         )}
 

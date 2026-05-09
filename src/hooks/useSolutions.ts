@@ -1,29 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
-import { SolveResponse, LeetCodeSolveResponse } from '@shared/api.ts';
-import { useToast } from '../contexts/toast';
-import { useScreenshots } from './useScreenshots';
-import { useScreenshotEvents } from './useScreenshotEvents';
+import type { LeetCodeSolveResponse, SolveResponse } from '@shared/api.ts';
+import { useEffect, useRef, useState } from 'react';
 import { useSolutionContext } from '../contexts/SolutionContext';
+import { useToast } from '../contexts/toast';
+import { useScreenshotEvents } from './useScreenshotEvents';
+import { useScreenshots } from './useScreenshots';
 
 export function useSolutions() {
-  const {
-    state: solutionState,
-    setSolution,
-    setNewSolution,
-    clearAll,
-  } = useSolutionContext();
+  const { state: solutionState, setSolution, setNewSolution, clearAll } = useSolutionContext();
   const contentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
   const [debugProcessing, setDebugProcessing] = useState(false);
   const [solutionData, setSolutionData] = useState<string | null>(null);
   const [thoughtsData, setThoughtsData] = useState<string[] | null>(null);
-  const [timeComplexityData, setTimeComplexityData] = useState<string | null>(
-    null,
-  );
-  const [spaceComplexityData, setSpaceComplexityData] = useState<string | null>(
-    null,
-  );
+  const [timeComplexityData, setTimeComplexityData] = useState<string | null>(null);
+  const [spaceComplexityData, setSpaceComplexityData] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
 
   const {
@@ -59,9 +50,7 @@ export function useSolutions() {
     if (solutionState.solution) {
       setSolutionData(solutionState.solution.code || null);
       setThoughtsData(
-        'thoughts' in solutionState.solution
-          ? solutionState.solution.thoughts || null
-          : null,
+        'thoughts' in solutionState.solution ? solutionState.solution.thoughts || null : null,
       );
       setTimeComplexityData(
         'time_complexity' in solutionState.solution
@@ -107,9 +96,7 @@ export function useSolutions() {
         if (solutionState.solution) {
           setSolutionData(solutionState.solution.code || null);
           setThoughtsData(
-            'thoughts' in solutionState.solution
-              ? solutionState.solution.thoughts || null
-              : null,
+            'thoughts' in solutionState.solution ? solutionState.solution.thoughts || null : null,
           );
           setTimeComplexityData(
             'time_complexity' in solutionState.solution
@@ -123,26 +110,19 @@ export function useSolutions() {
           );
         }
       }),
-      window.electronAPI.onSolutionSuccess(
-        (data: SolveResponse | LeetCodeSolveResponse) => {
-          if (!data) {
-            return;
-          }
-          setSolution(data);
-          setSolutionData(data.code || null);
-          setThoughtsData('thoughts' in data ? data.thoughts || null : null);
-          setTimeComplexityData(
-            'time_complexity' in data ? data.time_complexity || null : null,
-          );
-          setSpaceComplexityData(
-            'space_complexity' in data ? data.space_complexity || null : null,
-          );
-          void clearAllScreenshots();
-        },
-      ),
+      window.electronAPI.onSolutionSuccess((data: SolveResponse | LeetCodeSolveResponse) => {
+        if (!data) {
+          return;
+        }
+        setSolution(data);
+        setSolutionData(data.code || null);
+        setThoughtsData('thoughts' in data ? data.thoughts || null : null);
+        setTimeComplexityData('time_complexity' in data ? data.time_complexity || null : null);
+        setSpaceComplexityData('space_complexity' in data ? data.space_complexity || null : null);
+        void clearAllScreenshots();
+      }),
       window.electronAPI.onDebugStart(() => setDebugProcessing(true)),
       window.electronAPI.onDebugSuccess((data: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setNewSolution(data);
         setDebugProcessing(false);
         void clearAllScreenshots();
@@ -152,26 +132,18 @@ export function useSolutions() {
         setDebugProcessing(false);
       }),
       window.electronAPI.onProcessingNoScreenshots(() => {
-        showToast(
-          'No Screenshots',
-          'There are no screenshots to process.',
-          'neutral',
-        );
+        showToast('No Screenshots', 'There are no screenshots to process.', 'neutral');
       }),
     ];
 
     return () => {
       resizeObserver.disconnect();
       mutationObserver.disconnect();
-      cleanupFunctions.forEach((cleanup) => cleanup());
+      cleanupFunctions.forEach((cleanup) => {
+        cleanup();
+      });
     };
-  }, [
-    showToast,
-    setSolution,
-    setNewSolution,
-    solutionState.solution,
-    clearAllScreenshots,
-  ]);
+  }, [showToast, setSolution, setNewSolution, solutionState.solution, clearAllScreenshots]);
 
   useScreenshotEvents({
     refetch,

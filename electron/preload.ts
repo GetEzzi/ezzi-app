@@ -1,7 +1,6 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, shell } from 'electron';
+import type { AppMode, SubscriptionLevel } from '../shared/api';
 import { IPC_EVENTS } from '../shared/constants';
-import { AppMode, SubscriptionLevel } from '../shared/api';
-import { shell } from 'electron';
 
 // Types for the exposed Electron API
 interface ElectronAPI {
@@ -19,13 +18,9 @@ interface ElectronAPI {
     previews?: Array<{ path: string; preview: string }> | null;
     error?: string;
   }>;
-  deleteScreenshot: (
-    path: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  deleteScreenshot: (path: string) => Promise<{ success: boolean; error?: string }>;
   clearAllScreenshots: () => Promise<{ success: boolean; error?: string }>;
-  onScreenshotTaken: (
-    callback: (data: { path: string; preview: string }) => void,
-  ) => () => void;
+  onScreenshotTaken: (callback: (data: { path: string; preview: string }) => void) => () => void;
   onResetView: (callback: () => void) => () => void;
   onSolutionStart: (callback: () => void) => () => void;
   onDebugStart: (callback: () => void) => () => void;
@@ -61,26 +56,20 @@ interface ElectronAPI {
     token?: string | null;
     error?: string;
   }>;
-  setSubscriptionLevel: (
-    level: SubscriptionLevel,
-  ) => Promise<{ success: boolean; error?: string }>;
+  setSubscriptionLevel: (level: SubscriptionLevel) => Promise<{ success: boolean; error?: string }>;
   authClearToken: () => Promise<{ success: boolean; error?: string }>;
   authIsAuthenticated: () => Promise<{
     success: boolean;
     isAuthenticated?: boolean;
     error?: string;
   }>;
-  authSetLastUsedEmail: (
-    email: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  authSetLastUsedEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
   authGetLastUsedEmail: () => Promise<{
     success: boolean;
     email?: string | null;
     error?: string;
   }>;
-  setAppMode: (
-    appMode: AppMode,
-  ) => Promise<{ success: boolean; error?: string }>;
+  setAppMode: (appMode: AppMode) => Promise<{ success: boolean; error?: string }>;
   writeText: (text: string) => Promise<{ success: boolean; error?: string }>;
   copyAndRefreshWindow: (
     text: string,
@@ -108,20 +97,14 @@ export const PROCESSING_EVENTS = {
 console.log('Preload script is running');
 
 const electronAPI = {
-  openSubscriptionPortal: async (authData: {
-    email: string;
-  }): Promise<unknown> => {
+  openSubscriptionPortal: async (authData: { email: string }): Promise<unknown> => {
     return ipcRenderer.invoke('open-subscription-portal', authData);
   },
-  updateContentDimensions: (dimensions: {
-    width: number;
-    height: number;
-    source: string;
-  }) => ipcRenderer.invoke('update-content-dimensions', dimensions),
+  updateContentDimensions: (dimensions: { width: number; height: number; source: string }) =>
+    ipcRenderer.invoke('update-content-dimensions', dimensions),
   clearStore: () => ipcRenderer.invoke('clear-store'),
   getScreenshots: () => ipcRenderer.invoke('get-screenshots'),
-  deleteScreenshot: (path: string) =>
-    ipcRenderer.invoke('delete-screenshot', path),
+  deleteScreenshot: (path: string) => ipcRenderer.invoke('delete-screenshot', path),
   clearAllScreenshots: () => ipcRenderer.invoke('clear-all-screenshots'),
   toggleMainWindow: async () => {
     console.log('toggleMainWindow called from preload');
@@ -137,11 +120,8 @@ const electronAPI = {
     }
   },
   // Event listeners
-  onScreenshotTaken: (
-    callback: (data: { path: string; preview: string }) => void,
-  ) => {
-    const subscription = (_: any, data: { path: string; preview: string }) =>
-      callback(data);
+  onScreenshotTaken: (callback: (data: { path: string; preview: string }) => void) => {
+    const subscription = (_: any, data: { path: string; preview: string }) => callback(data);
     ipcRenderer.on('screenshot-taken', subscription);
 
     return () => {
@@ -176,9 +156,7 @@ const electronAPI = {
     ipcRenderer.on('debug-success', (_event, data) => callback(data));
 
     return () => {
-      ipcRenderer.removeListener('debug-success', (_event, data) =>
-        callback(data),
-      );
+      ipcRenderer.removeListener('debug-success', (_event, data) => callback(data));
     };
   },
   onDebugError: (callback: (error: string) => void) => {
@@ -194,10 +172,7 @@ const electronAPI = {
     ipcRenderer.on(PROCESSING_EVENTS.INITIAL_SOLUTION_ERROR, subscription);
 
     return () => {
-      ipcRenderer.removeListener(
-        PROCESSING_EVENTS.INITIAL_SOLUTION_ERROR,
-        subscription,
-      );
+      ipcRenderer.removeListener(PROCESSING_EVENTS.INITIAL_SOLUTION_ERROR, subscription);
     };
   },
   onProcessingNoScreenshots: (callback: () => void) => {
@@ -205,10 +180,7 @@ const electronAPI = {
     ipcRenderer.on(PROCESSING_EVENTS.NO_SCREENSHOTS, subscription);
 
     return () => {
-      ipcRenderer.removeListener(
-        PROCESSING_EVENTS.NO_SCREENSHOTS,
-        subscription,
-      );
+      ipcRenderer.removeListener(PROCESSING_EVENTS.NO_SCREENSHOTS, subscription);
     };
   },
   onSolutionSuccess: (callback: (data: any) => void) => {
@@ -216,10 +188,7 @@ const electronAPI = {
     ipcRenderer.on(PROCESSING_EVENTS.SOLUTION_SUCCESS, subscription);
 
     return () => {
-      ipcRenderer.removeListener(
-        PROCESSING_EVENTS.SOLUTION_SUCCESS,
-        subscription,
-      );
+      ipcRenderer.removeListener(PROCESSING_EVENTS.SOLUTION_SUCCESS, subscription);
     };
   },
   onUnauthorized: (callback: () => void) => {
@@ -257,13 +226,9 @@ const electronAPI = {
   handleMouseEnter: () => ipcRenderer.invoke(IPC_EVENTS.TOOLTIP.MOUSE_ENTER),
   handleMouseLeave: () => ipcRenderer.invoke(IPC_EVENTS.TOOLTIP.MOUSE_LEAVE),
   handleCloseClick: () => ipcRenderer.invoke(IPC_EVENTS.TOOLTIP.CLOSE_CLICK),
-  handleQueueLoadedNoScreenshots: () =>
-    ipcRenderer.invoke(IPC_EVENTS.QUEUE.LOADED_NO_SCREENSHOTS),
+  handleQueueLoadedNoScreenshots: () => ipcRenderer.invoke(IPC_EVENTS.QUEUE.LOADED_NO_SCREENSHOTS),
   handleQueueLoadedWithScreenshots: (screenshotCount) =>
-    ipcRenderer.invoke(
-      IPC_EVENTS.QUEUE.LOADED_WITH_SCREENSHOTS,
-      screenshotCount,
-    ),
+    ipcRenderer.invoke(IPC_EVENTS.QUEUE.LOADED_WITH_SCREENSHOTS, screenshotCount),
   // Auth token operations
   setSubscriptionLevel: (level: SubscriptionLevel) =>
     ipcRenderer.invoke('auth-set-subscription-level', level),
@@ -272,25 +237,19 @@ const electronAPI = {
   authGetToken: () => ipcRenderer.invoke('auth-get-token'),
   authClearToken: () => ipcRenderer.invoke('auth-clear-token'),
   authIsAuthenticated: () => ipcRenderer.invoke('auth-is-authenticated'),
-  authSetLastUsedEmail: (email: string) =>
-    ipcRenderer.invoke('auth-set-last-used-email', email),
+  authSetLastUsedEmail: (email: string) => ipcRenderer.invoke('auth-set-last-used-email', email),
   authGetLastUsedEmail: () => ipcRenderer.invoke('auth-get-last-used-email'),
-  setAppMode: (appMode: AppMode) =>
-    ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
+  setAppMode: (appMode: AppMode) => ipcRenderer.invoke(IPC_EVENTS.APP_MODE.CHANGE, appMode),
   getAppMode: () => ipcRenderer.invoke('get-app-mode'),
   getReadableVarNames: () => ipcRenderer.invoke('get-readable-var-names'),
-  setReadableVarNames: (value: boolean) =>
-    ipcRenderer.invoke('set-readable-var-names', value),
+  setReadableVarNames: (value: boolean) => ipcRenderer.invoke('set-readable-var-names', value),
   writeText: (text: string) => ipcRenderer.invoke('write-text', text),
   copyAndRefreshWindow: (text: string, waitDuration?: number) =>
     ipcRenderer.invoke('copy-and-refresh-window', text, waitDuration),
 } as ElectronAPI;
 
 // Before exposing the API
-console.log(
-  'About to expose electronAPI with methods:',
-  Object.keys(electronAPI),
-);
+console.log('About to expose electronAPI with methods:', Object.keys(electronAPI));
 
 // Expose the API
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
@@ -312,16 +271,12 @@ contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
     on: (channel: string, func: (...args: any[]) => void) => {
       if (channel === 'auth-callback') {
-        ipcRenderer.on(channel, (_event, ...args) =>
-          func(...(args as unknown[])),
-        );
+        ipcRenderer.on(channel, (_event, ...args) => func(...(args as unknown[])));
       }
     },
     removeListener: (channel: string, func: (...args: any[]) => void) => {
       if (channel === 'auth-callback') {
-        ipcRenderer.removeListener(channel, (_event, ...args) =>
-          func(...(args as unknown[])),
-        );
+        ipcRenderer.removeListener(channel, (_event, ...args) => func(...(args as unknown[])));
       }
     },
   },

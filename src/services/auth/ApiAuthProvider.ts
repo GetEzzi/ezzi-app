@@ -1,6 +1,6 @@
-import { IAuthProvider } from './AuthProvider';
-import { AuthenticatedUser, AuthResponse } from '@shared/api.ts';
+import type { AuthenticatedUser, AuthResponse } from '@shared/api.ts';
 import { authService } from '../auth';
+import type { IAuthProvider } from './AuthProvider';
 
 export class ApiAuthProvider implements IAuthProvider {
   async login(email: string, password: string): Promise<AuthResponse> {

@@ -1,8 +1,6 @@
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 
-export function createMockBrowserWindow(
-  overrides: Partial<BrowserWindow> = {},
-): BrowserWindow {
+export function createMockBrowserWindow(overrides: Partial<BrowserWindow> = {}): BrowserWindow {
   return {
     loadFile: jest.fn(),
     loadURL: jest.fn(),

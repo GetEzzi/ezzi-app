@@ -1,5 +1,5 @@
-import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as React from 'react';
 import { cn } from '../../lib/utils';
 
 const Dialog = DialogPrimitive.Root;
@@ -41,4 +41,4 @@ DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogClose = DialogPrimitive.Close;
 
-export { Dialog, DialogTrigger, DialogContent, DialogClose };
+export { Dialog, DialogClose, DialogContent, DialogTrigger };

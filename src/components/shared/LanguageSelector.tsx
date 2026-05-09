@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { ProgrammingLanguage } from '@shared/api.ts';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 
 const LANGUAGE_LABELS: Record<ProgrammingLanguage, string> = {
@@ -17,12 +18,10 @@ const LANGUAGE_LABELS: Record<ProgrammingLanguage, string> = {
   [ProgrammingLanguage.PHP]: 'PHP',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface LanguageSelectorProps {}
+type LanguageSelectorProps = {};
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
-  const { solutionLanguage, updateSolutionLanguage, loading, error } =
-    useSettings();
+  const { solutionLanguage, updateSolutionLanguage, loading, error } = useSettings();
   const [readableVarNames, setReadableVarNames] = useState(false);
 
   useEffect(() => {
@@ -55,9 +54,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
   if (error) {
     return (
       <div className="mb-3 px-2 space-y-1">
-        <div className="text-[11px] text-red-400">
-          Error loading language settings
-        </div>
+        <div className="text-[11px] text-red-400">Error loading language settings</div>
       </div>
     );
   }
@@ -89,8 +86,8 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {
         />
       </label>
       <p className="text-[10px] leading-relaxed text-gray-400">
-        e.g. leftIndex instead of l, currentSum instead of s. Simple loop
-        iterators like i stay short.
+        e.g. leftIndex instead of l, currentSum instead of s. Simple loop iterators like i stay
+        short.
       </p>
     </div>
   );

@@ -1,20 +1,16 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { isSelfHosted } from '@shared/constants';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import App from './App';
 import {
-  AuthenticatedUser,
+  type AuthenticatedUser,
   ProgrammingLanguage,
   SubscriptionLevel,
   UserLanguage,
 } from '../shared/api';
+import App from './App';
 import { authService } from './services/auth';
-import { getStorageProvider } from './services/storage';
 import { getAuthProvider } from './services/auth/index';
-import { isSelfHosted } from '@shared/constants';
+import { getStorageProvider } from './services/storage';
 
 // Mock all external dependencies
 jest.mock('./services/auth.ts');
@@ -41,9 +37,7 @@ jest.mock('./contexts/SettingsContext', () => ({
 
 jest.mock('./pages/SubscribedApp', () => {
   return function MockSubscribedApp() {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment
     const { useSettings } = require('./contexts/SettingsContext');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const settings = useSettings();
 
     return (
@@ -56,9 +50,7 @@ jest.mock('./pages/SubscribedApp', () => {
 });
 jest.mock('./pages/SubscribePage', () => {
   return function MockSubscribePage({ user }: any) {
-    return (
-      <div data-testid="subscribe-page">Subscribe Page - {user.user.email}</div>
-    );
+    return <div data-testid="subscribe-page">Subscribe Page - {user.user.email}</div>;
   };
 });
 jest.mock('./pages/AuthForm', () => {
@@ -73,9 +65,7 @@ jest.mock('./pages/AuthForm', () => {
   };
 });
 
-function createMockUser(
-  overrides: Partial<AuthenticatedUser> = {},
-): AuthenticatedUser {
+function createMockUser(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser {
   const defaultSubscription: AuthenticatedUser['subscription'] = {
     active_from: '2024-01-01T00:00:00.000Z',
     active_to: null,
@@ -153,9 +143,7 @@ describe('App', () => {
 
   describe('App loading states', () => {
     test('WHEN app is loading THEN it shows loading spinner', () => {
-      mockAuthProvider.getCurrentUser.mockImplementation(
-        () => new Promise(() => {}),
-      );
+      mockAuthProvider.getCurrentUser.mockImplementation(() => new Promise(() => {}));
 
       render(<App />);
 
@@ -334,9 +322,7 @@ describe('App', () => {
 
       // Assert
       await waitFor(() => {
-        expect(window.electronAPI.setSubscriptionLevel).toHaveBeenCalledWith(
-          SubscriptionLevel.PRO,
-        );
+        expect(window.electronAPI.setSubscriptionLevel).toHaveBeenCalledWith(SubscriptionLevel.PRO);
       });
     });
   });
@@ -352,8 +338,7 @@ describe('App', () => {
       });
 
       // Set test globals for this specific test
-      (global as any).__TEST_SOLUTION_LANGUAGE__ =
-        ProgrammingLanguage.JavaScript;
+      (global as any).__TEST_SOLUTION_LANGUAGE__ = ProgrammingLanguage.JavaScript;
       (global as any).__TEST_USER_LANGUAGE__ = UserLanguage.ES_ES;
 
       render(<App />);
@@ -373,9 +358,7 @@ describe('App', () => {
       const user = createMockUser();
       mockAuthProvider.getCurrentUser.mockResolvedValue(user);
       mockAuthProvider.getAuthToken.mockResolvedValue('valid-token');
-      mockStorageProvider.getSettings.mockRejectedValue(
-        new Error('Settings error'),
-      );
+      mockStorageProvider.getSettings.mockRejectedValue(new Error('Settings error'));
 
       render(<App />);
 
@@ -385,9 +368,7 @@ describe('App', () => {
       });
 
       // Assert
-      expect(
-        screen.getByText('Failed to load user settings'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('Failed to load user settings')).toBeInTheDocument();
     });
   });
 
@@ -409,9 +390,7 @@ describe('App', () => {
     });
 
     test('WHEN initialization fails THEN it shows auth form and error toast', async () => {
-      mockAuthProvider.getCurrentUser.mockRejectedValue(
-        new Error('Auth error'),
-      );
+      mockAuthProvider.getCurrentUser.mockRejectedValue(new Error('Auth error'));
 
       render(<App />);
 

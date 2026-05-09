@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { AppMode } from '@shared/api.ts';
-import GearIcon from './GearIcon';
-import ShortcutsTooltip, { ShortcutItem } from './ShortcutsTooltip';
-import { sendToElectron } from '../../../utils/electron.ts';
+import type { AppMode } from '@shared/api.ts';
 import { IPC_EVENTS } from '@shared/constants.ts';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { sendToElectron } from '../../../utils/electron.ts';
+import GearIcon from './GearIcon';
+import ShortcutsTooltip, { type ShortcutItem } from './ShortcutsTooltip';
 
 interface SettingsTooltipProps {
   shortcuts: ShortcutItem[];

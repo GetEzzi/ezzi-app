@@ -1,4 +1,4 @@
-import { AuthenticatedUser, AuthResponse } from '@shared/api.ts';
+import type { AuthenticatedUser, AuthResponse } from '@shared/api.ts';
 
 export interface IAuthProvider {
   login(email: string, password: string): Promise<AuthResponse>;

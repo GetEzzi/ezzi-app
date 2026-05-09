@@ -1,5 +1,5 @@
-import { globalShortcut, app } from 'electron';
-import { IShortcutsHelperDeps } from './main';
+import { app, globalShortcut } from 'electron';
+import type { IShortcutsHelperDeps } from './main';
 
 export class ShortcutsHelper {
   private deps: IShortcutsHelperDeps;
@@ -23,9 +23,7 @@ export class ShortcutsHelper {
    * Register only the CommandOrControl+B shortcut for toggling window visibility
    */
   public registerVisibilityShortcutOnly(): void {
-    console.debug(
-      'Registering only visibility toggle shortcut (CommandOrControl+B)',
-    );
+    console.debug('Registering only visibility toggle shortcut (CommandOrControl+B)');
 
     globalShortcut.unregisterAll();
 
@@ -68,9 +66,7 @@ export class ShortcutsHelper {
     });
 
     globalShortcut.register('CommandOrControl+G', () => {
-      console.debug(
-        'Command + G pressed. Canceling requests and resetting queues...',
-      );
+      console.debug('Command + G pressed. Canceling requests and resetting queues...');
 
       // Cancel ongoing API requests
       this.deps.processingHelper?.cancelOngoingRequests();

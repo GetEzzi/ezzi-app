@@ -1,4 +1,4 @@
-import { AppMode, SubscriptionLevel } from './api';
+import type { AppMode, SubscriptionLevel } from './api';
 
 /**
  * Centralized storage keys and configuration for both Electron and React

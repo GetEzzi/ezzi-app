@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-import { AuthStorage, IAuthStore } from './auth.storage';
+import { AuthStorage, type IAuthStore } from './auth.storage';
 
 // Mock electron-store with a factory function
 jest.mock('electron-store', () => {
@@ -12,13 +11,11 @@ jest.mock('electron-store', () => {
 
 function createMockAuthStorage() {
   // Reset AuthStorage singleton
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   (AuthStorage as any).instance = null;
 
   // Get reference to the mocked store instance
   const authStorage = AuthStorage.getInstance();
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const mockStore = (authStorage as any).store as jest.Mocked<IAuthStore>;
 
   return { mockStore, authStorage };
@@ -28,7 +25,6 @@ describe('AuthStorage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (AuthStorage as any).instance = null;
   });
 
@@ -90,9 +86,7 @@ describe('AuthStorage', () => {
       const { mockStore, authStorage } = createMockAuthStorage();
       const token = 'test-token';
       const futureExpiry = Date.now() + 3600000;
-      mockStore.get
-        .mockReturnValueOnce(token)
-        .mockReturnValueOnce(futureExpiry);
+      mockStore.get.mockReturnValueOnce(token).mockReturnValueOnce(futureExpiry);
 
       // Act
       const result = authStorage.getAuthToken();
@@ -170,9 +164,7 @@ describe('AuthStorage', () => {
     test('WHEN isAuthenticated is called and token is expired THEN it returns false', () => {
       const { mockStore, authStorage } = createMockAuthStorage();
       const pastExpiry = Date.now() - 3600000;
-      mockStore.get
-        .mockReturnValueOnce('test-token')
-        .mockReturnValueOnce(pastExpiry);
+      mockStore.get.mockReturnValueOnce('test-token').mockReturnValueOnce(pastExpiry);
 
       // Act
       const result = authStorage.isAuthenticated();

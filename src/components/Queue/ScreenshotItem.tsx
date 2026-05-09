@@ -1,5 +1,5 @@
-import React from 'react';
 import { X } from 'lucide-react';
+import type React from 'react';
 
 interface Screenshot {
   path: string;

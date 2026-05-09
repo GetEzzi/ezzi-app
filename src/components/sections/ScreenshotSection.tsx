@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
+import type { Screenshot } from '../../../shared/api';
 import ScreenshotQueue from '../Queue/ScreenshotQueue';
-import { Screenshot } from '../../../shared/api';
 
 interface ScreenshotSectionProps {
   screenshots: Screenshot[];

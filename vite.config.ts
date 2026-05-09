@@ -1,8 +1,9 @@
 // vite.config.ts
-import { defineConfig } from 'vite';
-import electron from 'vite-plugin-electron';
+
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { defineConfig } from 'vite';
+import electron from 'vite-plugin-electron';
 
 export default defineConfig({
   plugins: [
@@ -12,6 +13,7 @@ export default defineConfig({
         // main.ts
         entry: 'electron/main.ts',
         vite: {
+          define: { 'import.meta': '{}' },
           build: {
             outDir: 'dist-electron',
             sourcemap: true,
@@ -26,6 +28,7 @@ export default defineConfig({
         // preload.ts
         entry: 'electron/preload.ts',
         vite: {
+          define: { 'import.meta': '{}' },
           build: {
             outDir: 'dist-electron',
             sourcemap: true,

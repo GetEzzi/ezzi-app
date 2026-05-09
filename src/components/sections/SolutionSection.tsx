@@ -1,9 +1,9 @@
-import React from 'react';
+import type React from 'react';
+import { useSettings } from '../../contexts/SettingsContext';
+import { useAppModeLayout } from '../../layouts';
+import CodeBlock from '../Solutions/CodeBlock';
 import SolutionContent from '../Solutions/SolutionContent';
 import ThoughtsList from '../Solutions/ThoughtsList';
-import CodeBlock from '../Solutions/CodeBlock';
-import { useAppModeLayout } from '../../layouts';
-import { useSettings } from '../../contexts/SettingsContext';
 
 interface SolutionSectionProps {
   solutionData?: string | null;
@@ -31,11 +31,7 @@ const SolutionSectionInner: React.FC<SolutionSectionProps> = ({
   if (isGenerating) {
     return (
       <div className={className}>
-        <SolutionContent
-          title="Generating solution"
-          content="..."
-          isLoading={true}
-        />
+        <SolutionContent title="Generating solution" content="..." isLoading={true} />
       </div>
     );
   }
@@ -72,11 +68,7 @@ const SolutionSectionInner: React.FC<SolutionSectionProps> = ({
           <SolutionContent
             title={title}
             content={
-              <CodeBlock
-                code={solutionData}
-                language={currentLanguage}
-                showCopyButton={true}
-              />
+              <CodeBlock code={solutionData} language={currentLanguage} showCopyButton={true} />
             }
             isLoading={!solutionData}
             type="code"
@@ -100,11 +92,7 @@ const SolutionSectionInner: React.FC<SolutionSectionProps> = ({
         <SolutionContent
           title={title}
           content={
-            <CodeBlock
-              code={solutionData}
-              language={currentLanguage}
-              showCopyButton={false}
-            />
+            <CodeBlock code={solutionData} language={currentLanguage} showCopyButton={false} />
           }
           isLoading={!solutionData}
           type="code"
@@ -122,5 +110,4 @@ const SolutionSectionInner: React.FC<SolutionSectionProps> = ({
   );
 };
 
-export const SolutionSection: React.FC<SolutionSectionProps> =
-  SolutionSectionInner;
+export const SolutionSection: React.FC<SolutionSectionProps> = SolutionSectionInner;

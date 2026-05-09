@@ -1,11 +1,7 @@
-import React from 'react';
+import type React from 'react';
+import { CommandSection, ScreenshotSection } from '../components/sections';
 import { useQueue } from '../hooks';
-import {
-  useAppModeLayout,
-  LiveInterviewLayout,
-  LeetcodeSolverLayout,
-} from '../layouts';
-import { ScreenshotSection, CommandSection } from '../components/sections';
+import { LeetcodeSolverLayout, LiveInterviewLayout, useAppModeLayout } from '../layouts';
 
 interface QueuePageProps {
   setView: (view: 'queue' | 'solutions' | 'debug') => void;
@@ -13,12 +9,8 @@ interface QueuePageProps {
 
 const QueuePage: React.FC<QueuePageProps> = ({ setView: _setView }) => {
   const { isLiveInterview } = useAppModeLayout();
-  const {
-    screenshots,
-    handleDeleteScreenshot,
-    handleTooltipVisibilityChange,
-    contentRef,
-  } = useQueue();
+  const { screenshots, handleDeleteScreenshot, handleTooltipVisibilityChange, contentRef } =
+    useQueue();
 
   const screenshotSection =
     screenshots.length > 0 ? (

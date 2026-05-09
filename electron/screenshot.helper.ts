@@ -1,9 +1,9 @@
-import path from 'node:path';
 import fs from 'node:fs';
-import { app, nativeImage } from 'electron';
-import { v4 as uuidv4 } from 'uuid';
+import path from 'node:path';
 import { execFile } from 'child_process';
+import { app, nativeImage } from 'electron';
 import { promisify } from 'util';
+import { v4 as uuidv4 } from 'uuid';
 
 const execFileAsync = promisify(execFile);
 
@@ -152,12 +152,9 @@ export class ScreenshotHelper {
 
         return { data: jpegBuffer, ext: '.jpg' };
       }
-      console.warn(
-        `JPEG q${quality}: ${this.toMb(jpegBuffer.length)}, trying lower quality`,
-      );
+      console.warn(`JPEG q${quality}: ${this.toMb(jpegBuffer.length)}, trying lower quality`);
     }
-    const lastQuality =
-      ScreenshotHelper.QUALITY_STEPS[ScreenshotHelper.QUALITY_STEPS.length - 1];
+    const lastQuality = ScreenshotHelper.QUALITY_STEPS[ScreenshotHelper.QUALITY_STEPS.length - 1];
     const finalBuffer = image.toJPEG(lastQuality);
     console.warn(
       `Compressed: ${originalSize} → ${this.toMb(finalBuffer.length)} (JPEG q${lastQuality}, still over limit)`,
@@ -225,8 +222,7 @@ export class ScreenshotHelper {
       const data = await fs.promises.readFile(filepath);
 
       const ext = path.extname(filepath).toLowerCase();
-      const mimeType =
-        ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
+      const mimeType = ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
 
       return `data:${mimeType};base64,${data.toString('base64')}`;
     } catch (error) {
@@ -236,14 +232,10 @@ export class ScreenshotHelper {
     }
   }
 
-  public async deleteScreenshot(
-    path: string,
-  ): Promise<{ success: boolean; error?: string }> {
+  public async deleteScreenshot(path: string): Promise<{ success: boolean; error?: string }> {
     try {
       await fs.promises.unlink(path);
-      this.screenshotQueue = this.screenshotQueue.filter(
-        (filePath) => filePath !== path,
-      );
+      this.screenshotQueue = this.screenshotQueue.filter((filePath) => filePath !== path);
 
       console.log('Screenshot deleted', path);
 
@@ -301,10 +293,7 @@ export class ScreenshotHelper {
           }
 
           // Log other errors but don't fail the entire operation
-          console.error(
-            `Error deleting screenshot at ${screenshotPath}:`,
-            error,
-          );
+          console.error(`Error deleting screenshot at ${screenshotPath}:`, error);
           // Don't throw - continue processing other files
         }
       });

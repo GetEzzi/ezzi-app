@@ -1,6 +1,6 @@
-import SubscribedApp from './pages/SubscribedApp';
-import { AuthForm } from './pages/AuthForm';
+import { isSelfHosted } from '@shared/constants.ts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type AuthenticatedUser, SubscriptionLevel } from '../shared/api';
 import {
   Toast,
   ToastDescription,
@@ -8,13 +8,13 @@ import {
   ToastTitle,
   ToastViewport,
 } from './components/ui/toast';
-import { ToastContext } from './contexts/toast';
 import { AppModeProvider } from './contexts/appMode';
-import { AuthenticatedUser, SubscriptionLevel } from '../shared/api';
+import { ToastContext } from './contexts/toast';
+import { AuthForm } from './pages/AuthForm';
+import SubscribedApp from './pages/SubscribedApp';
+import { getAuthProvider } from './services/auth/index';
 import { authService } from './services/auth.ts';
 import { getStorageProvider } from './services/storage';
-import { getAuthProvider } from './services/auth/index';
-import { isSelfHosted } from '@shared/constants.ts';
 
 interface ToastState {
   open: boolean;
@@ -52,19 +52,14 @@ function AppContent({ isInitialized, user }: AppContentProps) {
       authService
         .getCurrentUser()
         .then(async (updatedUser) => {
-          if (
-            updatedUser &&
-            updatedUser.subscription.level !== SubscriptionLevel.FREE
-          ) {
+          if (updatedUser && updatedUser.subscription.level !== SubscriptionLevel.FREE) {
             window.electronAPI
               ?.setSubscriptionLevel(updatedUser.subscription.level)
               .catch(console.error);
 
             try {
               const currentSettings = await getStorageProvider().getSettings();
-              const newProvider = getStorageProvider(
-                updatedUser.subscription.level,
-              );
+              const newProvider = getStorageProvider(updatedUser.subscription.level);
               await newProvider.updateSettings({
                 solutionLanguage: currentSettings.solutionLanguage,
                 userLanguage: currentSettings.userLanguage,
@@ -90,8 +85,8 @@ function AppContent({ isInitialized, user }: AppContentProps) {
         <div className="flex flex-col items-center gap-3">
           <div className="w-6 h-6 border-2 border-white/20 border-t-white/80 rounded-full animate-spin"></div>
           <p className="text-white/60 text-sm">
-            Initializing...If you see this screen for more than 10 seconds,
-            please quit and restart the app.
+            Initializing...If you see this screen for more than 10 seconds, please quit and restart
+            the app.
           </p>
         </div>
       </div>
@@ -183,9 +178,7 @@ function useAppInitialization() {
       }
 
       setAppState((prev) => ({ ...prev, user }));
-      window.electronAPI
-        ?.setSubscriptionLevel(user.subscription.level)
-        .catch(console.error);
+      window.electronAPI?.setSubscriptionLevel(user.subscription.level).catch(console.error);
 
       const token = await authProvider.getAuthToken();
       if (!token) {
@@ -244,10 +237,7 @@ function useAppInitialization() {
             await getStorageProvider(SubscriptionLevel.FREE).getSettings();
             markInitialized();
           } catch (settingsError) {
-            console.error(
-              'Error fetching user settings in self-hosted mode:',
-              settingsError,
-            );
+            console.error('Error fetching user settings in self-hosted mode:', settingsError);
             showToast('Error', 'Failed to load user settings', 'error');
             markInitialized();
           }
@@ -278,8 +268,7 @@ function useAppInitialization() {
 }
 
 function App() {
-  const { appState, toastState, setToastState, setUser, showToast } =
-    useAppInitialization();
+  const { appState, toastState, setToastState, setUser, showToast } = useAppInitialization();
 
   const loadingSpinner = useMemo(
     () => (
@@ -302,10 +291,7 @@ function App() {
       <ToastContext.Provider value={{ showToast }}>
         <AppModeProvider>
           {appState.user ? (
-            <AppContent
-              isInitialized={appState.isInitialized}
-              user={appState.user}
-            />
+            <AppContent isInitialized={appState.isInitialized} user={appState.user} />
           ) : (
             <AuthForm
               setUser={(user) => {
@@ -315,9 +301,7 @@ function App() {
           )}
           <Toast
             open={toastState.open}
-            onOpenChange={(open) =>
-              setToastState((prev) => ({ ...prev, open }))
-            }
+            onOpenChange={(open) => setToastState((prev) => ({ ...prev, open }))}
             variant={toastState.variant}
             duration={1500}
           >
