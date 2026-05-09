@@ -24,7 +24,6 @@ const LANGUAGE_LABELS: Record<UserLanguage, string> = {
   [UserLanguage.AR_EG]: 'العربية (EG)',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type LocaleSelectorProps = {};
 
 export const LocaleSelector: React.FC<LocaleSelectorProps> = () => {

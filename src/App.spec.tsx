@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
 import { isSelfHosted } from '@shared/constants';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -42,9 +37,7 @@ jest.mock('./contexts/SettingsContext', () => ({
 
 jest.mock('./pages/SubscribedApp', () => {
   return function MockSubscribedApp() {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment
     const { useSettings } = require('./contexts/SettingsContext');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const settings = useSettings();
 
     return (

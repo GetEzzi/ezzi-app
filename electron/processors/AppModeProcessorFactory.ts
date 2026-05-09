@@ -28,7 +28,6 @@ export class AppModeProcessorFactory {
     if (!processor) {
       console.warn(`No processor found for app mode: ${appMode}, falling back to LIVE_INTERVIEW`);
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       return fallback!;
     }
 

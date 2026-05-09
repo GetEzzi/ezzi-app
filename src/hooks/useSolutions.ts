@@ -123,7 +123,6 @@ export function useSolutions() {
       }),
       window.electronAPI.onDebugStart(() => setDebugProcessing(true)),
       window.electronAPI.onDebugSuccess((data: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setNewSolution(data);
         setDebugProcessing(false);
         void clearAllScreenshots();

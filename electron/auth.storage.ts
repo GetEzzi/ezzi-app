@@ -8,7 +8,6 @@ export interface IAuthStore {
   delete(key: keyof AuthStoreSchema): void;
 }
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 const store = new Store<AuthStoreSchema>({
   name: ELECTRON_STORES.AUTH,
   schema: {
@@ -30,7 +29,6 @@ const store = new Store<AuthStoreSchema>({
     },
   },
 }) as unknown as IAuthStore;
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
 export class AuthStorage {
   private static instance: AuthStorage;
