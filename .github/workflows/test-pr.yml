@@ -16,7 +16,7 @@ jobs:
     
     strategy:
       matrix:
-        test-suite: [renderer, electron, lint]
+        test-suite: [renderer, electron, lint, typecheck]
     
     steps:
     - name: Checkout code
@@ -47,3 +47,7 @@ jobs:
     - name: Run lint
       if: matrix.test-suite == 'lint'
       run: pnpm run lint
+
+    - name: Run typecheck
+      if: matrix.test-suite == 'typecheck'
+      run: pnpm run typecheck
