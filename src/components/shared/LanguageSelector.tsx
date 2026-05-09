@@ -18,7 +18,6 @@ const LANGUAGE_LABELS: Record<ProgrammingLanguage, string> = {
   [ProgrammingLanguage.PHP]: 'PHP',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type LanguageSelectorProps = {};
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = () => {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { AuthStorage, type IAuthStore } from './auth.storage';
 
 // Mock electron-store with a factory function
@@ -12,13 +11,11 @@ jest.mock('electron-store', () => {
 
 function createMockAuthStorage() {
   // Reset AuthStorage singleton
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   (AuthStorage as any).instance = null;
 
   // Get reference to the mocked store instance
   const authStorage = AuthStorage.getInstance();
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const mockStore = (authStorage as any).store as jest.Mocked<IAuthStore>;
 
   return { mockStore, authStorage };
@@ -28,7 +25,6 @@ describe('AuthStorage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (AuthStorage as any).instance = null;
   });
 

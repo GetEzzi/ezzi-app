@@ -12,7 +12,6 @@ export function useScreenshotEvents(options: UseScreenshotEventsOptions = {}) {
 
     if (options.onScreenshotTaken || options.refetch) {
       cleanupFunctions.push(
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         window.electronAPI.onScreenshotTaken(async () => {
           options.onScreenshotTaken?.();
           await options.refetch?.();
@@ -22,7 +21,6 @@ export function useScreenshotEvents(options: UseScreenshotEventsOptions = {}) {
 
     if (options.onResetView || options.refetch) {
       cleanupFunctions.push(
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         window.electronAPI.onResetView(async () => {
           options.onResetView?.();
           await options.refetch?.();
