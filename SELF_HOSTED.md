@@ -747,7 +747,7 @@ echo "VITE_API_BASE_URL=http://localhost:3000" >> .env
 
 3. Start the Ezzi application:
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 The app will automatically bypass authentication and use local storage for settings while making API calls to your self-hosted endpoints.

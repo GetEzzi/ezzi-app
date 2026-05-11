@@ -193,8 +193,8 @@ Tips for hiding Ezzi during screen shares:
 
 ### Prerequisites
 
-- Node.js (v22 or higher)
-- npm or yarn package manager
+- Node.js (v24.15.0 or higher)
+- pnpm (v11.0.9 or higher)
 
 ### Setup
 
@@ -206,7 +206,7 @@ cd ezzi
 
 2. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 3. Configure environment (create `.env`):
@@ -223,35 +223,35 @@ VITE_API_BASE_URL=http://localhost:3000
 
 Development mode:
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ### Building
 
 Standard build:
 ```bash
-npm run build
+pnpm run build
 ```
 
 Custom product name build:
 ```bash
 # Mac/Linux
-PRODUCT_NAME="Custom Assistant" npm run build
+PRODUCT_NAME="Custom Assistant" pnpm run build
 
 # Windows (PowerShell)
-$env:PRODUCT_NAME="Custom Assistant"; npm run build
+$env:PRODUCT_NAME="Custom Assistant"; pnpm run build
 ```
 
 ### Testing
 
 Run tests:
 ```bash
-npm test
+pnpm test
 ```
 
 Watch mode:
 ```bash
-npm run test:watch
+pnpm run test:watch
 ```
 
 ## Architecture Overview
